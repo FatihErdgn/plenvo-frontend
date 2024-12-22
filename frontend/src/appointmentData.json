@@ -1,0 +1,152 @@
+[
+  {
+    "id": 1,
+    "firstName": "Jane",
+    "lastName": "Cooper",
+    "phoneNumber": "+91 9876543210",
+    "appointmentDateTime": "13-Aug-2023 10:00:00",
+    "status": "Open",
+    "actions": {
+      "payNow": true,
+      "bookNow": true,
+      "reBook": false,
+      "delete": true,
+      "view": true
+    }
+  },
+  {
+    "id": 2,
+    "firstName": "Wade",
+    "lastName": "Warren",
+    "phoneNumber": "+91 9876543210",
+    "appointmentDateTime": "13-Aug-2023 10:00:00",
+    "status": "Booked",
+    "actions": {
+      "payNow": true,
+      "bookNow": false,
+      "reBook": true,
+      "delete": true,
+      "view": true
+    }
+  },
+  {
+    "id": 3,
+    "firstName": "Brooklyn",
+    "lastName": "Simmons",
+    "phoneNumber": "+91 9876543210",
+    "appointmentDateTime": "13-Aug-2023 10:00:00",
+    "status": "Completed",
+    "actions": {
+      "payNow": false,
+      "bookNow": false,
+      "reBook": true,
+      "delete": true,
+      "view": true
+    }
+  },
+  {
+    "id": 4,
+    "firstName": "Cameron",
+    "lastName": "Williamson",
+    "phoneNumber": "+91 9876543210",
+    "appointmentDateTime": "13-Aug-2023 10:00:00",
+    "status": "Open",
+    "actions": {
+      "payNow": true,
+      "bookNow": true,
+      "reBook": false,
+      "delete": true,
+      "view": true
+    }
+  },
+  {
+    "id": 5,
+    "firstName": "Leslie",
+    "lastName": "Alexander",
+    "phoneNumber": "+91 9876543210",
+    "appointmentDateTime": "13-Aug-2023 10:00:00",
+    "status": "Open",
+    "actions": {
+      "payNow": true,
+      "bookNow": true,
+      "reBook": false,
+      "delete": true,
+      "view": true
+    }
+  },
+  {
+    "id": 6,
+    "firstName": "Savannah",
+    "lastName": "Nguyen",
+    "phoneNumber": "+91 9876543210",
+    "appointmentDateTime": "13-Aug-2023 10:00:00",
+    "status": "Open",
+    "actions": {
+      "payNow": true,
+      "bookNow": true,
+      "reBook": false,
+      "delete": true,
+      "view": true
+    }
+  },
+  {
+    "id": 7,
+    "firstName": "Darlene",
+    "lastName": "Robertson",
+    "phoneNumber": "+91 9876543210",
+    "appointmentDateTime": "13-Aug-2023 10:00:00",
+    "status": "Completed",
+    "actions": {
+      "payNow": false,
+      "bookNow": false,
+      "reBook": true,
+      "delete": true,
+      "view": true
+    }
+  },
+  {
+    "id": 8,
+    "firstName": "Ronald",
+    "lastName": "Richards",
+    "phoneNumber": "+91 9876543210",
+    "appointmentDateTime": "13-Aug-2023 10:00:00",
+    "status": "Open",
+    "actions": {
+      "payNow": true,
+      "bookNow": true,
+      "reBook": false,
+      "delete": true,
+      "view": true
+    }
+  },
+  {
+    "id": 9,
+    "firstName": "Kathryn",
+    "lastName": "Murphy",
+    "phoneNumber": "+91 9876543210",
+    "appointmentDateTime": "13-Aug-2023 10:00:00",
+    "status": "Open",
+    "actions": {
+      "payNow": true,
+      "bookNow": true,
+      "reBook": false,
+      "delete": true,
+      "view": true
+    }
+  },
+  {
+    "id": 10,
+    "firstName": "Darrell",
+    "lastName": "Steward",
+    "phoneNumber": "+91 9876543210",
+    "appointmentDateTime": "13-Aug-2023 10:00:00",
+    "status": "Open",
+    "actions": {
+      "payNow": true,
+      "bookNow": true,
+      "reBook": false,
+      "delete": true,
+      "view": true
+    }
+  }
+]
