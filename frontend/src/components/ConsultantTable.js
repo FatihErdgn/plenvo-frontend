@@ -1,6 +1,6 @@
 import React from "react";
 import data from "../appointmentData.json"; // JSON dosyasını içe aktar
-import { RiDeleteBin5Line } from "react-icons/ri";
+import { LiaEdit } from "react-icons/lia";
 import { IoEyeOutline } from "react-icons/io5";
 
 const ConsultantTable = () => {
@@ -70,10 +70,10 @@ const ConsultantTable = () => {
                 </button>
                 <button
                   className="flex items-center justify-center text-red-500 px-2 py-2 rounded-full hover:bg-red-600 hover:text-white"
-                  disabled={!row.actions.delete}
-                  aria-label="Delete"
+                  disabled={!row.actions.edit}
+                  aria-label="edit"
                 >
-                  <RiDeleteBin5Line className="w-6 h-6" />
+                  <LiaEdit className="w-6 h-6" />
                 </button>
                 <button
                   className="flex items-center justify-center text-gray-500 px-2 py-2 rounded-full hover:bg-gray-600 hover:text-white"

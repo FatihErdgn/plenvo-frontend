@@ -17,3 +17,14 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+@keyframes popupSlideIn {
+  from {
+      transform: translateY(-20px) scale(0.7);
+      opacity: 0;
+  }
+  to {
+      transform: translateY(0) scale(1);
+      opacity: 1;
+  }
+}

@@ -10,7 +10,7 @@
       "payNow": true,
       "bookNow": true,
       "reBook": false,
-      "delete": true,
+      "edit": true,
       "view": true
     }
   },
@@ -25,7 +25,7 @@
       "payNow": true,
       "bookNow": false,
       "reBook": true,
-      "delete": true,
+      "edit": true,
       "view": true
     }
   },
@@ -40,7 +40,7 @@
       "payNow": false,
       "bookNow": false,
       "reBook": true,
-      "delete": true,
+      "edit": true,
       "view": true
     }
   },
@@ -55,7 +55,7 @@
       "payNow": true,
       "bookNow": true,
       "reBook": false,
-      "delete": true,
+      "edit": true,
       "view": true
     }
   },
@@ -70,7 +70,7 @@
       "payNow": true,
       "bookNow": true,
       "reBook": false,
-      "delete": true,
+      "edit": true,
       "view": true
     }
   },
@@ -85,7 +85,7 @@
       "payNow": true,
       "bookNow": true,
       "reBook": false,
-      "delete": true,
+      "edit": true,
       "view": true
     }
   },
@@ -100,7 +100,7 @@
       "payNow": false,
       "bookNow": false,
       "reBook": true,
-      "delete": true,
+      "edit": true,
       "view": true
     }
   },
@@ -115,7 +115,7 @@
       "payNow": true,
       "bookNow": true,
       "reBook": false,
-      "delete": true,
+      "edit": true,
       "view": true
     }
   },
@@ -130,7 +130,7 @@
       "payNow": true,
       "bookNow": true,
       "reBook": false,
-      "delete": true,
+      "edit": true,
       "view": true
     }
   },
@@ -145,7 +145,7 @@
       "payNow": true,
       "bookNow": true,
       "reBook": false,
-      "delete": true,
+      "edit": true,
       "view": true
     }
   }
