@@ -1,7 +1,7 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
 import Login from "./pages/Login";
-import Home from "./pages/Home";
+// import Home from "./pages/Home";
 import ConsultantPage from "./pages/Consultant";
 import SideBar from "./components/Sidebar";
 import FinancePage from "./pages/Finance";
@@ -26,8 +26,8 @@ const MainLayout = () => {
         <div className="flex h-screen bg-[#007E85] font-montserrat">
           <SideBar />
           <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/appointment" element={<ConsultantPage />} />
+            {/* <Route path="/" element={<Home />} /> */}
+            <Route path="/" element={<ConsultantPage />} />
             <Route path="/finance" element={<FinancePage />} />
           </Routes>
         </div>
