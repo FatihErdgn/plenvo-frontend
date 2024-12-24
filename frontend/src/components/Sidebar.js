@@ -29,7 +29,7 @@ export default function SideBar() {
         <h3 className="mb-6 text-lg">Menu</h3>
         <nav>
           <Link
-            to="/appointment"
+            to="/"
             className={
               isActive("/appointment")
                 ? "mb-10 flex items-center gap-2 text-[#007E85] font-semibold bg-white w-[280px] p-3 rounded cursor-pointer"
@@ -60,8 +60,8 @@ export default function SideBar() {
             className="w-10 h-10 rounded-full"
           />
           <div>
-            <p>Receptionist</p>
-            <p className="text-gray-200">recep@example.com</p>
+            <p>Consultant</p>
+            <p className="text-gray-200">fatih.erdogan@example.com</p>
           </div>
         </div>
         <button
