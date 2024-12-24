@@ -12,7 +12,7 @@ export default function Navbar() {
           <Link to="/login" className="hover:underline">Login</Link>
         </li>
         <li>
-          <Link to="/consultant" className="hover:underline">Consultant</Link>
+          <Link to="/appointment" className="hover:underline">Appointment</Link>
         </li>
       </ul>
     </nav>
