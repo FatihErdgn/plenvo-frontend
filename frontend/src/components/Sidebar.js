@@ -31,7 +31,7 @@ export default function SideBar() {
           <Link
             to="/"
             className={
-              isActive("/appointment")
+              isActive("/")
                 ? "mb-10 flex items-center gap-2 text-[#007E85] font-semibold bg-white w-[280px] p-3 rounded cursor-pointer"
                 : "mb-10 flex items-center gap-2 text-white cursor-pointer"
             }
