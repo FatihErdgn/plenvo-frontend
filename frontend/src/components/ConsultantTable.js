@@ -3,7 +3,9 @@ import data from "../appointmentData.json"; // JSON dosyasını içe aktar
 import { LiaEdit } from "react-icons/lia";
 import { IoEyeOutline } from "react-icons/io5";
 
-const ConsultantTable = () => {
+const ConsultantTable = ({searchQuery}) => {
+  console.log("Search Query:", searchQuery);
+
   const getStatusClass = (status) => {
     switch (status) {
       case "Open":
@@ -23,6 +25,19 @@ const ConsultantTable = () => {
       : "bg-gray-300 text-gray-500 px-4 py-[9px] rounded-[20px] cursor-not-allowed";
   };
 
+  const filteredData = searchQuery
+  ? data.filter((item) => {
+      const fullName = `${item.firstName} ${item.lastName}`.toLowerCase();
+      const phoneNumber = item.phoneNumber.toLowerCase();
+      const query = searchQuery.toLowerCase();
+      const isMatch = fullName.includes(query) || phoneNumber.includes(query);
+      // console.log("Checking:", fullName, phoneNumber, "Match:", isMatch);
+      return isMatch;
+    })
+  : data;
+
+  console.log("Filtered Data:", filteredData);
+
   return (
     <div className="font-montserrat p-6 rounded-lg shadow-md">
       <table className="table-auto w-full border-collapse bg-white shadow-sm rounded-lg">
@@ -37,7 +52,7 @@ const ConsultantTable = () => {
           </tr>
         </thead>
         <tbody>
-          {data.map((row) => (
+          {filteredData.map((row) => (
             <tr
               key={row.id}
               className="odd:bg-[#F7F6FE] even:bg-white hover:bg-green-50 text-center"
