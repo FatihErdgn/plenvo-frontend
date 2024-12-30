@@ -1,0 +1,92 @@
+[
+    {
+        "Id": 1,
+        "Date": "2024-12-29",
+        "ExpenseCategory": "Personel",
+        "ExpenseType": "Doktor Maaşı",
+        "ExpenseKind": "Sabit",
+        "Amount": 50000,
+        "Currency": "TRY"
+    },
+    {
+        "Id": 2,
+        "Date": "2024-12-29",
+        "ExpenseCategory": "Personel",
+        "ExpenseType": "Hemşire Maaşı",
+        "ExpenseKind": "Sabit",
+        "Amount": 30000,
+        "Currency": "TRY"
+    },
+    {
+        "Id": 3,
+        "Date": "2024-12-29",
+        "ExpenseCategory": "Enerji",
+        "ExpenseType": "Elektrik Faturası",
+        "ExpenseKind": "Genel",
+        "Amount": 15000,
+        "Currency": "TRY"
+    },
+    {
+        "Id": 4,
+        "Date": "2024-12-29",
+        "ExpenseCategory": "Enerji",
+        "ExpenseType": "Su Faturası",
+        "ExpenseKind": "Genel",
+        "Amount": 4000,
+        "Currency": "TRY"
+    },
+    {
+        "Id": 5,
+        "Date": "2024-12-29",
+        "ExpenseCategory": "Tıbbi Malzeme",
+        "ExpenseType": "Tek Kullanımlık Eldiven",
+        "ExpenseKind": "Genel",
+        "Amount": 2000,
+        "Currency": "TRY"
+    },
+    {
+        "Id": 6,
+        "Date": "2024-12-30",
+        "ExpenseCategory": "Personel",
+        "ExpenseType": "Temizlik Personeli Maaşı",
+        "ExpenseKind": "Sabit",
+        "Amount": 15000,
+        "Currency": "TRY"
+    },
+    {
+        "Id": 7,
+        "Date": "2024-12-30",
+        "ExpenseCategory": "Bakım ve Onarım",
+        "ExpenseType": "Tıbbi Cihaz Onarımı",
+        "ExpenseKind": "Genel",
+        "Amount": 10000,
+        "Currency": "TRY"
+    },
+    {
+        "Id": 8,
+        "Date": "2024-12-30",
+        "ExpenseCategory": "Temizlik",
+        "ExpenseType": "Hijyenik Temizlik Maddeleri",
+        "ExpenseKind": "Genel",
+        "Amount": 5000,
+        "Currency": "TRY"
+    },
+    {
+        "Id": 9,
+        "Date": "2024-12-31",
+        "ExpenseCategory": "Personel",
+        "ExpenseType": "Güvenlik Personeli Maaşı",
+        "ExpenseKind": "Sabit",
+        "Amount": 20000,
+        "Currency": "TRY"
+    },
+    {
+        "Id": 10,
+        "Date": "2024-12-31",
+        "ExpenseCategory": "Enerji",
+        "ExpenseType": "Doğal Gaz Faturası",
+        "ExpenseKind": "Genel",
+        "Amount": 12000,
+        "Currency": "TRY"
+    }
+]

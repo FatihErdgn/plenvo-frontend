@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import ConsultantSearchContainer from "../components/ConsultantSearchContainer";
-import ConsultantTable from "../components/ConsultantTable";
-import AddAppointment from "../components/CreateAppointmentButton";
+import ConsultantSearchContainer from "../components/SearchContainer";
+import ConsultantTable from "../components/Consultant/ConsultantTable";
+import AddAppointment from "../components/Consultant/CreateAppointmentButton";
 
 export default function ConsultantPage() {
   const [searchQuery, setSearchQuery] = useState("");

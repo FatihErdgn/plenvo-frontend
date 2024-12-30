@@ -1,5 +1,5 @@
 import React from "react";
-import data from "../appointmentData.json"; // JSON dosyasını içe aktar
+import data from "../../appointmentData.json"; // JSON dosyasını içe aktar
 import { LiaEdit } from "react-icons/lia";
 import { IoEyeOutline } from "react-icons/io5";
 
