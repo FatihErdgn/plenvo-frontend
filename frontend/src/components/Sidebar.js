@@ -18,9 +18,9 @@ export default function SideBar() {
       {/* Logo */}
       <div className="flex flex-col items-center">
         <img
-          src="/plenvo-logo.png"
+          src="/plenvo-logo-3.png"
           alt="Plenvo Logo"
-          className="h-full w-screen"
+          className="h-full w-[70%]"
         />
       </div>
 
