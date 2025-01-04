@@ -1,0 +1,114 @@
+[
+  {
+    "id": 1,
+    "firstName": "Cemre Ceren",
+    "lastName": "Gündoğdu",
+    "profession": "Fizyoterapist",
+    "specialty": "Pilates",
+    "email": "cemre.gundogdu@example.com",
+    "hireDate": "2023-02-15",
+    "role": "Consultant",
+    "actions": {
+      "edit": true,
+      "view": true
+    }
+  },
+  {
+    "id": 2,
+    "firstName": "Hanife",
+    "lastName": "Çoban",
+    "profession": "Fizyoterapist",
+    "specialty": "Pilates",
+    "email": "hanife.coban@example.com",
+    "hireDate": "2021-07-12",
+    "role": "Doctor",
+    "actions": {
+      "edit": true,
+      "view": true
+    }
+  },
+  {
+    "id": 3,
+    "firstName": "Sanem",
+    "lastName": "Demircioğlu",
+    "profession": "Fizyoterapist",
+    "specialty": "Pilates",
+    "email": "sanem.demircioglu@example.com",
+    "hireDate": "2022-11-05",
+    "role": "Manager",
+    "actions": {
+      "edit": true,
+      "view": true
+    }
+  },
+  {
+    "id": 4,
+    "firstName": "İrem",
+    "lastName": "Salur",
+    "profession": "Diyetisyen",
+    "specialty": "Diyet",
+    "email": "irem.salur@example.com",
+    "hireDate": "2023-03-20",
+    "role": "Consultant",
+    "actions": {
+      "edit": true,
+      "view": true
+    }
+  },
+  {
+    "id": 5,
+    "firstName": "Serpil",
+    "lastName": "Özcan",
+    "profession": "Podolog",
+    "specialty": "Ayak Sağlığı",
+    "email": "serpil.ozcan@example.com",
+    "hireDate": "2020-09-18",
+    "role": "Doctor",
+    "actions": {
+      "edit": true,
+      "view": true
+    }
+  },
+  {
+    "id": 6,
+    "firstName": "Alpay",
+    "lastName": "Gündoğdu",
+    "profession": "Fizyoterapist",
+    "specialty": "Fizik Tedavi",
+    "email": "alpay.gundogdu@example.com",
+    "hireDate": "2021-04-22",
+    "role": "Admin",
+    "actions": {
+      "edit": true,
+      "view": true
+    }
+  },
+  {
+    "id": 7,
+    "firstName": "Cemre Ceren",
+    "lastName": "Gündoğdu",
+    "profession": "Fizyoterapist",
+    "specialty": "Pelvik Taban",
+    "email": "cemre.gundogdu.pt@example.com",
+    "hireDate": "2022-06-10",
+    "role": "Manager",
+    "actions": {
+      "edit": true,
+      "view": true
+    }
+  },
+  {
+    "id": 8,
+    "firstName": "İsimsiz",
+    "lastName": "",
+    "profession": "Fizyoterapist",
+    "specialty": "Pilates",
+    "email": "isimsiz@example.com",
+    "hireDate": "2023-08-01",
+    "role": "Consultant",
+    "actions": {
+      "edit": true,
+      "view": true
+    }
+  }
+]

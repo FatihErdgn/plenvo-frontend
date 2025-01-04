@@ -1,6 +1,6 @@
 import { CgLogOut } from "react-icons/cg";
 import { LuSquareMenu } from "react-icons/lu";
-// import { IoPersonOutline } from "react-icons/io5";
+import { IoPersonOutline } from "react-icons/io5";
 import { TbPresentationAnalytics } from "react-icons/tb";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 
@@ -47,6 +47,16 @@ export default function SideBar() {
             }
           >
             <TbPresentationAnalytics className="w-5 h-5" /> Financial Status
+          </Link>
+          <Link
+            to="/personnel-management"
+            className={
+              isActive("/personnel-management")
+                ? "mb-10 flex items-center gap-2 text-[#007E85] font-semibold bg-white w-[280px] p-3 rounded cursor-pointer"
+                : "mb-10 flex items-center gap-2 text-white cursor-pointer"
+            }
+          >
+            <IoPersonOutline className="w-5 h-5" /> Personnel Management
           </Link>
         </nav>
       </div>

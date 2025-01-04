@@ -5,6 +5,7 @@ import Login from "./pages/Login";
 import ConsultantPage from "./pages/Consultant";
 import SideBar from "./components/Sidebar";
 import FinancePage from "./pages/Finance";
+import PersonnelManagementPage from "./pages/PersonnelManagement";
 
 function App() {
   return (
@@ -29,6 +30,7 @@ const MainLayout = () => {
             {/* <Route path="/" element={<Home />} /> */}
             <Route path="/" element={<ConsultantPage />} />
             <Route path="/finance" element={<FinancePage />} />
+            <Route path="/personnel-management" element={<PersonnelManagementPage />} />
           </Routes>
         </div>
       ) : (
