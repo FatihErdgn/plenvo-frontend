@@ -2,9 +2,13 @@ import React from "react";
 import data from "../../appointmentData.json"; // JSON dosyasını içe aktar
 import { LiaEdit } from "react-icons/lia";
 import { IoEyeOutline } from "react-icons/io5";
+import { useState } from "react";
+import { MdNavigateBefore, MdNavigateNext } from "react-icons/md";
 
-const ConsultantTable = ({searchQuery}) => {
+const ConsultantTable = ({ searchQuery }) => {
   console.log("Search Query:", searchQuery);
+  const [currentPage, setCurrentPage] = useState(1); // Sayfa numarası
+  const rowsPerPage = 10; // Sayfa başına gösterilecek satır sayısı
 
   const getStatusClass = (status) => {
     switch (status) {
@@ -26,82 +30,134 @@ const ConsultantTable = ({searchQuery}) => {
   };
 
   const filteredData = searchQuery
-  ? data.filter((item) => {
-      const fullName = `${item.firstName} ${item.lastName}`.toLowerCase();
-      const phoneNumber = item.phoneNumber.toLowerCase();
-      const query = searchQuery.toLowerCase();
-      const isMatch = fullName.includes(query) || phoneNumber.includes(query);
-      // console.log("Checking:", fullName, phoneNumber, "Match:", isMatch);
-      return isMatch;
-    })
-  : data;
+    ? data.filter((item) => {
+        const fullName = `${item.firstName} ${item.lastName}`.toLowerCase();
+        const phoneNumber = item.phoneNumber.toLowerCase();
+        const query = searchQuery.toLowerCase();
+        const isMatch = fullName.includes(query) || phoneNumber.includes(query);
+        // console.log("Checking:", fullName, phoneNumber, "Match:", isMatch);
+        return isMatch;
+      })
+    : data;
 
   console.log("Filtered Data:", filteredData);
+  const totalPages = Math.ceil(filteredData.length / rowsPerPage); // Toplam sayfa sayısı
+  const startIndex = (currentPage - 1) * rowsPerPage; // Başlangıç index'i
+  const currentData = filteredData.slice(startIndex, startIndex + rowsPerPage); // Sayfa başına gösterilecek veriler
+
+  const goToNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
+  const goToPreviosPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
 
   return (
-    <div className="font-montserrat p-6 rounded-lg shadow-md">
-      <table className="table-auto w-full border-collapse bg-white shadow-sm rounded-lg">
-        <thead>
-          <tr className="text-gray-700 text-center">
-            <th className="px-4 py-2">First Name</th>
-            <th className="px-4 py-2">Last Name</th>
-            <th className="px-4 py-2">Phone Number</th>
-            <th className="px-4 py-2">Appointment Date & Time</th>
-            <th className="px-4 py-2">Status</th>
-            <th className="px-4 py-2">Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          {filteredData.map((row) => (
-            <tr
-              key={row.id}
-              className="odd:bg-[#F7F6FE] even:bg-white hover:bg-green-50 text-center"
-            >
-              <td className="px-4 py-2">{row.firstName}</td>
-              <td className="px-4 py-2">{row.lastName}</td>
-              <td className="px-4 py-2">{row.phoneNumber}</td>
-              <td className="px-4 py-2">{row.appointmentDateTime}</td>
-              <td className="px-4 py-2">
-                <span className={getStatusClass(row.status)}>{row.status}</span>
-              </td>
-              <td className="flex flex-row justify-center text-sm items-center px-4 py-[14px] space-x-2">
-                <button
-                  className={getButtonClasses(row.actions.payNow)}
-                  disabled={!row.actions.payNow}
-                >
-                  Pay Now
-                </button>
-                <button
-                  className={getButtonClasses(row.actions.bookNow)}
-                  disabled={!row.actions.bookNow}
-                >
-                  Book Now
-                </button>
-                <button
-                  className={getButtonClasses(row.actions.reBook)}
-                  disabled={!row.actions.reBook}
-                >
-                  Re-Book
-                </button>
-                <button
-                  className="flex items-center justify-center text-red-500 px-2 py-2 rounded-full hover:bg-red-600 hover:text-white"
-                  disabled={!row.actions.edit}
-                  aria-label="edit"
-                >
-                  <LiaEdit className="w-6 h-6" />
-                </button>
-                <button
-                  className="flex items-center justify-center text-gray-500 px-2 py-2 rounded-full hover:bg-gray-600 hover:text-white"
-                  disabled={!row.actions.view}
-                  aria-label="View"
-                >
-                  <IoEyeOutline className="w-6 h-6" />
-                </button>
-              </td>
+    <div className="flex flex-col justify-between h-[87vh] font-montserrat p-6 rounded-lg shadow-md">
+      <div className="overflow-auto">
+        <table className="table-auto w-full border-collapse bg-white shadow-sm rounded-lg">
+          <thead>
+            <tr className="text-gray-700 text-center">
+              <th className="px-4 py-2">First Name</th>
+              <th className="px-4 py-2">Last Name</th>
+              <th className="px-4 py-2">Phone Number</th>
+              <th className="px-4 py-2">Appointment Date & Time</th>
+              <th className="px-4 py-2">Status</th>
+              <th className="px-4 py-2">Action</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {currentData.map((row) => (
+              <tr
+                key={row.id}
+                className="odd:bg-[#F7F6FE] even:bg-white hover:bg-green-50 text-center"
+              >
+                <td className="px-4 py-2">{row.firstName}</td>
+                <td className="px-4 py-2">{row.lastName}</td>
+                <td className="px-4 py-2">{row.phoneNumber}</td>
+                <td className="px-4 py-2">{row.appointmentDateTime}</td>
+                <td className="px-4 py-2">
+                  <span className={getStatusClass(row.status)}>
+                    {row.status}
+                  </span>
+                </td>
+                <td className="flex flex-row justify-center text-sm items-center px-4 py-[14px] space-x-2">
+                  <button
+                    className={getButtonClasses(row.actions.payNow)}
+                    disabled={!row.actions.payNow}
+                  >
+                    Pay Now
+                  </button>
+                  <button
+                    className={getButtonClasses(row.actions.bookNow)}
+                    disabled={!row.actions.bookNow}
+                  >
+                    Book Now
+                  </button>
+                  <button
+                    className={getButtonClasses(row.actions.reBook)}
+                    disabled={!row.actions.reBook}
+                  >
+                    Re-Book
+                  </button>
+                  <button
+                    className="flex items-center justify-center text-red-500 px-2 py-2 rounded-full hover:bg-red-600 hover:text-white"
+                    disabled={!row.actions.edit}
+                    aria-label="edit"
+                  >
+                    <LiaEdit className="w-6 h-6" />
+                  </button>
+                  <button
+                    className="flex items-center justify-center text-gray-500 px-2 py-2 rounded-full hover:bg-gray-600 hover:text-white"
+                    disabled={!row.actions.view}
+                    aria-label="View"
+                  >
+                    <IoEyeOutline className="w-6 h-6" />
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      {/* Pagination */}
+      <div className="flex justify-center items-center mt-4">
+        {/* Önceki Sayfa */}
+        <button
+          onClick={goToPreviosPage}
+          disabled={currentPage === 1}
+          className={`px-2 py-2 rounded-full ${
+            currentPage === 1
+              ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+              : "bg-[#399AA1] text-white hover:bg-[#007E85]"
+          }`}
+        >
+          <MdNavigateBefore className="w-5 h-5" />
+        </button>
+
+        {/* Sayfa Bilgisi */}
+        <span className="mx-4 text-gray-700">
+          Page {currentPage} of {totalPages}
+        </span>
+
+        {/* Sonraki Sayfa */}
+        <button
+          onClick={goToNextPage}
+          disabled={currentPage === totalPages}
+          className={`px-2 py-2 rounded-full ${
+            currentPage === totalPages
+              ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+              : "bg-[#399AA1] text-white hover:bg-[#007E85]"
+          }`}
+        >
+          <MdNavigateNext className="w-5 h-5" />
+        </button>
+      </div>
     </div>
   );
 };

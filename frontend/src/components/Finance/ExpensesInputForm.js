@@ -6,7 +6,7 @@ import Collapse from "@mui/material/Collapse";
 export default function ExpensesInputForm() {
   const [formData, setFormData] = useState({
     ExpenseCategory: "",
-    ExpenseType: "",
+    ExpenseDesc: "",
     ExpenseKind: "",
     Amount: "",
     Currency: "",
@@ -78,7 +78,7 @@ export default function ExpensesInputForm() {
     e.preventDefault();
     if (
       !formData.ExpenseCategory ||
-      !formData.ExpenseType ||
+      !formData.ExpenseDesc ||
       !formData.ExpenseKind ||
       !formData.Amount ||
       !formData.Currency
@@ -100,7 +100,7 @@ export default function ExpensesInputForm() {
 
     setFormData({
       ExpenseCategory: "",
-      ExpenseType: "",
+      ExpenseDesc: "",
       ExpenseKind: "",
       Amount: "",
       Currency: "",
@@ -167,13 +167,13 @@ export default function ExpensesInputForm() {
           "ExpenseCategory",
           uniqueCategories
         )}
-        <label htmlFor="ExpenseType" className="text-gray-700 mb-2 block">
-          Expense Type
+        <label htmlFor="ExpenseDesc" className="text-gray-700 mb-2 block">
+          Expense Description
         </label>
         <input
           type="text"
-          name="ExpenseType"
-          value={formData.ExpenseType}
+          name="ExpenseDesc"
+          value={formData.ExpenseDesc}
           onChange={handleInputChange}
           className="px-4 py-2 border border-gray-300 rounded-lg mb-4 focus:outline-none focus:ring-2 focus:ring-[#007E85]"
         />

@@ -2,9 +2,13 @@ import React from "react";
 import data from "../../personnelData.json"; // JSON dosyasını içe aktar
 import { LiaEdit } from "react-icons/lia";
 import { IoEyeOutline } from "react-icons/io5";
+import { useState } from "react";
+import { MdNavigateBefore, MdNavigateNext } from "react-icons/md";
 
 const PersonnelTable = ({ searchQuery }) => {
   console.log("Search Query:", searchQuery);
+  const [currentPage, setCurrentPage] = useState(1); // Sayfa numarası
+  const rowsPerPage = 10; // Sayfa başına gösterilecek satır sayısı
 
   const getStatusClass = (status) => {
     switch (status) {
@@ -40,6 +44,22 @@ const PersonnelTable = ({ searchQuery }) => {
 
   console.log("Filtered Data:", filteredData);
 
+  const totalPages = Math.ceil(filteredData.length / rowsPerPage); // Toplam sayfa sayısı
+  const startIndex = (currentPage - 1) * rowsPerPage; // Başlangıç index'i
+  const currentData = filteredData.slice(startIndex, startIndex + rowsPerPage); // Sayfa başına gösterilecek veriler
+
+  const goToNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
+  const goToPreviosPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
   return (
     <div className="font-montserrat p-6 rounded-lg shadow-md">
       <table className="table-auto w-full border-collapse bg-white shadow-sm rounded-lg">
@@ -55,7 +75,7 @@ const PersonnelTable = ({ searchQuery }) => {
         </thead>
 
         <tbody>
-          {filteredData.map((row) => (
+          {currentData.map((row) => (
             <tr
               key={row.id}
               className="odd:bg-[#F7F6FE] even:bg-white hover:bg-green-50 text-center"
@@ -87,6 +107,39 @@ const PersonnelTable = ({ searchQuery }) => {
           ))}
         </tbody>
       </table>
+      {/* Pagination */}
+      <div className="flex justify-center items-center mt-4">
+        {/* Önceki Sayfa */}
+        <button
+          onClick={goToPreviosPage}
+          disabled={currentPage === 1}
+          className={`px-2 py-2 rounded-full ${
+            currentPage === 1
+              ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+              : "bg-[#399AA1] text-white hover:bg-[#007E85]"
+          }`}
+        >
+          <MdNavigateBefore className="w-5 h-5" />
+        </button>
+
+        {/* Sayfa Bilgisi */}
+        <span className="mx-4 text-gray-700">
+          Page {currentPage} of {totalPages}
+        </span>
+
+        {/* Sonraki Sayfa */}
+        <button
+          onClick={goToNextPage}
+          disabled={currentPage === totalPages}
+          className={`px-2 py-2 rounded-full ${
+            currentPage === totalPages
+              ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+              : "bg-[#399AA1] text-white hover:bg-[#007E85]"
+          }`}
+        >
+          <MdNavigateNext className="w-5 h-5" />
+        </button>
+      </div>
     </div>
   );
 };
