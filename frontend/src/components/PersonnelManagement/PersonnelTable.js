@@ -1,11 +1,10 @@
 import React from "react";
-import data from "../../personnelData.json"; // JSON dosyasını içe aktar
 import { LiaEdit } from "react-icons/lia";
 import { IoEyeOutline } from "react-icons/io5";
 import { useState } from "react";
 import { MdNavigateBefore, MdNavigateNext } from "react-icons/md";
 
-const PersonnelTable = ({ searchQuery }) => {
+const PersonnelTable = ({ searchQuery,data }) => {
   console.log("Search Query:", searchQuery);
   const [currentPage, setCurrentPage] = useState(1); // Sayfa numarası
   const rowsPerPage = 10; // Sayfa başına gösterilecek satır sayısı

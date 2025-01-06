@@ -2,6 +2,7 @@ import PersonnelTable from "../components/PersonnelManagement/PersonnelTable";
 import AddPersonnel from "../components/PersonnelManagement/CreatePersonnelButton";
 import SearchContainer from "../components/SearchContainer";
 import { useState } from "react";
+import personnelData from "../personnelData.json";
 
 export default function PersonnelManagementPage() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -22,7 +23,7 @@ export default function PersonnelManagementPage() {
       </div>
       {/* İçerik */}
       <div>
-        <PersonnelTable searchQuery={searchQuery} />
+        <PersonnelTable searchQuery={searchQuery} data={personnelData}/>
       </div>
     </div>
   );

@@ -1,9 +1,8 @@
 import { useState, useEffect } from "react";
-import expensesData from "../../expensesData.json";
 import Alert from "@mui/material/Alert";
 import Collapse from "@mui/material/Collapse";
 
-export default function ExpensesInputForm() {
+export default function ExpensesInputForm({expensesData}) {
   const [formData, setFormData] = useState({
     ExpenseCategory: "",
     ExpenseDesc: "",

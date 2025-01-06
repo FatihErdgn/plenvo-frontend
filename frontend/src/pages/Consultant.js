@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import ConsultantSearchContainer from "../components/SearchContainer";
 import ConsultantTable from "../components/Consultant/ConsultantTable";
 import AddAppointment from "../components/Consultant/CreateAppointmentButton";
+import appointmentData from "../appointmentData.json";
 
 export default function ConsultantPage() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -22,7 +23,7 @@ export default function ConsultantPage() {
       </div>
       {/* İçerik */}
       <div>
-        <ConsultantTable searchQuery={searchQuery} />
+        <ConsultantTable searchQuery={searchQuery} data={appointmentData} />
       </div>
     </div>
   );
