@@ -1,12 +1,14 @@
-import React from "react";
+import React, { useState } from "react";
 import { LiaEdit } from "react-icons/lia";
 import { IoEyeOutline } from "react-icons/io5";
-import { useState } from "react";
 import { MdNavigateBefore, MdNavigateNext } from "react-icons/md";
+import ViewAppointmentDetailsPopup from "./ViewAppointmentDetailsPopup";
 
-const ConsultantTable = ({ searchQuery,data }) => {
-  console.log("Search Query:", searchQuery);
+const ConsultantTable = ({ searchQuery, data }) => {
   const [currentPage, setCurrentPage] = useState(1); // Sayfa numarası
+  const [selectedData, setSelectedData] = useState(null);
+  const [isPopupOpen, setIsPopupOpen] = useState(false);
+  const [isEditable, setIsEditable] = useState(false);
   const rowsPerPage = 10; // Sayfa başına gösterilecek satır sayısı
 
   const getStatusClass = (status) => {
@@ -34,13 +36,14 @@ const ConsultantTable = ({ searchQuery,data }) => {
         const phoneNumber = item.phoneNumber.toLowerCase();
         const status = item.status.toLowerCase();
         const query = searchQuery.toLowerCase();
-        const isMatch = fullName.includes(query) || phoneNumber.includes(query) || status.includes(query);
-        // console.log("Checking:", fullName, phoneNumber, "Match:", isMatch);
+        const isMatch =
+          fullName.includes(query) ||
+          phoneNumber.includes(query) ||
+          status.includes(query);
         return isMatch;
       })
     : data;
 
-  console.log("Filtered Data:", filteredData);
   const totalPages = Math.ceil(filteredData.length / rowsPerPage); // Toplam sayfa sayısı
   const startIndex = (currentPage - 1) * rowsPerPage; // Başlangıç index'i
   const currentData = filteredData.slice(startIndex, startIndex + rowsPerPage); // Sayfa başına gösterilecek veriler
@@ -55,6 +58,23 @@ const ConsultantTable = ({ searchQuery,data }) => {
     if (currentPage > 1) {
       setCurrentPage(currentPage - 1);
     }
+  };
+
+  const handleEditClick = (data) => {
+    setSelectedData(data);
+    setIsEditable(true);
+    setIsPopupOpen(true);
+  };
+
+  const handleViewClick = (data) => {
+    setSelectedData(data);
+    setIsEditable(false);
+    setIsPopupOpen(true);
+  };
+
+  const handleClosePopup = () => {
+    setIsPopupOpen(false);
+    setSelectedData(null);
   };
 
   return (
@@ -109,6 +129,7 @@ const ConsultantTable = ({ searchQuery,data }) => {
                     className="flex items-center justify-center text-red-500 px-2 py-2 rounded-full hover:bg-red-600 hover:text-white"
                     disabled={!row.actions.edit}
                     aria-label="edit"
+                    onClick={() => handleEditClick(row)}
                   >
                     <LiaEdit className="w-6 h-6" />
                   </button>
@@ -116,6 +137,7 @@ const ConsultantTable = ({ searchQuery,data }) => {
                     className="flex items-center justify-center text-gray-500 px-2 py-2 rounded-full hover:bg-gray-600 hover:text-white"
                     disabled={!row.actions.view}
                     aria-label="View"
+                    onClick={() => handleViewClick(row)}
                   >
                     <IoEyeOutline className="w-6 h-6" />
                   </button>
@@ -158,6 +180,13 @@ const ConsultantTable = ({ searchQuery,data }) => {
           <MdNavigateNext className="w-5 h-5" />
         </button>
       </div>
+      {isPopupOpen && (
+        <ViewAppointmentDetailsPopup
+          data={selectedData}
+          isEditable={isEditable}
+          onClose={handleClosePopup}
+        />
+      )}
     </div>
   );
 };
