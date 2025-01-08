@@ -12,7 +12,9 @@
       "reBook": false,
       "edit": true,
       "view": true
-    }
+    },
+    "gender": "female",
+    "age": 34
   },
   {
     "id": 2,
@@ -27,7 +29,9 @@
       "reBook": true,
       "edit": true,
       "view": true
-    }
+    },
+    "gender": "male",
+    "age": 42
   },
   {
     "id": 3,
@@ -42,7 +46,9 @@
       "reBook": true,
       "edit": true,
       "view": true
-    }
+    },
+    "gender": "female",
+    "age": 29
   },
   {
     "id": 4,
@@ -57,7 +63,9 @@
       "reBook": false,
       "edit": true,
       "view": true
-    }
+    },
+    "gender": "male",
+    "age": 37
   },
   {
     "id": 5,
@@ -72,7 +80,9 @@
       "reBook": false,
       "edit": true,
       "view": true
-    }
+    },
+    "gender": "female",
+    "age": 25
   },
   {
     "id": 6,
@@ -87,7 +97,9 @@
       "reBook": false,
       "edit": true,
       "view": true
-    }
+    },
+    "gender": "female",
+    "age": 31
   },
   {
     "id": 7,
@@ -102,7 +114,9 @@
       "reBook": true,
       "edit": true,
       "view": true
-    }
+    },
+    "gender": "female",
+    "age": 45
   },
   {
     "id": 8,
@@ -117,7 +131,9 @@
       "reBook": false,
       "edit": true,
       "view": true
-    }
+    },
+    "gender": "male",
+    "age": 40
   },
   {
     "id": 9,
@@ -132,7 +148,9 @@
       "reBook": false,
       "edit": true,
       "view": true
-    }
+    },
+    "gender": "female",
+    "age": 28
   },
   {
     "id": 10,
@@ -147,6 +165,8 @@
       "reBook": false,
       "edit": true,
       "view": true
-    }
+    },
+    "gender": "male",
+    "age": 35
   }
 ]

@@ -32,8 +32,9 @@ const ConsultantTable = ({ searchQuery,data }) => {
     ? data.filter((item) => {
         const fullName = `${item.firstName} ${item.lastName}`.toLowerCase();
         const phoneNumber = item.phoneNumber.toLowerCase();
+        const status = item.status.toLowerCase();
         const query = searchQuery.toLowerCase();
-        const isMatch = fullName.includes(query) || phoneNumber.includes(query);
+        const isMatch = fullName.includes(query) || phoneNumber.includes(query) || status.includes(query);
         // console.log("Checking:", fullName, phoneNumber, "Match:", isMatch);
         return isMatch;
       })

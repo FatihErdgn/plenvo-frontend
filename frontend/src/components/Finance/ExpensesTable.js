@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import data from "../../expensesData.json"; // JSON dosyasını içe aktar
 import { MdNavigateNext, MdNavigateBefore } from "react-icons/md";
+import { format } from "date-fns";
 
 const ExpensesTable = ({ searchQuery }) => {
   console.log("Search Query:", searchQuery);
@@ -24,12 +25,14 @@ const ExpensesTable = ({ searchQuery }) => {
     ? data.filter((item) => {
         const expenseCategory = item.ExpenseCategory.toLowerCase();
         const expenseDesc = item.ExpenseDesc.toLowerCase();
+        const expenseDate = item.Date.toLowerCase();
         const expenseKind = item.ExpenseKind.toLowerCase();
         const currency = item.Currency.toLowerCase();
         const query = searchQuery.toLowerCase();
         return (
           expenseCategory.includes(query) ||
           expenseDesc.includes(query) ||
+          expenseDate.includes(query) ||
           expenseKind.includes(query) ||
           currency.includes(query)
         );
@@ -54,17 +57,18 @@ const ExpensesTable = ({ searchQuery }) => {
   };
 
   return (
-    <div className="font-montserrat w-screen p-6 rounded-lg shadow-md flex flex-col justify-between h-[72vh]">
+    <div className="font-montserrat w-screen p-6 rounded-lg shadow-md flex flex-col justify-between h-[78vh]">
       {/* Tablo */}
       <div className="overflow-auto">
         <table className="table-auto w-full border-collapse bg-white shadow-sm rounded-lg">
           <thead>
             <tr className="text-gray-700 text-center">
-              <th className="px-4 py-2">Expense Category</th>
-              <th className="px-4 py-2">Expense Description</th>
-              <th className="px-4 py-2">Expense Kind</th>
-              <th className="px-4 py-2">Amount</th>
-              <th className="px-4 py-2">Currency</th>
+              <th className="px-4 py-2.5">Expense Category</th>
+              <th className="px-4 py-2.5">Expense Description</th>
+              <th className="px-4 py-2.5">Expense Date</th>
+              <th className="px-4 py-2.5">Expense Kind</th>
+              <th className="px-4 py-2.5">Amount</th>
+              <th className="px-4 py-2.5">Currency</th>
             </tr>
           </thead>
           <tbody>
@@ -73,15 +77,18 @@ const ExpensesTable = ({ searchQuery }) => {
                 key={row.id}
                 className="odd:bg-[#F7F6FE] even:bg-white hover:bg-green-50 text-center"
               >
-                <td className="px-4 py-2">{row.ExpenseCategory}</td>
-                <td className="px-4 py-2">{row.ExpenseDesc}</td>
-                <td className="px-4 py-2 flex justify-center">
+                <td className="px-4 py-2.5">{row.ExpenseCategory}</td>
+                <td className="px-4 py-2.5">{row.ExpenseDesc}</td>
+                <td className="px-4 py-2.5">
+                  {format(new Date(row.Date), "dd.MM.yyyy")}
+                </td>
+                <td className="px-4 py-2.5 flex justify-center">
                   <span className={getStatusClass(row.ExpenseKind)}>
                     {row.ExpenseKind}
                   </span>
                 </td>
-                <td className="px-4 py-2">{row.Amount}</td>
-                <td className="px-4 py-2">{row.Currency}</td>
+                <td className="px-4 py-2.5">{row.Amount}</td>
+                <td className="px-4 py-2.5">{row.Currency}</td>
               </tr>
             ))}
           </tbody>

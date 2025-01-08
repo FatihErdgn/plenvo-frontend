@@ -6,6 +6,7 @@ export default function ExpensesInputForm({expensesData}) {
   const [formData, setFormData] = useState({
     ExpenseCategory: "",
     ExpenseDesc: "",
+    ExpenseDate: "",	
     ExpenseKind: "",
     Amount: "",
     Currency: "",
@@ -78,6 +79,7 @@ export default function ExpensesInputForm({expensesData}) {
     if (
       !formData.ExpenseCategory ||
       !formData.ExpenseDesc ||
+      !formData.ExpenseDate ||
       !formData.ExpenseKind ||
       !formData.Amount ||
       !formData.Currency
@@ -100,6 +102,7 @@ export default function ExpensesInputForm({expensesData}) {
     setFormData({
       ExpenseCategory: "",
       ExpenseDesc: "",
+      ExpenseDate: "",
       ExpenseKind: "",
       Amount: "",
       Currency: "",
@@ -188,6 +191,16 @@ export default function ExpensesInputForm({expensesData}) {
           className="px-4 py-2 border border-gray-300 rounded-lg mb-4 focus:outline-none focus:ring-2 focus:ring-[#007E85]"
         />
         {renderDropdown("Currency", "Currency", uniqueCurrencies)}
+        <label htmlFor="ExpenseDate" className="text-gray-700 mb-2 block mt-4">
+          Expense Date
+        </label>
+        <input
+          type="date"
+          name="ExpenseDate"
+          value={formData.ExpenseDate}
+          onChange={handleInputChange}
+          className="px-4 py-2 border border-gray-300 rounded-lg mb-4 focus:outline-none focus:ring-2 focus:ring-[#007E85]"
+        />
         <button
           type="submit"
           className="bg-[#399AA1] text-white px-4 py-2 rounded-[20px] hover:bg-[#007E85] mt-6"
