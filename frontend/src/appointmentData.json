@@ -14,7 +14,9 @@
       "view": true
     },
     "gender": "female",
-    "age": 34
+    "age": 34,
+    "clinic": "Dermatology",
+    "doctor": "Dr. John Doe"
   },
   {
     "id": 2,
@@ -31,7 +33,9 @@
       "view": true
     },
     "gender": "male",
-    "age": 42
+    "age": 42,
+    "clinic": "Dermatology",
+    "doctor": "Dr. John Doe"
   },
   {
     "id": 3,
@@ -48,7 +52,9 @@
       "view": true
     },
     "gender": "female",
-    "age": 29
+    "age": 29,
+    "clinic": "Dermatology",
+    "doctor": "Dr. John Doe"
   },
   {
     "id": 4,
@@ -65,7 +71,9 @@
       "view": true
     },
     "gender": "male",
-    "age": 37
+    "age": 37,
+    "clinic": "Dermatology",
+    "doctor": "Dr. John Doe"
   },
   {
     "id": 5,
@@ -82,7 +90,9 @@
       "view": true
     },
     "gender": "female",
-    "age": 25
+    "age": 25,
+    "clinic": "Dermatology",
+    "doctor": "Dr. John Doe"
   },
   {
     "id": 6,
@@ -99,7 +109,9 @@
       "view": true
     },
     "gender": "female",
-    "age": 31
+    "age": 31,
+    "clinic": "Dermatology",
+    "doctor": "Dr. John Doe"
   },
   {
     "id": 7,
@@ -116,7 +128,9 @@
       "view": true
     },
     "gender": "female",
-    "age": 45
+    "age": 45,
+    "clinic": "Dermatology",
+    "doctor": "Dr. John Doe"
   },
   {
     "id": 8,
@@ -133,7 +147,9 @@
       "view": true
     },
     "gender": "male",
-    "age": 40
+    "age": 40,
+    "clinic": "Dermatology",
+    "doctor": "Dr. John Doe"
   },
   {
     "id": 9,
@@ -150,7 +166,9 @@
       "view": true
     },
     "gender": "female",
-    "age": 28
+    "age": 28,
+    "clinic": "Dermatology",
+    "doctor": "Dr. John Doe"
   },
   {
     "id": 10,
@@ -167,6 +185,8 @@
       "view": true
     },
     "gender": "male",
-    "age": 35
+    "age": 35,
+    "clinic": "Dermatology",
+    "doctor": "Dr. John Doe"
   }
 ]

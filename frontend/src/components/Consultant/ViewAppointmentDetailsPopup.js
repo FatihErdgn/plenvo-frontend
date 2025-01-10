@@ -101,8 +101,30 @@ export default function ViewAppointmentDetailsPopup({ data, isEditable, onClose 
               className={`w-full px-4 py-2 border rounded-lg ${isEditable ? "border-gray-300" : "border-transparent bg-gray-100"}`}
             />
           </div>
+          <div className="mb-4">
+            <label className="block text-gray-700">Clinic</label>
+            <input
+              type="text"
+              name="clinic"
+              value={formData.clinic}
+              onChange={handleInputChange}
+              disabled={!isEditable}
+              className={`w-full px-4 py-2 border rounded-lg ${isEditable ? "border-gray-300" : "border-transparent bg-gray-100"}`}
+            />
+          </div>
+          <div className="mb-4">
+            <label className="block text-gray-700">Doctor</label>
+            <input
+              type="text"
+              name="doctor"
+              value={formData.doctor}
+              onChange={handleInputChange}
+              disabled={!isEditable}
+              className={`w-full px-4 py-2 border rounded-lg ${isEditable ? "border-gray-300" : "border-transparent bg-gray-100"}`}
+            />
+          </div>
           {isEditable && (
-            <button type="submit" className="px-4 py-2 bg-blue-500 text-white rounded-lg">
+            <button type="submit" className="px-4 py-2 bg-[#399AA1] text-white rounded-lg">
               Save
             </button>
           )}
