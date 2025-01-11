@@ -57,18 +57,18 @@ const ExpensesTable = ({ searchQuery }) => {
   };
 
   return (
-    <div className="font-montserrat w-screen p-6 rounded-lg shadow-md flex flex-col justify-between h-[78vh]">
+    <div className="font-montserrat w-screen p-6 rounded-lg shadow-md flex flex-col justify-between h-[79vh]">
       {/* Tablo */}
       <div className="overflow-auto">
         <table className="table-auto w-full border-collapse bg-white shadow-sm rounded-lg">
           <thead>
             <tr className="text-gray-700 text-center">
-              <th className="px-4 py-2.5">Expense Category</th>
-              <th className="px-4 py-2.5">Expense Description</th>
-              <th className="px-4 py-2.5">Expense Date</th>
-              <th className="px-4 py-2.5">Expense Kind</th>
-              <th className="px-4 py-2.5">Amount</th>
-              <th className="px-4 py-2.5">Currency</th>
+              <th className="px-4 py-2.5">Kategori</th>
+              <th className="px-4 py-2.5">Açıklama</th>
+              <th className="px-4 py-2.5">Tarih</th>
+              <th className="px-4 py-2.5">Kalem Türü</th>
+              <th className="px-4 py-2.5">Fiyat</th>
+              <th className="px-4 py-2.5">Para Birimi</th>
             </tr>
           </thead>
           <tbody>
@@ -112,7 +112,8 @@ const ExpensesTable = ({ searchQuery }) => {
 
         {/* Sayfa Bilgisi */}
         <span className="mx-4 text-gray-700">
-          Page {currentPage} of {totalPages}
+          Sayfa {currentPage} 
+          {/* {totalPages} */}
         </span>
 
         {/* Sonraki Sayfa */}

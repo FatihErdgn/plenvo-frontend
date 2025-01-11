@@ -64,12 +64,12 @@ const PersonnelTable = ({ searchQuery,data }) => {
       <table className="table-auto w-full border-collapse bg-white shadow-sm rounded-lg">
         <thead>
           <tr className="text-gray-700 text-center">
-            <th className="px-4 py-2 text-center">First Name</th>
-            <th className="px-4 py-2 text-center">Last Name</th>
-            <th className="px-4 py-2 w-1/4 text-center">Email Address</th>
-            <th className="px-4 py-2 text-center">Joined</th>
-            <th className="px-4 py-2 text-center">User Role</th>
-            <th className="px-4 py-2 text-center">Action</th>
+            <th className="px-4 py-2 text-center">İsim</th>
+            <th className="px-4 py-2 text-center">Soyisim</th>
+            <th className="px-4 py-2 w-1/4 text-center">Eposta</th>
+            <th className="px-4 py-2 text-center">İşe Giriş Tarihi</th>
+            <th className="px-4 py-2 text-center">Rol</th>
+            <th className="px-4 py-2 text-center">İşlem</th>
           </tr>
         </thead>
 
@@ -123,7 +123,8 @@ const PersonnelTable = ({ searchQuery,data }) => {
 
         {/* Sayfa Bilgisi */}
         <span className="mx-4 text-gray-700">
-          Page {currentPage} of {totalPages}
+          Sayfa {currentPage}
+          {/* {totalPages} */}
         </span>
 
         {/* Sonraki Sayfa */}

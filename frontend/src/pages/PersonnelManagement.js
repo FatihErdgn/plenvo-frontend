@@ -15,7 +15,7 @@ export default function PersonnelManagementPage() {
     <div className="w-screen bg-white p-8 overflow-hidden rounded-l-[40px] relative z-20">
       {/* Başlık */}
       <div className="flex flex-row justify-between items-center">
-        <h1 className="text-3xl font-bold mb-6">Manage Personnel</h1>
+        <h1 className="text-3xl font-bold mb-6">Personel Yönetimi</h1>
         <div className="flex flex-row justify-end gap-4">
           <SearchContainer onSearchChange={handleSearchChange} />
           <AddPersonnel />

@@ -26,7 +26,7 @@ export default function SideBar() {
 
       {/* Menü */}
       <div className="absolute mt-[60%]">
-        <h3 className="mb-6 text-lg">Menu</h3>
+        <h3 className="mb-6 text-lg">Menü</h3>
         <nav>
           <Link
             to="/"
@@ -36,7 +36,7 @@ export default function SideBar() {
                 : "mb-10 flex items-center gap-2 text-white cursor-pointer"
             }
           >
-            <LuSquareMenu className="w-5 h-5" /> Manage Appointment
+            <LuSquareMenu className="w-5 h-5" /> Randevuları Yönet
           </Link>
           <Link
             to="/finance"
@@ -46,7 +46,7 @@ export default function SideBar() {
                 : "mb-10 flex items-center gap-2 text-white cursor-pointer"
             }
           >
-            <TbPresentationAnalytics className="w-5 h-5" /> Financial Status
+            <TbPresentationAnalytics className="w-5 h-5" /> Gelir/Gider Yönetimi
           </Link>
           <Link
             to="/personnel-management"
@@ -56,7 +56,7 @@ export default function SideBar() {
                 : "mb-10 flex items-center gap-2 text-white cursor-pointer"
             }
           >
-            <IoPersonOutline className="w-5 h-5" /> Personnel Management
+            <IoPersonOutline className="w-5 h-5" /> Personel Yönetimi
           </Link>
         </nav>
       </div>
@@ -70,7 +70,7 @@ export default function SideBar() {
             className="w-10 h-10 rounded-full"
           />
           <div>
-            <p>Consultant</p>
+            <p>Danışman</p>
             <p className="text-gray-200">fatih.erdogan@example.com</p>
           </div>
         </div>
@@ -79,7 +79,7 @@ export default function SideBar() {
           className="flex flex-row items-center justify-center bg-white w-full text-[#007E85] text-[17px] font-semibold px-4 py-2 rounded-md hover:bg-gray-200"
         >
           <CgLogOut className="mx-1 pt-0.5" size={25} />
-          Log out
+          Çıkış Yap
         </button>
       </div>
     </div>

@@ -2,11 +2,11 @@ import { useState, useEffect } from "react";
 import Alert from "@mui/material/Alert";
 import Collapse from "@mui/material/Collapse";
 
-export default function ExpensesInputForm({expensesData}) {
+export default function ExpensesInputForm({ expensesData }) {
   const [formData, setFormData] = useState({
     ExpenseCategory: "",
     ExpenseDesc: "",
-    ExpenseDate: "",	
+    ExpenseDate: "",
     ExpenseKind: "",
     Amount: "",
     Currency: "",
@@ -85,7 +85,7 @@ export default function ExpensesInputForm({expensesData}) {
       !formData.Currency
     ) {
       setAlertState({
-        message: "Please fill all the fields!",
+        message: "Lütfen tüm alanları doldurun.",
         severity: "error",
         open: true,
       });
@@ -94,7 +94,7 @@ export default function ExpensesInputForm({expensesData}) {
 
     console.log("Form Data:", formData);
     setAlertState({
-      message: "Expense added successfully!",
+      message: "Başarılı bir şekilde eklendi.",
       severity: "success",
       open: true,
     });
@@ -109,6 +109,16 @@ export default function ExpensesInputForm({expensesData}) {
     });
   };
 
+  useEffect(() => {
+    if (alertState.open) {
+      const timer = setTimeout(() => {
+        setAlertState((prev) => ({ ...prev, open: false }));
+      }, 5000); // 5 saniye sonra otomatik kapanır
+
+      return () => clearTimeout(timer); // Temizleme işlemi
+    }
+  }, [alertState.open]);
+
   const uniqueCategories = [
     ...new Set(expensesData.map((item) => item.ExpenseCategory)),
   ];
@@ -120,7 +130,7 @@ export default function ExpensesInputForm({expensesData}) {
   ];
 
   const renderDropdown = (label, key, options) => (
-    <div className="relative mb-4 dropdown-container">
+    <div className="relative mb-3 dropdown-container">
       <label htmlFor={key} className="text-gray-700 mb-2 block">
         {label}
       </label>
@@ -128,7 +138,7 @@ export default function ExpensesInputForm({expensesData}) {
         className="px-4 py-2 border border-gray-300 rounded-lg cursor-pointer bg-white flex justify-between items-center"
         onClick={() => toggleDropdown(key)}
       >
-        {formData[key] || `Select ${label}`}
+        {formData[key] || `${label} Seçin`}
         <span className="ml-2 transform transition-transform duration-200 opacity-50">
           {dropdownOpen[key] ? "▲" : "▼"}
         </span>
@@ -163,49 +173,46 @@ export default function ExpensesInputForm({expensesData}) {
         onSubmit={handleSubmit}
         className="flex flex-col w-full min-w-[400px] h-full justify-center p-8 rounded-lg shadow-md"
       >
-        <h2 className="text-xl font-semibold mb-6">Expense Form</h2>
-        {renderDropdown(
-          "Expense Category",
-          "ExpenseCategory",
-          uniqueCategories
-        )}
+        <h2 className="text-xl font-semibold mb-6">Gelir/Gider Formu</h2>
+        {renderDropdown("Kategori", "ExpenseCategory", uniqueCategories)}
         <label htmlFor="ExpenseDesc" className="text-gray-700 mb-2 block">
-          Expense Description
+          Açıklama
         </label>
-        <input
-          type="text"
+        <textarea
           name="ExpenseDesc"
           value={formData.ExpenseDesc}
           onChange={handleInputChange}
-          className="px-4 py-2 border border-gray-300 rounded-lg mb-4 focus:outline-none focus:ring-2 focus:ring-[#007E85]"
+          rows="3" // Başlangıçta 3 satır yüksekliğinde olacak
+          className="px-4 py-2 border border-gray-300 rounded-lg mb-3 focus:outline-none focus:ring-2 focus:ring-[#007E85] resize-none overflow-auto"
         />
-        {renderDropdown("Expense Kind", "ExpenseKind", uniqueKinds)}
+
+        {renderDropdown("Kalem Türü", "ExpenseKind", uniqueKinds)}
         <label htmlFor="Amount" className="text-gray-700 mb-2 block">
-          Amount
+          Fiyat
         </label>
         <input
           type="number"
           name="Amount"
           value={formData.Amount}
           onChange={handleInputChange}
-          className="px-4 py-2 border border-gray-300 rounded-lg mb-4 focus:outline-none focus:ring-2 focus:ring-[#007E85]"
+          className="px-4 py-2 border border-gray-300 rounded-lg mb-3 focus:outline-none focus:ring-2 focus:ring-[#007E85]"
         />
-        {renderDropdown("Currency", "Currency", uniqueCurrencies)}
-        <label htmlFor="ExpenseDate" className="text-gray-700 mb-2 block mt-4">
-          Expense Date
+        {renderDropdown("Para Birimi", "Currency", uniqueCurrencies)}
+        <label htmlFor="ExpenseDate" className="text-gray-700 mb-2 block">
+          Tarih
         </label>
         <input
           type="date"
           name="ExpenseDate"
           value={formData.ExpenseDate}
           onChange={handleInputChange}
-          className="px-4 py-2 border border-gray-300 rounded-lg mb-4 focus:outline-none focus:ring-2 focus:ring-[#007E85]"
+          className="px-4 py-2 border border-gray-300 rounded-lg mb-3 focus:outline-none focus:ring-2 focus:ring-[#007E85]"
         />
         <button
           type="submit"
           className="bg-[#399AA1] text-white px-4 py-2 rounded-[20px] hover:bg-[#007E85] mt-6"
         >
-          Add Expense
+          Gelir/Gider Ekle
         </button>
       </form>
     </div>

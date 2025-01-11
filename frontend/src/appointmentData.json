@@ -5,18 +5,18 @@
     "lastName": "Cooper",
     "phoneNumber": "+90 8876543210",
     "appointmentDateTime": "13-Aug-2023 10:00:00",
-    "status": "Open",
+    "status": "Açık",
     "actions": {
       "payNow": true,
-      "bookNow": true,
+
       "reBook": false,
       "edit": true,
       "view": true
     },
-    "gender": "female",
+    "gender": "Kadın",
     "age": 34,
     "clinic": "Dermatology",
-    "doctor": "Dr. John Doe"
+    "doctor": "Dr. Anthony Hopkins"
   },
   {
     "id": 2,
@@ -24,18 +24,18 @@
     "lastName": "Warren",
     "phoneNumber": "+90 9876543210",
     "appointmentDateTime": "13-Aug-2023 10:00:00",
-    "status": "Booked",
+    "status": "Ödeme Bekleniyor",
     "actions": {
       "payNow": true,
-      "bookNow": false,
-      "reBook": true,
+
+      "reBook": false,
       "edit": true,
       "view": true
     },
-    "gender": "male",
+    "gender": "Erkek",
     "age": 42,
     "clinic": "Dermatology",
-    "doctor": "Dr. John Doe"
+    "doctor": "Dr. Robert Downey Jr."
   },
   {
     "id": 3,
@@ -43,15 +43,15 @@
     "lastName": "Simmons",
     "phoneNumber": "+90 9876543210",
     "appointmentDateTime": "13-Aug-2023 10:00:00",
-    "status": "Completed",
+    "status": "Tamamlandı",
     "actions": {
       "payNow": false,
-      "bookNow": false,
+
       "reBook": true,
       "edit": true,
       "view": true
     },
-    "gender": "female",
+    "gender": "Kadın",
     "age": 29,
     "clinic": "Dermatology",
     "doctor": "Dr. John Doe"
@@ -62,15 +62,15 @@
     "lastName": "Williamson",
     "phoneNumber": "+90 9876543210",
     "appointmentDateTime": "13-Aug-2023 10:00:00",
-    "status": "Open",
+    "status": "İptal Edildi",
     "actions": {
-      "payNow": true,
-      "bookNow": true,
-      "reBook": false,
+      "payNow": false,
+
+      "reBook": true,
       "edit": true,
       "view": true
     },
-    "gender": "male",
+    "gender": "Erkek",
     "age": 37,
     "clinic": "Dermatology",
     "doctor": "Dr. John Doe"
@@ -81,18 +81,18 @@
     "lastName": "Alexander",
     "phoneNumber": "+90 9876543210",
     "appointmentDateTime": "13-Aug-2023 10:00:00",
-    "status": "Open",
+    "status": "Açık",
     "actions": {
       "payNow": true,
-      "bookNow": true,
+
       "reBook": false,
       "edit": true,
       "view": true
     },
-    "gender": "female",
+    "gender": "Kadın",
     "age": 25,
     "clinic": "Dermatology",
-    "doctor": "Dr. John Doe"
+    "doctor": "Dr. Michael Jackson"
   },
   {
     "id": 6,
@@ -100,15 +100,15 @@
     "lastName": "Nguyen",
     "phoneNumber": "+90 9876543210",
     "appointmentDateTime": "13-Aug-2023 10:00:00",
-    "status": "Open",
+    "status": "Açık",
     "actions": {
       "payNow": true,
-      "bookNow": true,
+
       "reBook": false,
       "edit": true,
       "view": true
     },
-    "gender": "female",
+    "gender": "Kadın",
     "age": 31,
     "clinic": "Dermatology",
     "doctor": "Dr. John Doe"
@@ -119,18 +119,18 @@
     "lastName": "Robertson",
     "phoneNumber": "+90 9876543210",
     "appointmentDateTime": "13-Aug-2023 10:00:00",
-    "status": "Completed",
+    "status": "Tamamlandı",
     "actions": {
       "payNow": false,
-      "bookNow": false,
+
       "reBook": true,
       "edit": true,
       "view": true
     },
-    "gender": "female",
+    "gender": "Kadın",
     "age": 45,
     "clinic": "Dermatology",
-    "doctor": "Dr. John Doe"
+    "doctor": "Dr. Johnny Depp"
   },
   {
     "id": 8,
@@ -138,18 +138,18 @@
     "lastName": "Richards",
     "phoneNumber": "+90 9876543210",
     "appointmentDateTime": "13-Aug-2023 10:00:00",
-    "status": "Open",
+    "status": "Açık",
     "actions": {
       "payNow": true,
-      "bookNow": true,
+
       "reBook": false,
       "edit": true,
       "view": true
     },
-    "gender": "male",
+    "gender": "Erkek",
     "age": 40,
     "clinic": "Dermatology",
-    "doctor": "Dr. John Doe"
+    "doctor": "Dr. Sydney Sweeney"
   },
   {
     "id": 9,
@@ -157,18 +157,18 @@
     "lastName": "Murphy",
     "phoneNumber": "+90 9876543210",
     "appointmentDateTime": "13-Aug-2023 10:00:00",
-    "status": "Open",
+    "status": "Açık",
     "actions": {
       "payNow": true,
-      "bookNow": true,
+
       "reBook": false,
       "edit": true,
       "view": true
     },
-    "gender": "female",
+    "gender": "Kadın",
     "age": 28,
     "clinic": "Dermatology",
-    "doctor": "Dr. John Doe"
+    "doctor": "Dr. Bridget Jones"
   },
   {
     "id": 10,
@@ -176,17 +176,17 @@
     "lastName": "Steward",
     "phoneNumber": "+90 9876543210",
     "appointmentDateTime": "13-Aug-2023 10:00:00",
-    "status": "Open",
+    "status": "Açık",
     "actions": {
       "payNow": true,
-      "bookNow": true,
+
       "reBook": false,
       "edit": true,
       "view": true
     },
-    "gender": "male",
+    "gender": "Erkek",
     "age": 35,
     "clinic": "Dermatology",
-    "doctor": "Dr. John Doe"
+    "doctor": "Dr. Jack Nicholson"
   }
 ]
