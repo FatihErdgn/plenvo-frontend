@@ -107,7 +107,7 @@ const ConsultantTable = ({ searchQuery, data }) => {
   const genderOptions = ["Erkek", "Kadın"];
 
   return (
-    <div className="flex flex-col justify-between h-[87vh] font-montserrat p-6 rounded-lg shadow-md">
+    <div className="flex flex-col bg-white justify-between h-[87vh] font-montserrat p-6 rounded-lg shadow-md">
       <div className="overflow-auto">
         <table className="table-auto w-full border-collapse bg-white shadow-sm rounded-lg">
           <thead>

@@ -6,15 +6,15 @@ export default function AddPersonnel() {
   const [isPopUpOpen, setPopUpOpen] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
-    day: "",
-    month: "",
-    year: "",
-    gender: "",
+    // day: "",
+    // month: "",
+    // year: "",
+    // gender: "",
     mobile: "",
     email: "",
     clinic: "",
-    doctor: "",
-    datetime: "",
+    role: "",
+    hireDate: "",
   });
 
   const handleInputChange = (e) => {
@@ -53,7 +53,7 @@ export default function AddPersonnel() {
         onClick={() => setPopUpOpen(true)}
         className="font-poppins flex flex-row bg-[#399AA1] text-white px-4 py-3 rounded-[10px] hover:bg-[#007E85]"
       >
-        + Add Personnel
+        + Personel Ekle
       </button>
 
       {isPopUpOpen && (
@@ -86,7 +86,7 @@ export default function AddPersonnel() {
                 />
               </div>
               {/* Updated input fields for Day, Month, and Year */}
-              <div className="mb-4">
+              {/* <div className="mb-4">
                 <label className="block text-gray-700 mb-2">
                   Doğum Tarihi:
                 </label>
@@ -119,10 +119,10 @@ export default function AddPersonnel() {
                     required
                   />
                 </div>
-              </div>
+              </div> */}
 
               {/* New input fields for Gender, Mobile, Clinic, and Doctor */}
-              <div className="mb-4">
+              {/* <div className="mb-4">
                 <label className="block text-gray-700 mb-2" htmlFor="gender">
                   Cinsiyet:
                 </label>
@@ -135,7 +135,7 @@ export default function AddPersonnel() {
                   className="w-full px-3 py-2 border rounded-[10px] focus:outline-none focus:ring-2 focus:ring-[#007E85]"
                   required
                 />
-              </div>
+              </div> */}
               <div className="mb-4">
                 <label className="block text-gray-700 mb-2" htmlFor="mobile">
                   Telefon:
@@ -145,6 +145,20 @@ export default function AddPersonnel() {
                   id="mobile"
                   name="mobile"
                   value={formData.mobile}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 border rounded-[10px] focus:outline-none focus:ring-2 focus:ring-[#007E85]"
+                  required
+                />
+              </div>
+              <div className="mb-4">
+                <label className="block text-gray-700 mb-2" htmlFor="email">
+                  Email:
+                </label>
+                <input
+                  type="text"
+                  id="email"
+                  name="email"
+                  value={formData.email}
                   onChange={handleInputChange}
                   className="w-full px-3 py-2 border rounded-[10px] focus:outline-none focus:ring-2 focus:ring-[#007E85]"
                   required
@@ -165,14 +179,28 @@ export default function AddPersonnel() {
                 />
               </div>
               <div className="mb-4">
-                <label className="block text-gray-700 mb-2" htmlFor="doctor">
-                  Doktor:
+                <label className="block text-gray-700 mb-2" htmlFor="specialty">
+                  Uzmanlık Alanı:
                 </label>
                 <select
                   type="text"
-                  id="doctor"
-                  name="doctor"
-                  value={formData.doctor}
+                  id="specialty"
+                  name="specialty"
+                  value={formData.specialty}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 border rounded-[10px] focus:outline-none focus:ring-2 focus:ring-[#007E85]"
+                  required
+                />
+              </div>
+              <div className="mb-4">
+                <label className="block text-gray-700 mb-2" htmlFor="role">
+                  Sistemdeki Rolü:
+                </label>
+                <select
+                  type="text"
+                  id="role"
+                  name="role"
+                  value={formData.role}
                   onChange={handleInputChange}
                   className="w-full px-3 py-2 border rounded-[10px] focus:outline-none focus:ring-2 focus:ring-[#007E85]"
                   required
@@ -181,14 +209,14 @@ export default function AddPersonnel() {
 
               {/* Updated Datetime field */}
               <div className="mb-4">
-                <label className="block text-gray-700 mb-2" htmlFor="datetime">
-                  Randevu Tarihi ve Saati:
+                <label className="block text-gray-700 mb-2" htmlFor="hireDate">
+                  İşe Giriş Tarihi:
                 </label>
                 <input
-                  type="datetime-local"
-                  id="datetime"
-                  name="datetime"
-                  value={formData.datetime}
+                  type="date"
+                  id="date"
+                  name="date"
+                  value={formData.hireDate}
                   onChange={handleInputChange}
                   className="w-full px-3 py-2 border rounded-[10px] focus:outline-none focus:ring-2 focus:ring-[#007E85]"
                   required

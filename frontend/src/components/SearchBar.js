@@ -2,7 +2,7 @@ import { CiSearch } from "react-icons/ci";
 
 export default function SearchBar({onSearchChange}) {
   return (
-    <div className="font-poppins flex flex-row items-center bg-[#F5F3FF] w-[412px] h-[40px] rounded-full px-4 py-2 shadow-sm">
+    <div className="font-poppins flex flex-row items-center bg-[#ffffff] w-[412px] h-[40px] rounded-full px-4 py-2 shadow-sm">
       <input
         type="text"
         placeholder="Ara"

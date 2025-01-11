@@ -5,7 +5,7 @@ import { TbLockPassword } from "react-icons/tb";
 
 export default function Login() {
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-r from-[#f0f0f0] to-[#ffffff]">
+    <div className="flex items-center justify-center min-h-screen bg-[#f4f7fe]">
       <div className="w-full h-auto md:h-[800px] md:w-[1500px] rounded-3xl flex flex-col md:flex-row overflow-hidden">
         {/* Sol taraf (Beyaz) */}
         <div className="flex flex-col items-center justify-center w-full md:w-1/2 bg-white p-6 md:p-0">

@@ -1,12 +1,16 @@
 import React from "react";
 import { LiaEdit } from "react-icons/lia";
 import { IoEyeOutline } from "react-icons/io5";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { MdNavigateBefore, MdNavigateNext } from "react-icons/md";
+import ViewPersonnelDetailsPopup from "./ViewPersonnelDetailsPopup";
 
 const PersonnelTable = ({ searchQuery,data }) => {
   console.log("Search Query:", searchQuery);
   const [currentPage, setCurrentPage] = useState(1); // Sayfa numarası
+  const [selectedData, setSelectedData] = useState(null);
+  const [isPopupOpen, setIsPopupOpen] = useState(false);
+  const [isEditable, setIsEditable] = useState(false);
   const rowsPerPage = 10; // Sayfa başına gösterilecek satır sayısı
 
   const getStatusClass = (status) => {
@@ -59,8 +63,53 @@ const PersonnelTable = ({ searchQuery,data }) => {
     }
   };
 
+    const handleEditClick = (data) => {
+      setSelectedData(data);
+      setIsEditable(true);
+      setIsPopupOpen(true);
+    };
+  
+    const handleViewClick = (data) => {
+      setSelectedData(data);
+      setIsEditable(false);
+      setIsPopupOpen(true);
+    };
+  
+    const handleClosePopup = () => {
+      setIsPopupOpen(false);
+      setSelectedData(null);
+    };
+  
+    useEffect(() => {
+      const handleKeyDown = (e) => {
+        if (e.key === "Escape") {
+          setIsPopupOpen(false);
+        }
+      };
+  
+      if (isPopupOpen) {
+        window.addEventListener("keydown", handleKeyDown);
+      }
+  
+      return () => {
+        window.removeEventListener("keydown", handleKeyDown);
+      };
+    }, [isPopupOpen]);
+  
+    const professionOptions =
+      data && Array.isArray(data)
+        ? [...new Set(data.map((item) => item.profession))]
+        : [];
+    const specialityOptions =
+      data && Array.isArray(data)
+        ? [...new Set(data.map((item) => item.speciality))]
+        : [];
+  
+    const roleOptions = ["Consultant", "Doctor", "Manager", "Admin"];
+  
+
   return (
-    <div className="font-montserrat p-6 rounded-lg shadow-md">
+    <div className="bg-white font-montserrat p-6 rounded-lg shadow-md">
       <table className="table-auto w-full border-collapse bg-white shadow-sm rounded-lg">
         <thead>
           <tr className="text-gray-700 text-center">
@@ -91,6 +140,7 @@ const PersonnelTable = ({ searchQuery,data }) => {
                   className="flex items-center justify-center text-red-500 px-2 py-2 rounded-full hover:bg-red-600 hover:text-white"
                   disabled={!row.actions.edit}
                   aria-label="edit"
+                  onClick={() => handleEditClick(row)}
                 >
                   <LiaEdit className="w-6 h-6" />
                 </button>
@@ -98,6 +148,7 @@ const PersonnelTable = ({ searchQuery,data }) => {
                   className="flex items-center justify-center text-gray-500 px-2 py-2 rounded-full hover:bg-gray-600 hover:text-white"
                   disabled={!row.actions.view}
                   aria-label="View"
+                  onClick={() => handleViewClick(row)}
                 >
                   <IoEyeOutline className="w-6 h-6" />
                 </button>
@@ -140,6 +191,27 @@ const PersonnelTable = ({ searchQuery,data }) => {
           <MdNavigateNext className="w-5 h-5" />
         </button>
       </div>
+            {isPopupOpen && (
+              <div className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center transition-opacity duration-300 ease-in-out">
+                <div
+                  className="p-6 rounded-[10px] w-[100%] px-12 py-8 transform scale-95 transition-transform duration-300 ease-out"
+                  style={{
+                    animation: "popupSlideIn 0.3s forwards",
+                  }}
+                >
+                  <ViewPersonnelDetailsPopup
+                    data={selectedData}
+                    isEditable={isEditable}
+                    onClose={handleClosePopup}
+                    options={{
+                      profession: professionOptions,
+                      speciality: specialityOptions,
+                      role: roleOptions,
+                    }}
+                  />
+                </div>
+              </div>
+            )}
     </div>
   );
 };

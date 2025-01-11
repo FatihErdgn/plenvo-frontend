@@ -57,7 +57,7 @@ const ExpensesTable = ({ searchQuery }) => {
   };
 
   return (
-    <div className="font-montserrat w-screen p-6 rounded-lg shadow-md flex flex-col justify-between h-[79vh]">
+    <div className="font-montserrat bg-white w-screen p-6 rounded-lg shadow-md flex flex-col justify-between h-[79vh]">
       {/* Tablo */}
       <div className="overflow-auto">
         <table className="table-auto w-full border-collapse bg-white shadow-sm rounded-lg">

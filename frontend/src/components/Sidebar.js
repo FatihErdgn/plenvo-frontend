@@ -2,6 +2,7 @@ import { CgLogOut } from "react-icons/cg";
 import { LuSquareMenu } from "react-icons/lu";
 import { IoPersonOutline } from "react-icons/io5";
 import { TbPresentationAnalytics } from "react-icons/tb";
+import { MdOutlineSpaceDashboard } from "react-icons/md";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 
 export default function SideBar() {
@@ -47,6 +48,16 @@ export default function SideBar() {
             }
           >
             <TbPresentationAnalytics className="w-5 h-5" /> Gelir/Gider Yönetimi
+          </Link>
+          <Link
+            to="/finance-dashboard"
+            className={
+              isActive("/finance-dashboard")
+                ? "mb-10 flex items-center gap-2 text-[#007E85] font-semibold bg-white w-[280px] p-3 rounded cursor-pointer"
+                : "mb-10 flex items-center gap-2 text-white cursor-pointer"
+            }
+          >
+            <MdOutlineSpaceDashboard className="w-5 h-5" /> Finansal Dashboard
           </Link>
           <Link
             to="/personnel-management"

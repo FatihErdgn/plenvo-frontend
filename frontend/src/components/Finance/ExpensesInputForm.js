@@ -160,7 +160,7 @@ export default function ExpensesInputForm({ expensesData }) {
   );
 
   return (
-    <div className="flex flex-col justify-center items-center font-poppins">
+    <div className="flex flex-col bg-white justify-center items-center font-poppins rounded-lg shadow-md">
       <Collapse in={alertState.open}>
         <Alert
           severity={alertState.severity}
@@ -171,7 +171,7 @@ export default function ExpensesInputForm({ expensesData }) {
       </Collapse>
       <form
         onSubmit={handleSubmit}
-        className="flex flex-col w-full min-w-[400px] h-full justify-center p-8 rounded-lg shadow-md"
+        className="flex flex-col w-full min-w-[400px] h-full justify-center p-8"
       >
         <h2 className="text-xl font-semibold mb-6">Gelir/Gider Formu</h2>
         {renderDropdown("Kategori", "ExpenseCategory", uniqueCategories)}
