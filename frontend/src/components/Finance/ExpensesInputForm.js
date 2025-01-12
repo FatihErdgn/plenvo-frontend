@@ -173,7 +173,7 @@ export default function ExpensesInputForm({ expensesData }) {
         onSubmit={handleSubmit}
         className="flex flex-col w-full min-w-[400px] h-full justify-center p-8"
       >
-        <h2 className="text-xl font-semibold mb-6">Gelir/Gider Formu</h2>
+        <h2 className="text-xl font-semibold mb-6">Maliyet Formu</h2>
         {renderDropdown("Kategori", "ExpenseCategory", uniqueCategories)}
         <label htmlFor="ExpenseDesc" className="text-gray-700 mb-2 block">
           Açıklama
@@ -212,7 +212,7 @@ export default function ExpensesInputForm({ expensesData }) {
           type="submit"
           className="bg-[#399AA1] text-white px-4 py-2 rounded-[20px] hover:bg-[#007E85] mt-6"
         >
-          Gelir/Gider Ekle
+          Maliyet Ekle
         </button>
       </form>
     </div>

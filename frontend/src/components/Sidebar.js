@@ -47,7 +47,7 @@ export default function SideBar() {
                 : "mb-10 flex items-center gap-2 text-white cursor-pointer"
             }
           >
-            <TbPresentationAnalytics className="w-5 h-5" /> Gelir/Gider Yönetimi
+            <TbPresentationAnalytics className="w-5 h-5" /> Maliyet Yönetimi
           </Link>
           <Link
             to="/finance-dashboard"
@@ -67,7 +67,7 @@ export default function SideBar() {
                 : "mb-10 flex items-center gap-2 text-white cursor-pointer"
             }
           >
-            <IoPersonOutline className="w-5 h-5" /> Personel Yönetimi
+            <IoPersonOutline className="w-5 h-5" /> Personel/Hizmet Yönetimi
           </Link>
         </nav>
       </div>

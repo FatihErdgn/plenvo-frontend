@@ -39,7 +39,7 @@ export default function FinancePage() {
     <div className="w-screen bg-[#f4f7fe] p-8 overflow-hidden rounded-l-[40px] relative z-20">
       {/* Başlık */}
       <div className="flex flex-row justify-between items-center">
-        <h1 className="text-3xl font-bold mb-6">Gelir/Gider Yönetimi</h1>
+        <h1 className="text-3xl font-bold mb-6">Maliyet Yönetimi</h1>
         <div className="flex flex-row justify-end gap-4">
           <SearchContainer onSearchChange={handleSearchChange} />
         </div>
