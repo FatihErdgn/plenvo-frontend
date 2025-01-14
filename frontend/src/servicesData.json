@@ -1,0 +1,67 @@
+[
+  {
+    "id": 1,
+    "serviceName": "Ayak Basınç Analizi",
+    "provider": "Dr. Ahmet Yılmaz",
+    "validityDate": "2025-01-31",
+    "serviceFee": 150,
+    "currency": "TRY",
+    "status": "Aktif",
+    "actions": {
+      "edit": true,
+      "view": true
+    }
+  },
+  {
+    "id": 2,
+    "serviceName": "Ortopedik Ayak Tedavisi",
+    "provider": "Uzm. Dr. Zeynep Çelik",
+    "validityDate": "2025-02-15",
+    "serviceFee": 300,
+    "currency": "TRY",
+    "status": "Aktif",
+    "actions": {
+      "edit": true,
+      "view": true
+    }
+  },
+  {
+    "id": 3,
+    "serviceName": "Düz Tabanlık Değerlendirme",
+    "provider": "Dr. Ahmet Yılmaz",
+    "validityDate": "2025-01-20",
+    "serviceFee": 200,
+    "currency": "TRY",
+    "status": "Aktif",
+    "actions": {
+      "edit": true,
+      "view": true
+    }
+  },
+  {
+    "id": 4,
+    "serviceName": "Fizyoterapi Seansı",
+    "provider": "Fzt. Elif Kaya",
+    "validityDate": "2024-03-05",
+    "serviceFee": 250,
+    "currency": "TRY",
+    "status": "Pasif",
+    "actions": {
+      "edit": true,
+      "view": true
+    }
+  },
+  {
+    "id": 5,
+    "serviceName": "Ayak Masajı ve Tedavi Programı",
+    "provider": "Uzm. Dr. Zeynep Çelik",
+    "validityDate": "2025-02-28",
+    "serviceFee": 400,
+    "currency": "TRY",
+    "status": "Aktif",
+    "actions": {
+      "edit": true,
+      "view": true
+    }
+  }
+]

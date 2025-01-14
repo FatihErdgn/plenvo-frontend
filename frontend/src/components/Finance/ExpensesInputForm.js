@@ -210,7 +210,7 @@ export default function ExpensesInputForm({ expensesData }) {
         />
         <button
           type="submit"
-          className="bg-[#399AA1] text-white px-4 py-2 rounded-[20px] hover:bg-[#007E85] mt-6"
+          className="bg-[#399AA1] text-white px-4 py-2 rounded-[20px] hover:bg-[#007E85] mt-6 shadow-md"
         >
           Maliyet Ekle
         </button>

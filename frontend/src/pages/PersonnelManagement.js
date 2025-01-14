@@ -1,9 +1,11 @@
 import PersonnelTable from "../components/PersonnelManagement/PersonnelTable";
 import AddPersonnel from "../components/PersonnelManagement/CreatePersonnelButton";
+import AddService from "../components/ServiceManagement/CreateServiceButton";
 import SearchContainer from "../components/SearchContainer";
 import { useState } from "react";
 import personnelData from "../personnelData.json";
-import { FiArrowLeftCircle,FiArrowRightCircle } from "react-icons/fi";
+import servicesData from "../servicesData.json";
+import { FiArrowLeftCircle, FiArrowRightCircle } from "react-icons/fi";
 import ServiceManagementTable from "../components/ServiceManagement/ServiceManagementTable";
 
 export default function PersonnelManagementPage() {
@@ -34,14 +36,17 @@ export default function PersonnelManagementPage() {
         )}
         <div className="flex flex-row justify-end gap-4">
           <SearchContainer onSearchChange={handleSearchChange} />
-          <AddPersonnel />
+          {isServiceModalOpen ? <AddService /> : <AddPersonnel />}
         </div>
       </div>
       {/* İçerik */}
       {isServiceModalOpen ? (
         <>
-          <ServiceManagementTable />
-          <div className="flex flex-row justify-start gap-4 mb-4">
+          <ServiceManagementTable
+            searchQuery={searchQuery}
+            data={servicesData}
+          />
+          <div className="flex flex-row justify-start gap-4 mt-4">
             <button
               onClick={handleServiceModalOpen}
               className="font-poppins flex flex-row text-[#399AA1] font-semibold px-4 py-3 rounded-[10px] hover:text-[#007E85]"
@@ -57,7 +62,7 @@ export default function PersonnelManagementPage() {
           <div className="flex flex-row justify-end gap-4 mt-4">
             <button
               onClick={handleServiceModalOpen}
-              className="font-poppins flex flex-row bg-[#399AA1] text-white px-4 py-3 rounded-[10px] hover:bg-[#007E85]"
+              className="font-poppins flex flex-row bg-[#399AA1] text-white px-4 py-3 rounded-[10px] hover:bg-[#007E85] shadow-md"
             >
               Hizmetleri Yönet
               <FiArrowRightCircle className="w-6 h-6 ml-2" />
