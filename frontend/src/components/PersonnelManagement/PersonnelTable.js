@@ -108,7 +108,7 @@ const PersonnelTable = ({ searchQuery, data }) => {
   const roleOptions = ["Consultant", "Doctor", "Manager", "Admin"];
 
   return (
-    <div className="bg-white font-montserrat p-6 rounded-lg shadow-md">
+    <div className="font-montserrat bg-white p-6 rounded-lg shadow-md flex flex-col justify-between h-[79vh]">
       <table className="table-auto w-full border-collapse bg-white shadow-sm rounded-lg">
         <thead>
           <tr className="text-gray-700 text-center">

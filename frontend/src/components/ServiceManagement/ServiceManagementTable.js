@@ -2,6 +2,8 @@ import React from "react";
 import { LiaEdit } from "react-icons/lia";
 import { IoEyeOutline } from "react-icons/io5";
 import { useState, useEffect } from "react";
+import { MdNavigateBefore, MdNavigateNext } from "react-icons/md";
+import ViewServiceDetailsPopup from "./ViewServiceDetailsPopup";
 
 export default function ServiceManagementTable({ searchQuery, data }) {
   console.log("Search Query:", searchQuery);
@@ -60,11 +62,11 @@ export default function ServiceManagementTable({ searchQuery, data }) {
     setIsPopupOpen(true);
     setIsEditable(true);
   };
-  const handleViewClick = (data) => {
-    setSelectedData(data);
-    setIsEditable(false);
-    setIsPopupOpen(true);
-  };
+  // const handleViewClick = (data) => {
+  //   setSelectedData(data);
+  //   setIsEditable(false);
+  //   setIsPopupOpen(true);
+  // };
 
   const handleClosePopup = () => {
     setSelectedData(null);
@@ -87,18 +89,13 @@ export default function ServiceManagementTable({ searchQuery, data }) {
     };
   }, [isPopupOpen]);
 
-  const serviceNameOptions =
-    data && Array.isArray(data)
-      ? [...new Set(data.map((item) => item.serviceName))]
-      : [];
-
   const providerOptions =
     data && Array.isArray(data)
       ? [...new Set(data.map((item) => item.provider))]
       : [];
 
   return (
-    <div className="bg-white font-montserrat p-6 rounded-lg shadow-md">
+    <div className="font-montserrat bg-white p-6 rounded-lg shadow-md flex flex-col justify-between h-[79vh]">
       <table className="table-auto w-full border-collapse bg-white shadow-sm rounded-lg">
         <thead>
           <tr className="text-gray-700 text-center">
@@ -137,19 +134,64 @@ export default function ServiceManagementTable({ searchQuery, data }) {
                   >
                     <LiaEdit className="w-6 h-6" />
                   </button>
-                  <button
+                  {/* <button
                     className="flex items-center justify-center text-gray-500 px-2 py-2 rounded-full hover:bg-gray-600 hover:text-white"
                     disabled={!row.actions.view}
                     aria-label="View"
                     onClick={() => handleViewClick(row)}
                   >
                     <IoEyeOutline className="w-6 h-6" />
-                  </button>
+                  </button> */}
                 </td>
               </tr>
             ))}
         </tbody>
       </table>
+      <div className="flex justify-center items-center mt-4">
+        <button
+          onClick={goToPreviosPage}
+          disabled={currentPage === 1}
+          className={`px-2 py-2 rounded-full ${
+            currentPage === 1
+              ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+              : "bg-[#399AA1] text-white hover:bg-[#007E85]"
+          }`}
+        >
+          <MdNavigateBefore className="w-5 h-5" />
+        </button>
+        <span className="mx-4 text-gray-700">Sayfa {currentPage}</span>
+        <button
+          onClick={goToNextPage}
+          disabled={currentPage === totalPages}
+          className={`px-2 py-2 rounded-full ${
+            currentPage === totalPages
+              ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+              : "bg-[#399AA1] text-white hover:bg-[#007E85]"
+          }`}
+        >
+          <MdNavigateNext className="w-5 h-5" />
+        </button>
+      </div>
+      {isPopupOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center transition-opacity duration-300 ease-in-out">
+          <div
+            className="p-6 rounded-[10px] w-[100%] px-12 py-8 transform scale-95 transition-transform duration-300 ease-out"
+            style={{
+              animation: "popupSlideIn 0.3s forwards",
+            }}
+          >
+            <ViewServiceDetailsPopup
+              data={selectedData}
+              onClose={handleClosePopup}
+              options={{
+                provider: providerOptions,
+                status: ["Aktif", "Pasif"],
+                currency: ["TRY", "USD", "EUR"],
+              }}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
