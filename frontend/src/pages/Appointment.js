@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import ConsultantSearchContainer from "../components/SearchContainer";
-import ConsultantTable from "../components/Consultant/ConsultantTable";
+import ConsultantTableWrapper from "../components/Consultant/ConsultantTableWrapper";
 import AddAppointment from "../components/Consultant/CreateAppointmentButton";
 import appointmentData from "../appointmentData.json";
 
@@ -23,7 +23,10 @@ export default function ConsultantPage() {
       </div>
       {/* İçerik */}
       <div>
-        <ConsultantTable searchQuery={searchQuery} data={appointmentData} />
+        <ConsultantTableWrapper
+          data={appointmentData}
+          searchQuery={searchQuery}
+        />
       </div>
     </div>
   );

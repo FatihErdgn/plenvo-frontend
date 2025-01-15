@@ -1,9 +1,10 @@
 // components/ServiceManagementTableWrapper.js
 import React, { useCallback } from "react";
-import { TableProvider,useTableContext } from "../../contexts/TableContext";
+import { TableProvider, useTableContext } from "../../contexts/TableContext";
 import GenericTable from "../Table/GenericTable";
 import { LiaEdit } from "react-icons/lia";
 import ViewServiceDetailsPopup from "./ViewServiceDetailsPopup";
+import ExportExcel from "../../utils/ExportExcel";
 
 export default function ServiceManagementTableWrapper({ data, searchQuery }) {
   const getStatusClass = (status) => {
@@ -62,7 +63,20 @@ export default function ServiceManagementTableWrapper({ data, searchQuery }) {
       customFilterFn={customFilterFn}
     >
       <div className="font-montserrat bg-white p-6 rounded-lg shadow-md flex flex-col h-[79vh]">
-        <GenericTable />
+        {/* Üst satır: Başlık (isteğe bağlı) + Excel butonu */}
+        <div className="flex flex-row justify-between items-center mb-4">
+          {/* Eğer başlık istemiyorsanız, boş bir <div /> veya <span /> bırakabilirsiniz */}
+          <h2 className="text-lg font-semibold text-gray-700">
+            Hizmet Listesi
+          </h2>
+
+          <ExportExcel fileName="HizmetListesi.xlsx" />
+        </div>
+
+        {/* Tablo alanı */}
+        <div className="flex-1 overflow-y-auto">
+          <GenericTable />
+        </div>
         <ServicePopupArea />
       </div>
     </TableProvider>
@@ -106,7 +120,10 @@ function ServicePopupArea() {
     setIsPopupOpen(false);
   };
 
-  const providerOptions = data && Array.isArray(data) ? [...new Set(data.map((item) => item.provider))] : [];
+  const providerOptions =
+    data && Array.isArray(data)
+      ? [...new Set(data.map((item) => item.provider))]
+      : [];
   const statusOptions = ["Aktif", "Pasif"];
   const currencyOptions = ["TRY", "USD", "EUR"];
 

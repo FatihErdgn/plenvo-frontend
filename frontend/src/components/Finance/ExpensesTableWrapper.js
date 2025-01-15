@@ -3,6 +3,7 @@ import React, { useCallback } from "react";
 import { TableProvider } from "../../contexts/TableContext";
 import GenericTable from "../Table/GenericTable";
 import { format } from "date-fns";
+import ExportExcel from "../../utils/ExportExcel";
 
 export default function ExpensesTableWrapper({ data, searchQuery }) {
   const getStatusClass = (kind) => {
@@ -44,8 +45,7 @@ export default function ExpensesTableWrapper({ data, searchQuery }) {
     {
       key: "Date",
       label: "Tarih",
-      renderCell: (row) =>
-        format(new Date(row.Date), "dd.MM.yyyy")
+      renderCell: (row) => format(new Date(row.Date), "dd.MM.yyyy"),
     },
     {
       key: "ExpenseKind",
@@ -65,11 +65,23 @@ export default function ExpensesTableWrapper({ data, searchQuery }) {
       data={data}
       columns={columns}
       searchQuery={searchQuery}
-      rowsPerPage={12}
+      rowsPerPage={10}
       customFilterFn={customFilterFn}
     >
       <div className="font-montserrat bg-white w-screen p-6 rounded-lg shadow-md flex flex-col justify-between">
-        <GenericTable />
+        <div className="flex flex-row justify-between items-center mb-4">
+          {/* Eğer başlık istemiyorsanız, boş bir <div /> veya <span /> bırakabilirsiniz */}
+          <h2 className="text-lg font-semibold text-gray-700">
+            Maliyet Listesi
+          </h2>
+
+          <ExportExcel fileName="MaliyetListesi.xlsx" />
+        </div>
+
+        {/* Tablo alanı */}
+        <div className="flex-1 overflow-y-auto">
+          <GenericTable />
+        </div>
       </div>
     </TableProvider>
   );

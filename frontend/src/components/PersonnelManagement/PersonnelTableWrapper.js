@@ -1,10 +1,11 @@
 // components/PersonnelTableWrapper.js
 import React, { useCallback } from "react";
-import { TableProvider,useTableContext } from "../../contexts/TableContext";
+import { TableProvider, useTableContext } from "../../contexts/TableContext";
 import GenericTable from "../Table/GenericTable";
 import { LiaEdit } from "react-icons/lia";
 import { IoEyeOutline } from "react-icons/io5";
 import ViewPersonnelDetailsPopup from "./ViewPersonnelDetailsPopup";
+import ExportExcel from "../../utils/ExportExcel";
 
 export default function PersonnelTableWrapper({ data, searchQuery }) {
   // Roller için badge css sınıfı
@@ -58,11 +59,26 @@ export default function PersonnelTableWrapper({ data, searchQuery }) {
       data={data}
       columns={columns}
       searchQuery={searchQuery}
-      rowsPerPage={10}
+      rowsPerPage={7}
       customFilterFn={customFilterFn}
     >
-      <div className="font-montserrat bg-white p-6 rounded-lg shadow-md flex flex-col justify-between">
-        <GenericTable />
+      <div className="font-montserrat bg-white p-6 rounded-lg shadow-md flex flex-col justify-between h-[79vh]">
+        {/* Üst satır: Başlık (isteğe bağlı) + Excel butonu */}
+        <div className="flex flex-row justify-between items-center mb-4">
+          {/* Eğer başlık istemiyorsanız, boş bir <div /> veya <span /> bırakabilirsiniz */}
+          <h2 className="text-lg font-semibold text-gray-700">
+            Personel Listesi
+          </h2>
+
+          <ExportExcel fileName="PersonelListesi.xlsx" />
+        </div>
+
+        {/* Tablo alanı */}
+        <div className="flex-1 overflow-y-auto">
+          <GenericTable />
+        </div>
+
+        {/* Popup alanı */}
         <PersonnelPopupArea />
       </div>
     </TableProvider>
@@ -71,11 +87,7 @@ export default function PersonnelTableWrapper({ data, searchQuery }) {
 
 // Aksiyon butonlarını ayrı bir component’te tanımlayabilirsiniz.
 function PersonnelTableActions({ row }) {
-  const {
-    setSelectedData,
-    setIsEditable,
-    setIsPopupOpen,
-  } = useTableContext();
+  const { setSelectedData, setIsEditable, setIsPopupOpen } = useTableContext();
 
   const handleEditClick = () => {
     setSelectedData(row);
@@ -113,13 +125,8 @@ function PersonnelTableActions({ row }) {
 
 // Pop-up alanı
 function PersonnelPopupArea() {
-  const {
-    data,
-    isPopupOpen,
-    setIsPopupOpen,
-    selectedData,
-    isEditable,
-  } = useTableContext();
+  const { data, isPopupOpen, setIsPopupOpen, selectedData, isEditable } =
+    useTableContext();
 
   // Bu örnekte sadece context verisini aldık. Popup kapama:
   const handleClosePopup = () => {
@@ -128,8 +135,14 @@ function PersonnelPopupArea() {
 
   // Profesyon, specialty, role gibi opsiyonlar
   // Bu örnek için veriyi context içinden alabilir
-  const professionOptions = data && Array.isArray(data) ? [...new Set(data.map((item) => item.profession))] : [];
-  const specialityOptions = data && Array.isArray(data) ? [...new Set(data.map((item) => item.speciality))] : [];
+  const professionOptions =
+    data && Array.isArray(data)
+      ? [...new Set(data.map((item) => item.profession))]
+      : [];
+  const specialityOptions =
+    data && Array.isArray(data)
+      ? [...new Set(data.map((item) => item.speciality))]
+      : [];
   const roleOptions = ["Consultant", "Doctor", "Manager", "Admin"];
 
   if (!isPopupOpen) return null;

@@ -2,7 +2,7 @@ import React from "react";
 import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
 import Login from "./pages/Login";
 // import Home from "./pages/Home";
-import ConsultantPage from "./pages/Consultant";
+import ConsultantPage from "./pages/Appointment";
 import SideBar from "./components/Sidebar";
 import FinancePage from "./pages/Finance";
 import FinanceDashboard from "./pages/FinanceDashboard";

@@ -14,7 +14,7 @@ export default function GenericTable() {
   } = useTableContext();
 
   return (
-    <div className="w-full h-full flex flex-col justify-between h-[79vh]">
+    <div className="w-full h-full flex flex-col justify-between">
       <table className="table-auto w-full border-collapse bg-white shadow-sm rounded-lg">
         <thead>
           <tr className="text-gray-700 text-center">
