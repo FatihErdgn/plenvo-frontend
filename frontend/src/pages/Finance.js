@@ -3,6 +3,7 @@ import SearchContainer from "../components/SearchContainer";
 import ExpenseTable from "../components/Finance/ExpensesTable";
 import expensesData from "../expensesData.json";
 import ExpensesInputForm from "../components/Finance/ExpensesInputForm";
+import ExpensesTableWrapper from "../components/Finance/ExpensesTableWrapper";
 // import BarChartComponent from "../components/Finance/BarChart";
 
 // const categoryData = expensesData
@@ -48,7 +49,8 @@ export default function FinancePage() {
       {/* <BarChartComponent data={categoryData} /> */}
       <div className="flex flex-row gap-8">
         <ExpensesInputForm expensesData={expensesData} />
-        <ExpenseTable searchQuery={searchQuery} data={expensesData} />
+        {/* <ExpenseTable searchQuery={searchQuery} data={expensesData} /> */}
+        <ExpensesTableWrapper searchQuery={searchQuery} data={expensesData} />
       </div>
     </div>
   );

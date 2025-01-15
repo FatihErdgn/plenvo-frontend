@@ -7,6 +7,8 @@ import personnelData from "../personnelData.json";
 import servicesData from "../servicesData.json";
 import { FiArrowLeftCircle, FiArrowRightCircle } from "react-icons/fi";
 import ServiceManagementTable from "../components/ServiceManagement/ServiceManagementTable";
+import PersonnelTableWrapper from "../components/PersonnelManagement/PersonnelTableWrapper";
+import ServiceManagementTableWrapper from "../components/ServiceManagement/ServiceManagementTableWrapper";
 
 export default function PersonnelManagementPage() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -42,7 +44,11 @@ export default function PersonnelManagementPage() {
       {/* İçerik */}
       {isServiceModalOpen ? (
         <>
-          <ServiceManagementTable
+          {/* <ServiceManagementTable
+            searchQuery={searchQuery}
+            data={servicesData}
+          /> */}
+          <ServiceManagementTableWrapper
             searchQuery={searchQuery}
             data={servicesData}
           />
@@ -58,7 +64,11 @@ export default function PersonnelManagementPage() {
         </>
       ) : (
         <>
-          <PersonnelTable searchQuery={searchQuery} data={personnelData} />
+          {/* <PersonnelTable searchQuery={searchQuery} data={personnelData} /> */}
+          <PersonnelTableWrapper
+            data={personnelData}
+            searchQuery={searchQuery}
+          />
           <div className="flex flex-row justify-end gap-4 mt-4">
             <button
               onClick={handleServiceModalOpen}
