@@ -95,6 +95,7 @@ function ServiceManagementActions({ row }) {
 
 function ServicePopupArea() {
   const {
+    data,
     isPopupOpen,
     setIsPopupOpen,
     selectedData,
@@ -105,7 +106,7 @@ function ServicePopupArea() {
     setIsPopupOpen(false);
   };
 
-  const providerOptions = ["Sağlayıcı1", "Sağlayıcı2"];
+  const providerOptions = data && Array.isArray(data) ? [...new Set(data.map((item) => item.provider))] : [];
   const statusOptions = ["Aktif", "Pasif"];
   const currencyOptions = ["TRY", "USD", "EUR"];
 

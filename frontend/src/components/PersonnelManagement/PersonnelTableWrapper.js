@@ -114,6 +114,7 @@ function PersonnelTableActions({ row }) {
 // Pop-up alanı
 function PersonnelPopupArea() {
   const {
+    data,
     isPopupOpen,
     setIsPopupOpen,
     selectedData,
@@ -127,8 +128,8 @@ function PersonnelPopupArea() {
 
   // Profesyon, specialty, role gibi opsiyonlar
   // Bu örnek için veriyi context içinden alabilir
-  const professionOptions = ["Diyetisyen", "Psikolog", "Fizyoterapist"];
-  const specialityOptions = ["Bel Fıtığı", "Obezite"];
+  const professionOptions = data && Array.isArray(data) ? [...new Set(data.map((item) => item.profession))] : [];
+  const specialityOptions = data && Array.isArray(data) ? [...new Set(data.map((item) => item.speciality))] : [];
   const roleOptions = ["Consultant", "Doctor", "Manager", "Admin"];
 
   if (!isPopupOpen) return null;
