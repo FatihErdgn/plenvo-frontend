@@ -1,4 +1,3 @@
-import PersonnelTable from "../components/PersonnelManagement/PersonnelTable";
 import AddPersonnel from "../components/PersonnelManagement/CreatePersonnelButton";
 import AddService from "../components/ServiceManagement/CreateServiceButton";
 import SearchContainer from "../components/SearchContainer";
@@ -6,7 +5,6 @@ import { useState } from "react";
 import personnelData from "../personnelData.json";
 import servicesData from "../servicesData.json";
 import { FiArrowLeftCircle, FiArrowRightCircle } from "react-icons/fi";
-import ServiceManagementTable from "../components/ServiceManagement/ServiceManagementTable";
 import PersonnelTableWrapper from "../components/PersonnelManagement/PersonnelTableWrapper";
 import ServiceManagementTableWrapper from "../components/ServiceManagement/ServiceManagementTableWrapper";
 

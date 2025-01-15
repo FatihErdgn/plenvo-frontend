@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import SearchContainer from "../components/SearchContainer";
-import ExpenseTable from "../components/Finance/ExpensesTable";
 import expensesData from "../expensesData.json";
 import ExpensesInputForm from "../components/Finance/ExpensesInputForm";
 import ExpensesTableWrapper from "../components/Finance/ExpensesTableWrapper";
