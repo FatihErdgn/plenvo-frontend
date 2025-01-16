@@ -6,7 +6,12 @@ import { LiaEdit } from "react-icons/lia";
 import ViewServiceDetailsPopup from "./ViewServiceDetailsPopup";
 import ExportExcel from "../../utils/ExportExcel";
 
-export default function ServiceManagementTableWrapper({ data, searchQuery }) {
+export default function ServiceManagementTableWrapper({
+  data,
+  searchQuery,
+  startDate,
+  endDate,
+}) {
   const getStatusClass = (status) => {
     switch (status) {
       case "Aktif":
@@ -31,6 +36,20 @@ export default function ServiceManagementTableWrapper({ data, searchQuery }) {
         validityDate.includes(_query) ||
         currency.includes(_query)
       );
+    });
+  }, []);
+
+  const customDateFilterFn = useCallback((items, startDate, endDate) => {
+    if (!startDate && !endDate) {
+      return items;
+    }
+
+    return items.filter((item) => {
+      const itemDate = new Date(item.validityDate);
+      const start = startDate ? new Date(startDate) : new Date("1970-01-01");
+      const end = endDate ? new Date(endDate) : new Date("2999-12-31");
+
+      return itemDate >= start && itemDate <= end;
     });
   }, []);
 
@@ -59,8 +78,11 @@ export default function ServiceManagementTableWrapper({ data, searchQuery }) {
       data={data}
       columns={columns}
       searchQuery={searchQuery}
+      startDate={startDate}
+      endDate={endDate}
       rowsPerPage={10}
       customFilterFn={customFilterFn}
+      customDateFilterFn={customDateFilterFn}
     >
       <div className="font-montserrat bg-white p-6 rounded-lg shadow-md flex flex-col h-[79vh]">
         {/* Üst satır: Başlık (isteğe bağlı) + Excel butonu */}

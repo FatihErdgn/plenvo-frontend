@@ -12,11 +12,14 @@ export function TableProvider({
   data = [],
   columns = [],
   searchQuery = "",
+  startDate = "",
+  endDate = "",
   rowsPerPage = 10,
   customFilterFn, // Filtreleme için özel bir fonksiyon tanımlamak isterseniz
+  customDateFilterFn, // Tarih aralığı filtresi için özel bir fonksiyon tanımlamak isterseniz
 }) {
   const [currentPage, setCurrentPage] = useState(1);
-  
+
   // Pop-up, seçilen satır vb. alanları context içerisinde yönetebilirsiniz
   const [selectedData, setSelectedData] = useState(null);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
@@ -24,11 +27,27 @@ export function TableProvider({
 
   // Eğer tablo verilerini searchQuery ile filtreleyecekseniz:
   const filteredData = useMemo(() => {
-    if (customFilterFn) {
-      return customFilterFn(data, searchQuery);
+    let newData = data;
+
+    // 1. ÖNCE arama filtresi
+    if (customFilterFn && searchQuery) {
+      newData = customFilterFn(newData, searchQuery);
     }
-    return data;
-  }, [data, searchQuery, customFilterFn]);
+
+    // 2. SONRA tarih filtresi
+    if (customDateFilterFn && (startDate || endDate)) {
+      newData = customDateFilterFn(newData, startDate, endDate);
+    }
+
+    return newData;
+  }, [
+    data,
+    searchQuery,
+    startDate,
+    endDate,
+    customFilterFn,
+    customDateFilterFn,
+  ]);
 
   const totalPages = Math.ceil(filteredData.length / rowsPerPage);
 
@@ -68,6 +87,8 @@ export function TableProvider({
     data,
     columns,
     searchQuery,
+    startDate,
+    endDate,
     currentData,
     currentPage,
     totalPages,
@@ -82,5 +103,7 @@ export function TableProvider({
     // ...
   };
 
-  return <TableContext.Provider value={value}>{children}</TableContext.Provider>;
+  return (
+    <TableContext.Provider value={value}>{children}</TableContext.Provider>
+  );
 }

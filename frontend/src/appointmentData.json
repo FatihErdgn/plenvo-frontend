@@ -4,7 +4,7 @@
     "firstName": "Jane",
     "lastName": "Cooper",
     "phoneNumber": "+90 8876543210",
-    "appointmentDateTime": "13-Aug-2023 10:00:00",
+    "appointmentDateTime": "13-Aug-2024 10:00:00",
     "status": "Açık",
     "actions": {
       "payNow": true,

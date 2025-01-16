@@ -7,7 +7,12 @@ import { IoEyeOutline } from "react-icons/io5";
 import ViewPersonnelDetailsPopup from "./ViewPersonnelDetailsPopup";
 import ExportExcel from "../../utils/ExportExcel";
 
-export default function PersonnelTableWrapper({ data, searchQuery }) {
+export default function PersonnelTableWrapper({
+  data,
+  searchQuery,
+  startDate,
+  endDate,
+}) {
   // Roller için badge css sınıfı
   const getStatusClass = (role) => {
     switch (role) {
@@ -31,6 +36,24 @@ export default function PersonnelTableWrapper({ data, searchQuery }) {
       const userRole = item.role.toLowerCase();
       const _query = query.toLowerCase();
       return fullName.includes(_query) || userRole.includes(_query);
+    });
+  }, []);
+
+  const customDateFilterFn = useCallback((items, startDate, endDate) => {
+    // eğer iki tarih de boş ya da geçersiz ise doğrudan items dön
+    if (!startDate && !endDate) {
+      return items;
+    }
+
+    return items.filter((item) => {
+      const itemDate = new Date(item.hireDate);
+
+      // eğer startDate veya endDate’den herhangi biri boşsa
+      // ona göre filtreleyin, örneğin:
+      const start = startDate ? new Date(startDate) : new Date("1970-01-01");
+      const end = endDate ? new Date(endDate) : new Date("2999-12-31");
+
+      return itemDate >= start && itemDate <= end;
     });
   }, []);
 
@@ -59,8 +82,11 @@ export default function PersonnelTableWrapper({ data, searchQuery }) {
       data={data}
       columns={columns}
       searchQuery={searchQuery}
+      startDate={startDate}
+      endDate={endDate}
       rowsPerPage={7}
       customFilterFn={customFilterFn}
+      customDateFilterFn={customDateFilterFn}
     >
       <div className="font-montserrat bg-white p-6 rounded-lg shadow-md flex flex-col justify-between h-[79vh]">
         {/* Üst satır: Başlık (isteğe bağlı) + Excel butonu */}

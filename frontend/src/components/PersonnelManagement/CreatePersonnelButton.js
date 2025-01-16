@@ -51,7 +51,7 @@ export default function AddPersonnel() {
     <div className="flex justify-center items-center font-poppins">
       <button
         onClick={() => setPopUpOpen(true)}
-        className="font-poppins flex flex-row bg-[#399AA1] text-white px-4 py-3 rounded-[10px] hover:bg-[#007E85] shadow-md"
+        className="font-poppins flex flex-row bg-[#399AA1] text-white px-4 py-3 min-w-[150px] rounded-[10px] hover:bg-[#007E85] shadow-md"
       >
         + Personel Ekle
       </button>

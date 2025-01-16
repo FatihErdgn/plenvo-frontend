@@ -8,7 +8,12 @@ import { IoEyeOutline } from "react-icons/io5";
 import ViewAppointmentDetailsPopup from "./ViewAppointmentDetailsPopup";
 
 // Bu tabloya özel wrapper
-export default function ConsultantTableWrapper({ data, searchQuery }) {
+export default function ConsultantTableWrapper({
+  data,
+  searchQuery,
+  startDate,
+  endDate,
+}) {
   // Duruma göre rozet/badge CSS'leri
   const getStatusClass = (status) => {
     switch (status) {
@@ -40,6 +45,18 @@ export default function ConsultantTableWrapper({ data, searchQuery }) {
     });
   }, []);
 
+  const customDateFilterFn = useCallback((items, startDate, endDate) => {
+    if (!startDate && !endDate) {
+      return items;
+    }
+    return items.filter((item) => {
+      const itemDate = new Date(item.appointmentDateTime);
+      const start = startDate ? new Date(startDate) : new Date("1970-01-01");
+      const end = endDate ? new Date(endDate) : new Date("2999-12-31");
+      return itemDate >= start && itemDate <= end;
+    });
+  }, []);
+
   // Kolon konfigürasyonu:
   const columns = [
     { key: "firstName", label: "İsim" },
@@ -65,8 +82,11 @@ export default function ConsultantTableWrapper({ data, searchQuery }) {
       data={data}
       columns={columns}
       searchQuery={searchQuery}
+      startDate={startDate}
+      endDate={endDate}
       rowsPerPage={8}
       customFilterFn={customFilterFn}
+      customDateFilterFn={customDateFilterFn}
     >
       <div className="flex flex-col bg-white max-h-full justify-between font-montserrat p-6 rounded-lg shadow-md">
         {/* Üst satır: Başlık (isteğe bağlı) + Excel butonu */}

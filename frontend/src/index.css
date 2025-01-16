@@ -28,3 +28,19 @@ code {
       opacity: 1;
   }
 }
+
+/* Örnek: tailwind.css veya global.css */
+
+/* React Datepicker CSS’ini önde import edin */
+@import "react-datepicker/dist/react-datepicker.css";
+
+/* Ardından istediğiniz sınıfları Tailwind ile override edin */
+.react-datepicker__day--selected,
+.react-datepicker__day--keyboard-selected {
+  @apply bg-[#007E85] text-white;
+}
+
+.react-datepicker__day:hover {
+  @apply bg-gray-200;
+}
+

@@ -5,7 +5,12 @@ import GenericTable from "../Table/GenericTable";
 import { format } from "date-fns";
 import ExportExcel from "../../utils/ExportExcel";
 
-export default function ExpensesTableWrapper({ data, searchQuery }) {
+export default function ExpensesTableWrapper({
+  data,
+  searchQuery,
+  startDate,
+  endDate,
+}) {
   const getStatusClass = (kind) => {
     switch (kind) {
       case "Gelir":
@@ -38,6 +43,20 @@ export default function ExpensesTableWrapper({ data, searchQuery }) {
     });
   }, []);
 
+  const customDateFilterFn = useCallback((items, startDate, endDate) => {
+    if (!startDate && !endDate) {
+      return items;
+    }
+
+    return items.filter((item) => {
+      const itemDate = new Date(item.Date);
+      const start = startDate ? new Date(startDate) : new Date("1970-01-01");
+      const end = endDate ? new Date(endDate) : new Date("2999-12-31");
+
+      return itemDate >= start && itemDate <= end;
+    });
+  }, []);
+
   // columns config
   const columns = [
     { key: "ExpenseCategory", label: "Kategori" },
@@ -65,8 +84,11 @@ export default function ExpensesTableWrapper({ data, searchQuery }) {
       data={data}
       columns={columns}
       searchQuery={searchQuery}
+      startDate={startDate}
+      endDate={endDate}
       rowsPerPage={10}
       customFilterFn={customFilterFn}
+      customDateFilterFn={customDateFilterFn}
     >
       <div className="font-montserrat bg-white w-screen p-6 rounded-lg shadow-md flex flex-col justify-between">
         <div className="flex flex-row justify-between items-center mb-4">

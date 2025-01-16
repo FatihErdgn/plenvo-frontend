@@ -7,13 +7,24 @@ import servicesData from "../servicesData.json";
 import { FiArrowLeftCircle, FiArrowRightCircle } from "react-icons/fi";
 import PersonnelTableWrapper from "../components/PersonnelManagement/PersonnelTableWrapper";
 import ServiceManagementTableWrapper from "../components/ServiceManagement/ServiceManagementTableWrapper";
+import DateFilter from "../components/DateFilter";
 
 export default function PersonnelManagementPage() {
   const [searchQuery, setSearchQuery] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
   const [isServiceModalOpen, setIsServiceModalOpen] = useState(false);
 
   const handleSearchChange = (event) => {
     setSearchQuery(event.target.value);
+  };
+
+  const handleStartDateChange = (event) => {
+    setStartDate(event.target.value);
+  };
+
+  const handleEndDateChange = (event) => {
+    setEndDate(event.target.value); 
   };
 
   const handleServiceModalOpen = () => {
@@ -34,8 +45,9 @@ export default function PersonnelManagementPage() {
         ) : (
           <h1 className="text-3xl font-bold mb-6">Personel Yönetimi</h1>
         )}
-        <div className="flex flex-row justify-end gap-4">
+        <div className="flex flex-row justify-end gap-4 items-center">
           <SearchContainer onSearchChange={handleSearchChange} />
+          <DateFilter onStartDateChange={handleStartDateChange} onEndDateChange={handleEndDateChange} />
           {isServiceModalOpen ? <AddService /> : <AddPersonnel />}
         </div>
       </div>
@@ -49,6 +61,8 @@ export default function PersonnelManagementPage() {
           <ServiceManagementTableWrapper
             searchQuery={searchQuery}
             data={servicesData}
+            startDate={startDate}
+            endDate={endDate}
           />
           <div className="flex flex-row justify-start gap-4 mt-4">
             <button
@@ -66,6 +80,8 @@ export default function PersonnelManagementPage() {
           <PersonnelTableWrapper
             data={personnelData}
             searchQuery={searchQuery}
+            startDate={startDate}
+            endDate={endDate}
           />
           <div className="flex flex-row justify-end gap-4 mt-4">
             <button
