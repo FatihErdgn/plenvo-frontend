@@ -1,6 +1,7 @@
 [
   {
     "id": 1,
+    "type": "single",
     "firstName": "Jane",
     "lastName": "Cooper",
     "phoneNumber": "+90 8876543210",
@@ -8,7 +9,6 @@
     "status": "Açık",
     "actions": {
       "payNow": true,
-
       "reBook": false,
       "edit": true,
       "view": true
@@ -20,6 +20,7 @@
   },
   {
     "id": 2,
+    "type": "single",
     "firstName": "Wade",
     "lastName": "Warren",
     "phoneNumber": "+90 9876543210",
@@ -27,7 +28,6 @@
     "status": "Ödeme Bekleniyor",
     "actions": {
       "payNow": true,
-
       "reBook": false,
       "edit": true,
       "view": true
@@ -39,25 +39,37 @@
   },
   {
     "id": 3,
-    "firstName": "Brooklyn",
-    "lastName": "Simmons",
-    "phoneNumber": "+90 9876543210",
+    "type": "group",
     "appointmentDateTime": "13-Aug-2023 10:00:00",
     "status": "Tamamlandı",
     "actions": {
       "payNow": false,
-
       "reBook": true,
       "edit": true,
       "view": true
     },
-    "gender": "Kadın",
-    "age": 29,
     "clinic": "Dermatology",
-    "doctor": "Dr. John Doe"
+    "doctor": "Dr. John Doe",
+    "participants": [
+      {
+        "firstName": "Brooklyn",
+        "lastName": "Simmons",
+        "phoneNumber": "+90 9876543210",
+        "gender": "Kadın",
+        "age": 29
+      },
+      {
+        "firstName": "Melanie",
+        "lastName": "Foster",
+        "phoneNumber": "+90 5556655443",
+        "gender": "Kadın",
+        "age": 27
+      }
+    ]
   },
   {
     "id": 4,
+    "type": "single",
     "firstName": "Cameron",
     "lastName": "Williamson",
     "phoneNumber": "+90 9876543210",
@@ -65,7 +77,6 @@
     "status": "İptal Edildi",
     "actions": {
       "payNow": false,
-
       "reBook": true,
       "edit": true,
       "view": true
@@ -77,6 +88,7 @@
   },
   {
     "id": 5,
+    "type": "single",
     "firstName": "Leslie",
     "lastName": "Alexander",
     "phoneNumber": "+90 9876543210",
@@ -84,7 +96,6 @@
     "status": "Açık",
     "actions": {
       "payNow": true,
-
       "reBook": false,
       "edit": true,
       "view": true
@@ -96,25 +107,37 @@
   },
   {
     "id": 6,
-    "firstName": "Savannah",
-    "lastName": "Nguyen",
-    "phoneNumber": "+90 9876543210",
+    "type": "group",
     "appointmentDateTime": "13-Aug-2023 10:00:00",
     "status": "Açık",
     "actions": {
       "payNow": true,
-
       "reBook": false,
       "edit": true,
       "view": true
     },
-    "gender": "Kadın",
-    "age": 31,
     "clinic": "Dermatology",
-    "doctor": "Dr. John Doe"
+    "doctor": "Dr. John Doe",
+    "participants": [
+      {
+        "firstName": "Savannah",
+        "lastName": "Nguyen",
+        "phoneNumber": "+90 9876543210",
+        "gender": "Kadın",
+        "age": 31
+      },
+      {
+        "firstName": "Ethan",
+        "lastName": "Smith",
+        "phoneNumber": "+90 5554433221",
+        "gender": "Erkek",
+        "age": 26
+      }
+    ]
   },
   {
     "id": 7,
+    "type": "single",
     "firstName": "Darlene",
     "lastName": "Robertson",
     "phoneNumber": "+90 9876543210",
@@ -122,7 +145,6 @@
     "status": "Tamamlandı",
     "actions": {
       "payNow": false,
-
       "reBook": true,
       "edit": true,
       "view": true
@@ -134,25 +156,44 @@
   },
   {
     "id": 8,
-    "firstName": "Ronald",
-    "lastName": "Richards",
-    "phoneNumber": "+90 9876543210",
+    "type": "group",
     "appointmentDateTime": "13-Aug-2023 10:00:00",
     "status": "Açık",
     "actions": {
       "payNow": true,
-
       "reBook": false,
       "edit": true,
       "view": true
     },
-    "gender": "Erkek",
-    "age": 40,
     "clinic": "Dermatology",
-    "doctor": "Dr. Sydney Sweeney"
+    "doctor": "Dr. Sydney Sweeney",
+    "participants": [
+      {
+        "firstName": "Ronald",
+        "lastName": "Richards",
+        "phoneNumber": "+90 9876543210",
+        "gender": "Erkek",
+        "age": 40
+      },
+      {
+        "firstName": "Caroline",
+        "lastName": "Miller",
+        "phoneNumber": "+90 5311122334",
+        "gender": "Kadın",
+        "age": 38
+      },
+      {
+        "firstName": "Victor",
+        "lastName": "Young",
+        "phoneNumber": "+90 5311122339",
+        "gender": "Erkek",
+        "age": 29
+      }
+    ]
   },
   {
     "id": 9,
+    "type": "single",
     "firstName": "Kathryn",
     "lastName": "Murphy",
     "phoneNumber": "+90 9876543210",
@@ -160,7 +201,6 @@
     "status": "Açık",
     "actions": {
       "payNow": true,
-
       "reBook": false,
       "edit": true,
       "view": true
@@ -172,6 +212,7 @@
   },
   {
     "id": 10,
+    "type": "single",
     "firstName": "Darrell",
     "lastName": "Steward",
     "phoneNumber": "+90 9876543210",
@@ -179,7 +220,6 @@
     "status": "Açık",
     "actions": {
       "payNow": true,
-
       "reBook": false,
       "edit": true,
       "view": true
@@ -188,5 +228,123 @@
     "age": 35,
     "clinic": "Dermatology",
     "doctor": "Dr. Jack Nicholson"
+  },
+
+  {
+    "id": 11,
+    "type": "single",
+    "firstName": "Alice",
+    "lastName": "Morgan",
+    "phoneNumber": "+90 5353334455",
+    "appointmentDateTime": "14-Sep-2023 14:00:00",
+    "status": "Açık",
+    "actions": {
+      "payNow": true,
+      "reBook": false,
+      "edit": true,
+      "view": true
+    },
+    "gender": "Kadın",
+    "age": 32,
+    "clinic": "Cardiology",
+    "doctor": "Dr. Gregory House"
+  },
+  {
+    "id": 12,
+    "type": "single",
+    "firstName": "Henry",
+    "lastName": "Cavill",
+    "phoneNumber": "+90 5320001111",
+    "appointmentDateTime": "20-Sep-2023 16:30:00",
+    "status": "Ödeme Bekleniyor",
+    "actions": {
+      "payNow": true,
+      "reBook": false,
+      "edit": true,
+      "view": true
+    },
+    "gender": "Erkek",
+    "age": 39,
+    "clinic": "Neurology",
+    "doctor": "Dr. Stephen Strange"
+  },
+  {
+    "id": 13,
+    "type": "group",
+    "appointmentDateTime": "01-Oct-2023 09:30:00",
+    "status": "Açık",
+    "actions": {
+      "payNow": false,
+      "reBook": true,
+      "edit": true,
+      "view": true
+    },
+    "clinic": "Orthopedics",
+    "doctor": "Dr. Bruce Wayne",
+    "participants": [
+      {
+        "firstName": "Aria",
+        "lastName": "Shaw",
+        "phoneNumber": "+90 5551122334",
+        "gender": "Kadın",
+        "age": 23
+      },
+      {
+        "firstName": "Joel",
+        "lastName": "Miller",
+        "phoneNumber": "+90 5415566778",
+        "gender": "Erkek",
+        "age": 46
+      }
+    ]
+  },
+  {
+    "id": 14,
+    "type": "group",
+    "appointmentDateTime": "05-Oct-2023 11:00:00",
+    "status": "Tamamlandı",
+    "actions": {
+      "payNow": false,
+      "reBook": true,
+      "edit": true,
+      "view": true
+    },
+    "clinic": "Ophthalmology",
+    "doctor": "Dr. Tony Stark",
+    "participants": [
+      {
+        "firstName": "Harper",
+        "lastName": "Lee",
+        "phoneNumber": "+90 5415566778",
+        "gender": "Kadın",
+        "age": 29
+      },
+      {
+        "firstName": "Atticus",
+        "lastName": "Finch",
+        "phoneNumber": "+90 5415566999",
+        "gender": "Erkek",
+        "age": 55
+      }
+    ]
+  },
+  {
+    "id": 15,
+    "type": "single",
+    "firstName": "Emma",
+    "lastName": "Watson",
+    "phoneNumber": "+90 5332223344",
+    "appointmentDateTime": "10-Oct-2023 15:45:00",
+    "status": "İptal Edildi",
+    "actions": {
+      "payNow": false,
+      "reBook": true,
+      "edit": true,
+      "view": true
+    },
+    "gender": "Kadın",
+    "age": 30,
+    "clinic": "Oncology",
+    "doctor": "Dr. Hannibal Lecter"
   }
 ]

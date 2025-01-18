@@ -13,6 +13,11 @@ export default function ConsultantTableWrapper({
   searchQuery,
   startDate,
   endDate,
+  options: {
+    clinicOptions,
+    doctorOptions,
+    genderOptions,
+  },
 }) {
   // Duruma göre rozet/badge CSS'leri
   const getStatusClass = (status) => {
@@ -105,7 +110,13 @@ export default function ConsultantTableWrapper({
         </div>
 
         {/* Popup'ları render edecek alan */}
-        <ConsultantPopupArea />
+        <ConsultantPopupArea
+          options={{
+            clinicOptions,
+            doctorOptions,
+            genderOptions,
+          }}
+        />
       </div>
     </TableProvider>
   );
@@ -173,24 +184,19 @@ function ConsultantActions({ row }) {
 }
 
 // Popup Alanı
-function ConsultantPopupArea() {
-  const { isPopupOpen, setIsPopupOpen, selectedData, isEditable, data } =
+function ConsultantPopupArea({
+  options: {
+    clinicOptions,
+    doctorOptions,
+    genderOptions,
+  },
+}) {
+  const { isPopupOpen, setIsPopupOpen, selectedData, isEditable } =
     useTableContext();
 
   const handleClosePopup = () => {
     setIsPopupOpen(false);
   };
-
-  // Bu tabloya özel dropdown verileri
-  const clinicOptions =
-    data && Array.isArray(data)
-      ? [...new Set(data.map((item) => item.clinic))]
-      : [];
-  const doctorOptions =
-    data && Array.isArray(data)
-      ? [...new Set(data.map((item) => item.doctor))]
-      : [];
-  const genderOptions = ["Erkek", "Kadın"];
 
   if (!isPopupOpen) return null;
 
@@ -207,9 +213,9 @@ function ConsultantPopupArea() {
           isEditable={isEditable}
           onClose={handleClosePopup}
           options={{
-            clinic: clinicOptions,
-            doctor: doctorOptions,
-            gender: genderOptions,
+            clinicOptions,
+            doctorOptions,
+            genderOptions,
           }}
         />
       </div>
