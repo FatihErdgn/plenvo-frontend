@@ -11,6 +11,7 @@ export function TableProvider({
   children,
   data = [],
   columns = [],
+  excelColumns = [],
   searchQuery = "",
   startDate = "",
   endDate = "",
@@ -86,6 +87,7 @@ export function TableProvider({
   const value = {
     data,
     columns,
+    excelColumns,
     searchQuery,
     startDate,
     endDate,

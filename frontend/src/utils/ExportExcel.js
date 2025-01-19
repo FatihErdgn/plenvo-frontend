@@ -5,7 +5,7 @@ import * as XLSX from "xlsx";
 import { RiFileExcel2Line } from "react-icons/ri";
 
 export default function ExportExcel({ fileName = "Export.xlsx" }) {
-  const { data, columns } = useTableContext();
+  const { data, excelColumns } = useTableContext();
 
   // Excel’e aktarılacak veriye dönüştürme
   const transformDataForExcel = () => {
@@ -14,7 +14,7 @@ export default function ExportExcel({ fileName = "Export.xlsx" }) {
     // actions key’ini dışarıda bırakıyoruz, kalanı "label" -> "value" eşlemesi
     return data.map((row) => {
       const newObj = {};
-      columns.forEach((col) => {
+      excelColumns.forEach((col) => {
         if (col.key !== "actions") {
           newObj[col.label] = row[col.key];
         }
@@ -38,7 +38,7 @@ export default function ExportExcel({ fileName = "Export.xlsx" }) {
     // 2) Worksheet’e (örneğin) kolon genişlikleri ekleme
     // "wch" (width in characters) değeriyle yaklaşık kolon genişliği ayarlayabiliriz
     // columns uzunluğunda bir dizi oluşturup, istediğiniz genişlik değerlerini girebilirsiniz
-    const wsCols = columns
+    const wsCols = excelColumns
       .filter((col) => col.key !== "actions")
       .map(() => ({ wch: 20 })); // Tüm kolonlara 20 karakter genişlik
     worksheet["!cols"] = wsCols;

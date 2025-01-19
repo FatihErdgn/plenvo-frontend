@@ -1,11 +1,14 @@
 // components/ConsultantTableWrapper.js
-import React, { useCallback } from "react";
+import React, { useCallback, useState } from "react";
 import { TableProvider, useTableContext } from "../../../contexts/TableContext";
 import GenericTable from "../../Table/GenericTable";
 import ExportExcel from "../../../utils/ExportExcel"; // <-- Excel'e aktarım butonunuz
 import { LiaEdit } from "react-icons/lia";
 import { IoEyeOutline } from "react-icons/io5";
 import ViewAppointmentDetailsPopup from "./ViewAppointmentDetailsPopup";
+import RebookAppointment from "./RebookAppointment";
+import PaymentPopup from "./PayNowButton";
+import servicesData from "../../../servicesData.json"; // <-- Hizmetlerinizi içeren JSON dosyası
 
 // Bu tabloya özel wrapper
 export default function ConsultantTableWrapper({
@@ -74,7 +77,42 @@ export default function ConsultantTableWrapper({
     {
       key: "actions", // Excel'e giderken bu kolonu hariç bırakabilirsiniz
       label: "İşlem",
-      renderCell: (row) => <ConsultantActions row={row} />,
+      renderCell: (row) => (
+        <ConsultantActions
+          row={row}
+          options={{ clinicOptions, doctorOptions, genderOptions }}
+          servicesData={servicesData}
+        />
+      ),
+    },
+  ];
+
+  // Kolon konfigürasyonu:
+  const excelColumns = [
+    { key: "firstName", label: "İsim" },
+    { key: "lastName", label: "Soyisim" },
+    { key: "age", label: "Yaş" },
+    { key: "phoneNumber", label: "Cep Numarası" },
+    { key: "appointmentDateTime", label: "Randevu Tarihi ve Saati" },
+    {
+      key: "status",
+      label: "Durum",
+      renderCell: (row) => (
+        <span className={getStatusClass(row.status)}>{row.status}</span>
+      ),
+    },
+    {key: "clinic", label: "Klinik"},
+    {key: "doctor", label: "Doktor"},
+    {
+      key: "actions", // Excel'e giderken bu kolonu hariç bırakabilirsiniz
+      label: "İşlem",
+      renderCell: (row) => (
+        <ConsultantActions
+          row={row}
+          options={{ clinicOptions, doctorOptions, genderOptions }}
+          servicesData={servicesData}
+        />
+      ),
     },
   ];
 
@@ -82,6 +120,7 @@ export default function ConsultantTableWrapper({
     <TableProvider
       data={data}
       columns={columns}
+      excelColumns={excelColumns}
       searchQuery={searchQuery}
       startDate={startDate}
       endDate={endDate}
@@ -92,7 +131,7 @@ export default function ConsultantTableWrapper({
       <div className="flex flex-col bg-white max-h-full justify-between font-montserrat p-6 rounded-lg shadow-md">
         {/* Üst satır: Başlık (isteğe bağlı) + Excel butonu */}
         <div className="flex flex-row justify-between items-center mb-4">
-          {/* Eğer başlık istemiyorsanız, boş bir <div /> veya <span /> bırakabilirsiniz */}
+          {/* Eğer başlık istemiyorsanız, boş bir <div /> veya <span /> bırakabilirsin */}
           <h2 className="text-lg font-semibold text-gray-700">
             Randevu Listesi
           </h2>
@@ -119,8 +158,58 @@ export default function ConsultantTableWrapper({
 }
 
 // Tablodaki action butonları
-function ConsultantActions({ row }) {
+function ConsultantActions({
+  row,
+  options: { clinicOptions, doctorOptions, genderOptions },
+  servicesData,
+}) {
   const { setSelectedData, setIsEditable, setIsPopupOpen } = useTableContext();
+  const [rebookOpen, setRebookOpen] = useState(false);
+  const [paymentOpen, setPaymentOpen] = useState(false);
+
+  const handleReBook = () => {
+    setRebookOpen(true);
+  };
+
+  const handlePayNow = () => {
+    setPaymentOpen(true);
+  };
+
+  const getPrefilledData = () => {
+    if (row.type === "group") {
+      return {
+        type: "group",
+        clinic: row.clinic,
+        doctor: row.doctor,
+        // vs. ...
+        participants: row.participants || [
+          {
+            firstName: row.firstName,
+            lastName: row.lastName,
+            phoneNumber: row.phoneNumber,
+            gender: row.gender,
+            age: row.age,
+          },
+        ],
+      };
+    } else {
+      // Tek kişi
+      return {
+        type: "single",
+        firstName: row.firstName,
+        lastName: row.lastName,
+        day: row.day,
+        month: row.month,
+        year: row.year,
+        gender: row.gender,
+        phoneNumber: row.phoneNumber,
+        clinic: row.clinic,
+        doctor: row.doctor,
+        // appointmentDateTime? -> eğer row'dan alıyorsanız
+        // ama yenilemede boş bırakmak istiyoruz
+      };
+    }
+  };
 
   // Mevcut tabloda "Ödeme Yap", "Randevu Yenile" gibi butonlar da var.
   // Onları da dilediğiniz gibi ekleyebilirsiniz.
@@ -154,15 +243,31 @@ function ConsultantActions({ row }) {
       <button
         className={getButtonClasses(row.actions?.payNow)}
         disabled={!row.actions?.payNow}
+        onClick={handlePayNow}
       >
         Ödeme Yap
       </button>
-      <button
-        className={getButtonClasses(row.actions?.reBook)}
-        disabled={!row.actions?.reBook}
-      >
-        Randevu Yenile
-      </button>
+      <PaymentPopup
+        isOpen={paymentOpen}
+        onClose={() => setPaymentOpen(false)}
+        row={row} // hasta/doktor verisi
+        servicesData={servicesData} // JSON liste
+      />
+      <div>
+        <button
+          className={getButtonClasses(row.actions?.reBook)}
+          disabled={!row.actions?.reBook}
+          onClick={handleReBook}
+        >
+          Randevu Yenile
+        </button>
+        <RebookAppointment
+          isOpen={rebookOpen}
+          onClose={() => setRebookOpen(false)}
+          prefilledData={getPrefilledData()}
+          options={{ genderOptions, clinicOptions, doctorOptions }}
+        />
+      </div>
       <button
         className="flex items-center justify-center text-red-500 px-2 py-2 rounded-full hover:bg-red-600 hover:text-white"
         disabled={!row.actions?.edit}

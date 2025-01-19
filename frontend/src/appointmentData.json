@@ -40,6 +40,9 @@
   {
     "id": 3,
     "type": "group",
+    "firstName": "Grup",
+    "lastName": "Randevusu",
+    "phoneNumber": "+90 987654321",
     "appointmentDateTime": "13-Aug-2023 10:00:00",
     "status": "Tamamlandı",
     "actions": {
@@ -108,6 +111,9 @@
   {
     "id": 6,
     "type": "group",
+    "firstName": "Grup",
+    "lastName": "Randevusu",
+    "phoneNumber": "+90 987654321",
     "appointmentDateTime": "13-Aug-2023 10:00:00",
     "status": "Açık",
     "actions": {
@@ -157,6 +163,9 @@
   {
     "id": 8,
     "type": "group",
+    "firstName": "Grup",
+    "lastName": "Randevusu",
+    "phoneNumber": "+90 987654321",
     "appointmentDateTime": "13-Aug-2023 10:00:00",
     "status": "Açık",
     "actions": {
@@ -271,6 +280,9 @@
   {
     "id": 13,
     "type": "group",
+    "firstName": "Grup",
+    "lastName": "Randevusu",
+    "phoneNumber": "+90 987654321",
     "appointmentDateTime": "01-Oct-2023 09:30:00",
     "status": "Açık",
     "actions": {
@@ -301,6 +313,9 @@
   {
     "id": 14,
     "type": "group",
+    "firstName": "Grup",
+    "lastName": "Randevusu",
+    "phoneNumber": "+90 987654321",
     "appointmentDateTime": "05-Oct-2023 11:00:00",
     "status": "Tamamlandı",
     "actions": {

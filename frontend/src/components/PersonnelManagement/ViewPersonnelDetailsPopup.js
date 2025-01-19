@@ -284,7 +284,12 @@ export default function ViewPersonnelDetailsPopup({
           </div>
           <div className="mb-4">
             {isEditable ? (
-              renderDropdown("Uzmanlık Alanı", "speciality", specialityOptions, "up")
+              renderDropdown(
+                "Uzmanlık Alanı",
+                "speciality",
+                specialityOptions,
+                "up"
+              )
             ) : (
               <>
                 <label className="block text-gray-700">Uzmanlık Alanı</label>
@@ -302,6 +307,21 @@ export default function ViewPersonnelDetailsPopup({
                 />
               </>
             )}
+          </div>
+          <div className="mb-4">
+            <label className="block text-gray-700">Maaş</label>
+            <input
+              type="number"
+              name="salary"
+              className={`w-full px-4 py-2 border rounded-lg ${
+                isEditable
+                  ? "border-gray-300"
+                  : "border-transparent bg-gray-100"
+              }`}
+              value={formData.salary || ""}
+              onChange={handleInputChange}
+              disabled={!isEditable}
+            />
           </div>
           {isEditable && (
             <div className="flex justify-center">

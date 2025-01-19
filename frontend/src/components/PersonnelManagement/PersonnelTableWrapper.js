@@ -34,8 +34,9 @@ export default function PersonnelTableWrapper({
     return items.filter((item) => {
       const fullName = `${item.firstName} ${item.lastName}`.toLowerCase();
       const userRole = item.role.toLowerCase();
+      const clinic = item.clinic.toLowerCase();
       const _query = query.toLowerCase();
-      return fullName.includes(_query) || userRole.includes(_query);
+      return fullName.includes(_query) || userRole.includes(_query) || clinic.includes(_query);
     });
   }, []);
 
@@ -61,6 +62,7 @@ export default function PersonnelTableWrapper({
   const columns = [
     { key: "firstName", label: "İsim" },
     { key: "lastName", label: "Soyisim" },
+    { key: "clinic", label: "Klinik" },
     { key: "email", label: "E-posta" },
     { key: "hireDate", label: "İşe Giriş Tarihi" },
     {

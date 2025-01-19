@@ -6,19 +6,37 @@ import Collapse from "@mui/material/Collapse";
 export default function SingleAppointmentForm({
   onClose,
   options: { clinicOptions, doctorOptions, genderOptions },
+  prefilledData,
 }) {
-  const [formData, setFormData] = useState({
-    firstName: "",
-    lastName: "",
-    day: "",
-    month: "",
-    year: "",
-    gender: "",
-    phoneNumber: "",
-    clinic: "",
-    doctor: "",
-    datetime: "",
-  });
+  const initialState = prefilledData
+    ? {
+        firstName: prefilledData.firstName || "",
+        lastName: prefilledData.lastName || "",
+        day: prefilledData.day || "",
+        month: prefilledData.month || "",
+        year: prefilledData.year || "",
+        gender: prefilledData.gender || "",
+        phoneNumber: prefilledData.phoneNumber || "",
+        clinic: prefilledData.clinic || "",
+        doctor: prefilledData.doctor || "",
+        // Eğer eski tarihi sıfırlamak istiyorsanız:
+        datetime: "",
+      }
+    : {
+        firstName: "",
+        lastName: "",
+        day: "",
+        month: "",
+        year: "",
+        gender: "",
+        phoneNumber: "",
+        clinic: "",
+        doctor: "",
+        datetime: "",
+      };
+
+  const [formData, setFormData] = useState(initialState);
+
   const [dropdownOpen, setDropdownOpen] = useState({
     clinic: false,
     doctor: false,

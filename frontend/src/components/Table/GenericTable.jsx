@@ -26,29 +26,38 @@ export default function GenericTable() {
           </tr>
         </thead>
         <tbody>
-          {currentData.map((row, rowIndex) => (
-            <tr
-              key={row.id || rowIndex}
-              className="odd:bg-[#F7F6FE] even:bg-white hover:bg-green-50 text-center"
-            >
-              {columns.map((col) => {
-                // Eğer col.renderCell varsa onu kullan, yoksa doğrudan row[col.key]
-                if (col.renderCell) {
+          {currentData.map((row, rowIndex) => {
+            const isGroupRow =
+              row.firstName === "Grup" && row.lastName === "Randevusu";
+
+            return (
+              <tr
+                key={row.id || rowIndex}
+                className="odd:bg-[#F7F6FE] even:bg-white hover:bg-green-50 text-center"
+              >
+                {columns.map((col, colIndex) => {
+                  // Eğer isGroupRow ve kolonu ilk iki kolondan biriyse (colIndex < 2) => font-bold
+                  const cellClass =
+                    isGroupRow && colIndex < 2
+                      ? "px-4 py-1 text-center font-semibold"
+                      : "px-4 py-1 text-center";
+
+                  if (col.renderCell) {
+                    return (
+                      <td key={col.key} className={cellClass}>
+                        {col.renderCell(row)}
+                      </td>
+                    );
+                  }
                   return (
-                    <td key={col.key} className="px-4 py-1 text-center">
-                      {col.renderCell(row)}
+                    <td key={col.key} className={cellClass}>
+                      {row[col.key]}
                     </td>
                   );
-                }
-                // Default render:
-                return (
-                  <td key={col.key} className="px-4 py-1 text-center">
-                    {row[col.key]}
-                  </td>
-                );
-              })}
-            </tr>
-          ))}
+                })}
+              </tr>
+            );
+          })}
         </tbody>
       </table>
 
