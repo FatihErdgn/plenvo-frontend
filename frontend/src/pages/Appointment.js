@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import ConsultantSearchContainer from "../components/SearchContainer";
-import ConsultantTableWrapper from "../components/Consultant/ConsultantTableWrapper";
+import ConsultantTableWrapper from "../components/Consultant/ConsultantTable/ConsultantTableWrapper";
 // import AddAppointment from "../components/Consultant/CreateAppointmentButton";
 import AddAppointment from "../components/Consultant/CreateAppointment/AddAppointment";
 import appointmentData from "../appointmentData.json";
@@ -59,7 +59,7 @@ export default function ConsultantPage() {
         <ConsultantTableWrapper
           data={appointmentData}
           searchQuery={searchQuery}
-          startDate={startDate}
+          startDate={startDate} 
           endDate={endDate}
           options={{
             clinicOptions,

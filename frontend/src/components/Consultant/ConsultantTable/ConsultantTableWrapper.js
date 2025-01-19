@@ -1,8 +1,8 @@
 // components/ConsultantTableWrapper.js
 import React, { useCallback } from "react";
-import { TableProvider, useTableContext } from "../../contexts/TableContext";
-import GenericTable from "../Table/GenericTable";
-import ExportExcel from "../../utils/ExportExcel"; // <-- Excel'e aktarım butonunuz
+import { TableProvider, useTableContext } from "../../../contexts/TableContext";
+import GenericTable from "../../Table/GenericTable";
+import ExportExcel from "../../../utils/ExportExcel"; // <-- Excel'e aktarım butonunuz
 import { LiaEdit } from "react-icons/lia";
 import { IoEyeOutline } from "react-icons/io5";
 import ViewAppointmentDetailsPopup from "./ViewAppointmentDetailsPopup";
@@ -13,11 +13,7 @@ export default function ConsultantTableWrapper({
   searchQuery,
   startDate,
   endDate,
-  options: {
-    clinicOptions,
-    doctorOptions,
-    genderOptions,
-  },
+  options: { clinicOptions, doctorOptions, genderOptions },
 }) {
   // Duruma göre rozet/badge CSS'leri
   const getStatusClass = (status) => {
@@ -131,7 +127,11 @@ function ConsultantActions({ row }) {
 
   const handleEditClick = () => {
     setSelectedData(row);
-    setIsEditable(true);
+    if (row.status === "Tamamlandı") {
+      setIsEditable(false);
+    } else {
+      setIsEditable(true);
+    }
     setIsPopupOpen(true);
   };
 
@@ -185,11 +185,7 @@ function ConsultantActions({ row }) {
 
 // Popup Alanı
 function ConsultantPopupArea({
-  options: {
-    clinicOptions,
-    doctorOptions,
-    genderOptions,
-  },
+  options: { clinicOptions, doctorOptions, genderOptions },
 }) {
   const { isPopupOpen, setIsPopupOpen, selectedData, isEditable } =
     useTableContext();
