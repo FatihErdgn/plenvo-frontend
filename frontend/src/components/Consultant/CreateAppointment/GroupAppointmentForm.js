@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { IoIosCloseCircleOutline } from "react-icons/io";
 import Alert from "@mui/material/Alert";
 import Collapse from "@mui/material/Collapse";
+import AppointmentDatePicker from "./DatePicker";
 
 export default function GroupAppointmentForm({
   onClose,
@@ -165,7 +166,7 @@ export default function GroupAppointmentForm({
     options,
     direction = "down"
   ) => {
-    const dropdownKey = `gender${index}`; 
+    const dropdownKey = `gender${index}`;
     // her katılımcının gender dropdown’unu ayrı kontrol etmek için
 
     return (
@@ -279,7 +280,12 @@ export default function GroupAppointmentForm({
                 Katılımcının cinsiyet dropdown'u 
                 => renderParticipantDropdown("Cinsiyet", "gender", index, genderOptions)
               */}
-              {renderParticipantDropdown("Cinsiyet", "gender", index, genderOptions)}
+              {renderParticipantDropdown(
+                "Cinsiyet",
+                "gender",
+                index,
+                genderOptions
+              )}
             </div>
             <div className="mb-2">
               <label className="block text-gray-700 mb-1">Yaş</label>
@@ -312,7 +318,8 @@ export default function GroupAppointmentForm({
           {renderGroupDropdown("Doktor", "doctor", doctorOptions, "down")}
         </div>
         <div className="mb-4">
-          <label className="block text-gray-700 mb-1">
+          <AppointmentDatePicker />
+          {/* <label className="block text-gray-700 mb-1">
             Randevu Tarihi ve Saati
           </label>
           <input
@@ -322,7 +329,7 @@ export default function GroupAppointmentForm({
             onChange={handleGroupDataChange}
             className="w-full px-3 py-2 border rounded"
             required
-          />
+          /> */}
         </div>
 
         {/* Butonlar */}

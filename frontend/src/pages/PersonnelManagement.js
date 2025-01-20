@@ -48,7 +48,7 @@ export default function PersonnelManagementPage() {
         <div className="flex flex-row justify-end gap-4 items-center">
           <SearchContainer onSearchChange={handleSearchChange} />
           <DateFilter onStartDateChange={handleStartDateChange} onEndDateChange={handleEndDateChange} />
-          {isServiceModalOpen ? <AddService /> : <AddPersonnel />}
+          {isServiceModalOpen ? <AddService servicesData={servicesData} /> : <AddPersonnel personnelData={personnelData} />}
         </div>
       </div>
       {/* İçerik */}

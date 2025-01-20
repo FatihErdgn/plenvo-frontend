@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 import Alert from "@mui/material/Alert";
 import Collapse from "@mui/material/Collapse";
+import AppointmentDatePicker from "./DatePicker";
 
 export default function SingleAppointmentForm({
   onClose,
@@ -241,7 +242,8 @@ export default function SingleAppointmentForm({
 
         {/* Randevu Tarihi ve Saati */}
         <div className="mb-4">
-          <label className="block text-gray-700 mb-1">
+          <AppointmentDatePicker />
+          {/* <label className="block text-gray-700 mb-1">
             Randevu Tarihi ve Saati
           </label>
           <input
@@ -251,7 +253,7 @@ export default function SingleAppointmentForm({
             onChange={handleInputChange}
             className="w-full px-3 py-2 border rounded"
             required
-          />
+          /> */}
         </div>
 
         {/* Butonlar */}

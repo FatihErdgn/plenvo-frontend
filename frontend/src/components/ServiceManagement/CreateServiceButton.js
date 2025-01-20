@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { IoIosCloseCircleOutline } from "react-icons/io";
 // import CustomDateTimePicker from "./Datepicker.js"
 
-export default function AddService() {
+export default function AddService({servicesData}) {
   const [isPopUpOpen, setPopUpOpen] = useState(false);
   const [formData, setFormData] = useState({
     name: "",

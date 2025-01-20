@@ -36,7 +36,11 @@ export default function PersonnelTableWrapper({
       const userRole = item.role.toLowerCase();
       const clinic = item.clinic.toLowerCase();
       const _query = query.toLowerCase();
-      return fullName.includes(_query) || userRole.includes(_query) || clinic.includes(_query);
+      return (
+        fullName.includes(_query) ||
+        userRole.includes(_query) ||
+        clinic.includes(_query)
+      );
     });
   }, []);
 
@@ -79,10 +83,36 @@ export default function PersonnelTableWrapper({
     },
   ];
 
+  // Tablonun kolon konfigürasyonu
+  const excelColumns = [
+    { key: "firstName", label: "İsim" },
+    { key: "lastName", label: "Soyisim" },
+    { key: "clinic", label: "Klinik" },
+    { key: "profession", label: "Meslek" },
+    { key: "speciality", label: "Uzmanlık" },
+    { key: "salary", label: "Maaş" },
+    { key: "phoneNumber", label: "Telefon Numarası" },
+    { key: "email", label: "E-posta" },
+    { key: "hireDate", label: "İşe Giriş Tarihi" },
+    {
+      key: "role",
+      label: "Rol",
+      renderCell: (row) => (
+        <span className={getStatusClass(row.role)}>{row.role}</span>
+      ),
+    },
+    {
+      key: "actions",
+      label: "İşlem",
+      renderCell: (row) => <PersonnelTableActions row={row} />,
+    },
+  ];
+
   return (
     <TableProvider
       data={data}
       columns={columns}
+      excelColumns={excelColumns}
       searchQuery={searchQuery}
       startDate={startDate}
       endDate={endDate}
@@ -171,6 +201,10 @@ function PersonnelPopupArea() {
     data && Array.isArray(data)
       ? [...new Set(data.map((item) => item.speciality))]
       : [];
+  const clinicOptions =
+    data && Array.isArray(data)
+      ? [...new Set(data.map((item) => item.clinic))]
+      : [];
   const roleOptions = ["Consultant", "Doctor", "Manager", "Admin"];
 
   if (!isPopupOpen) return null;
@@ -190,6 +224,7 @@ function PersonnelPopupArea() {
           options={{
             profession: professionOptions,
             speciality: specialityOptions,
+            clinic: clinicOptions,
             role: roleOptions,
           }}
         />
