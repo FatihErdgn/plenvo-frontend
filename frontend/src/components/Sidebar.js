@@ -73,7 +73,7 @@ export default function SideBar() {
       </div>
 
       {/* Profil ve Çıkış */}
-      <div className="text-sm">
+      <div className="text-sm xs:text-base">
         <div className="flex items-center gap-2 mb-4">
           <img
             src="https://via.placeholder.com/40"

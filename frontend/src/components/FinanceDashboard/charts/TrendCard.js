@@ -7,6 +7,29 @@ const Card = ({ title, value, change, trendData }) => {
     chart: {
       id: `${title}-trend`,
       sparkline: { enabled: true },
+      // Küçük ekranlarda daha küçük boyuta inmesi için responsive ayarlar
+      // breakpoint değerlerini kendi ihtiyaçlarınıza göre güncelleyebilirsiniz
+      // örn: 1024 (laptop), 768 (tablet), 480 (telefon) vs.
+      responsive: [
+        {
+          breakpoint: 1024, // 1024px ve altı ekran için
+          options: {
+            chart: {
+              width: "100%",
+              height: 60,
+            },
+          },
+        },
+        {
+          breakpoint: 768, // 768px ve altı ekran için
+          options: {
+            chart: {
+              width: "100%",
+              height: 50,
+            },
+          },
+        },
+      ],
     },
     colors: [change >= 0 ? "#007E85" : "#FF4560"],
     stroke: {
@@ -39,7 +62,24 @@ const Card = ({ title, value, change, trendData }) => {
   ];
 
   return (
-    <div className="bg-white h-[20vh] w-[40vh] font-montserrat p-6 rounded-3xl shadow-md flex flex-col justify-between">
+    <div
+      className="
+        bg-white 
+        w-full
+        max-w-sm 
+        md:max-w-md
+        h-auto 
+        font-montserrat 
+        p-6 
+        rounded-3xl 
+        shadow-md 
+        flex 
+        flex-col 
+        justify-between 
+        overflow-hidden   /* İçerikte taşma olmasın */
+        m-2
+      "
+    >
       {/* Kartın üst kısmı */}
       <div className="flex-1 flex flex-col justify-start">
         <h3 className="text-xl font-semibold">{title}</h3>
@@ -55,7 +95,8 @@ const Card = ({ title, value, change, trendData }) => {
 
       {/* Grafik kısmı */}
       <div className="flex-1 flex items-center justify-center">
-        <Chart options={options} series={series} type="area" height={70} />
+        {/* width="100%" ve height sabit bir değerden ziyade ApexCharts responsive kullanarak ayarlayacağız */}
+        <Chart options={options} series={series} type="area" width="100%" height={70} />
       </div>
     </div>
   );

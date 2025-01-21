@@ -59,7 +59,7 @@ export default function FinanceDashboard() {
   // );
 
   return (
-    <div className="w-screen bg-[#f4f7fe] p-8 overflow-hidden rounded-l-[40px] relative z-20 font-montserrat">
+    <div className="w-screen bg-[#f4f7fe] p-8 overflow-y-auto rounded-l-[40px] relative z-20 font-montserrat">
       <div className="flex flex-row justify-between items-center">
         <h1 className="text-3xl font-bold mb-6">Finansal Dashboard</h1>
 
@@ -102,7 +102,7 @@ export default function FinanceDashboard() {
         />
       </div>
 
-      <div className="flex flex-row mx-4 mt-8 gap-4 items-center justify-between">
+      <div className="flex flex-row mx-4 mt-4 gap-4 items-center justify-between">
         <div className="bg-white justify-between h-[60vh] w-[50vh] font-montserrat p-6 rounded-3xl shadow-md">
           <ClinicFinancialsPieChart view={view} financialData={financialData} />
         </div>

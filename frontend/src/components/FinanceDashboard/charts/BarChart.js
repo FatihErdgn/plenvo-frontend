@@ -1,3 +1,4 @@
+import React from "react";
 import Chart from "react-apexcharts";
 
 const ClinicFinancialsChart = ({ view, financialData }) => {
@@ -7,6 +8,58 @@ const ClinicFinancialsChart = ({ view, financialData }) => {
     chart: {
       id: "clinic-financials",
       toolbar: { show: false },
+      // Ekran boyutuna göre height'i otomatik küçültmek için responsive ayarları
+      responsive: [
+        {
+          breakpoint: 1024, // 1024px ve altı
+          options: {
+            chart: {
+              width: "100%",
+              height: 350, // Laptop ve daha küçük ekranlarda yüksekliği 350 yap
+            },
+            legend: {
+              position: "bottom", // Legend'ı üstten alta alarak dikey alanı daralt
+            },
+            xaxis: {
+              // Eksen yazıları büyükse küçültebilirsiniz
+              labels: {
+                style: {
+                  fontSize: "12px",
+                },
+              },
+            },
+            dataLabels: {
+              style: {
+                fontSize: "11px",
+              },
+            },
+          },
+        },
+        {
+          breakpoint: 768, // 768px ve altı (tablet, telefon)
+          options: {
+            chart: {
+              width: "100%",
+              height: 300, // Daha küçük ekranlarda 300px
+            },
+            legend: {
+              position: "bottom",
+            },
+            xaxis: {
+              labels: {
+                style: {
+                  fontSize: "10px",
+                },
+              },
+            },
+            dataLabels: {
+              style: {
+                fontSize: "10px",
+              },
+            },
+          },
+        },
+      ],
     },
     colors: ["#F38A84", "#00A3A8"],
     plotOptions: {
@@ -20,6 +73,7 @@ const ClinicFinancialsChart = ({ view, financialData }) => {
       enabled: true,
       style: {
         colors: ["#FFFFFF"],
+        fontSize: "12px", // Varsayılan font boyutu (daha büyük ekranlar)
       },
     },
     stroke: {
@@ -30,17 +84,9 @@ const ClinicFinancialsChart = ({ view, financialData }) => {
     xaxis: {
       categories:
         view === "weekly"
-          ? [
-              "Pazartesi",
-              "Salı",
-              "Çarşamba",
-              "Perşembe",
-              "Cuma",
-              "Cumartesi",
-              "Pazar",
-            ]
+          ? ["Paz", "Sal", "Çar", "Per", "Cum", "Cts", "Paz"] // Çok uzun yazıları kısaltabilirsiniz
           : view === "monthly"
-          ? ["1. Hafta", "2. Hafta", "3. Hafta", "4. Hafta"]
+          ? ["1. H", "2. H", "3. H", "4. H"]
           : [
               "Ocak",
               "Şubat",
@@ -103,19 +149,40 @@ const ClinicFinancialsChart = ({ view, financialData }) => {
   ];
 
   return (
-    <div style={{ maxWidth: "1000px", margin: "0 auto", padding: "20px" }}>
+    <div
+      className="
+        max-w-[1000px] 
+        w-full 
+        mx-auto 
+        px-5 
+        py-5
+        overflow-hidden 
+      "
+    >
       <h2
-        style={{
-          textAlign: "center",
-          color: "#333",
-          fontSize: "20px",
-          fontWeight: "bold",
-          fontFamily: "Montserrat",
-        }}
+        className="
+          text-center 
+          text-[#333] 
+          font-bold 
+          font-montserrat 
+          mb-4 
+          text-lg 
+          sm:text-xl
+        "
       >
         Poliklinik Maliyet ve Kazanç Grafiği
       </h2>
-      <Chart options={options} series={series} type="bar" height={450} />
+      {/* 
+        Varsayılan olarak height={400} veya 450 kullanabilirsiniz.
+        Farklı breakpoint’lerde apex ‘responsive’ ayarları bunu override edecek.
+      */}
+      <Chart 
+        options={options} 
+        series={series} 
+        type="bar" 
+        width="100%" 
+        height={400} 
+      />
     </div>
   );
 };

@@ -23,7 +23,7 @@ export default function FinancePage() {
   };
 
   return (
-    <div className="w-screen bg-[#f4f7fe] p-8 overflow-hidden rounded-l-[40px] relative z-20">
+    <div className="w-screen bg-[#f4f7fe] p-8 overflow-auto rounded-l-[40px] relative z-20">
       {/* Başlık */}
       <div className="flex flex-row justify-between items-center">
         <h1 className="text-3xl font-bold mb-6">Maliyet Yönetimi</h1>
