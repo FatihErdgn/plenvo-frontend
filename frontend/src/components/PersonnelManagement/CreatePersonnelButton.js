@@ -1,14 +1,18 @@
 import { Alert, Collapse } from "@mui/material";
 import { useState, useEffect } from "react";
 import { IoIosCloseCircleOutline } from "react-icons/io";
-// import CustomDateTimePicker from "./Datepicker.js"
+import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
 
-export default function AddPersonnel({ personnelData }) {
+export default function AddPersonnel({ personnelData = [] }) {
   const [isPopUpOpen, setPopUpOpen] = useState(false);
+  const [passwordVisible, setPasswordVisible] = useState(false);
+
+  // Form State
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
-    mobile: "",
+    username: "",
+    password: "",
     phoneNumber: "",
     email: "",
     clinic: "",
@@ -17,18 +21,13 @@ export default function AddPersonnel({ personnelData }) {
     salary: "",
     role: "",
     hireDate: "",
-    //Manuel
+    // Manual entries
     manualClinic: "",
     manualProfession: "",
     manualSpeciality: "",
   });
 
-  const [manualEntry, setManualEntry] = useState({
-    clinic: "",
-    profession: "",
-    speciality: "",
-  });
-
+  // Which dropdowns are open
   const [dropdownOpen, setDropdownOpen] = useState({
     clinic: false,
     profession: false,
@@ -36,13 +35,21 @@ export default function AddPersonnel({ personnelData }) {
     role: false,
   });
 
+  // Whether the user selected "Diğer" (manual input) for each dropdown
+  const [manualEntry, setManualEntry] = useState({
+    clinic: false,
+    profession: false,
+    speciality: false,
+  });
+
+  // Alert State
   const [alertState, setAlertState] = useState({
     message: "",
     severity: "",
     open: false,
   });
 
-  // Dışına tıklayınca dropdown kapatma
+  // Close dropdowns if clicked outside
   useEffect(() => {
     const handleOutsideClick = (event) => {
       const dropdowns = document.querySelectorAll(".dropdown-container");
@@ -56,9 +63,10 @@ export default function AddPersonnel({ personnelData }) {
 
       if (!clickedInside) {
         setDropdownOpen({
-          ExpenseCategory: false,
-          ExpenseKind: false,
-          Currency: false,
+          clinic: false,
+          profession: false,
+          speciality: false,
+          role: false,
         });
       }
     };
@@ -69,6 +77,7 @@ export default function AddPersonnel({ personnelData }) {
     };
   }, []);
 
+  // Toggle a specific dropdown
   const toggleDropdown = (key) => {
     setDropdownOpen((prev) => ({
       ...prev,
@@ -77,25 +86,21 @@ export default function AddPersonnel({ personnelData }) {
   };
 
   /**
-   * Dropdown içindeki bir seçeneğe tıklayınca çalışan fonksiyon.
-   * Eğer "Diğer" seçeneği seçildiyse o dropdown için manuel girişi açıyoruz.
+   * Handle selection from dropdown.
+   * If "Diğer", switch to manual entry for that key.
    */
   const handleSelect = (key, value) => {
     if (value === "Diğer") {
-      // Manuel girişi aktif et
       setManualEntry((prev) => ({
         ...prev,
         [key]: true,
       }));
-      // Normal dropdown seçimini sıfırla
       setFormData((prev) => ({
         ...prev,
         [key]: "",
-        // Manuel alanı da sıfırla
-        [`Manual${key}`]: "",
+        [`manual${capitalizeFirstLetter(key)}`]: "",
       }));
     } else {
-      // Normal seçim yapıldı, manuel girişi kapat
       setManualEntry((prev) => ({
         ...prev,
         [key]: false,
@@ -105,75 +110,100 @@ export default function AddPersonnel({ personnelData }) {
         [key]: value,
       }));
     }
-    // Dropdownu kapat
+
     setDropdownOpen((prev) => ({
       ...prev,
       [key]: false,
     }));
   };
 
-  /**
-   * Manuel girişi devre dışı bırakıp tekrar dropdown'a dönmek için çağıracağımız fonksiyon
-   */
+  // Disable manual entry and revert to dropdown
   const handleDisableManualEntry = (key) => {
     setManualEntry((prev) => ({
       ...prev,
       [key]: false,
     }));
-    // Geri dönüldüğünde manuel inputu temizlemek isterseniz:
     setFormData((prev) => ({
       ...prev,
-      [`Manual${key}`]: "",
+      [`manual${capitalizeFirstLetter(key)}`]: "",
     }));
   };
 
+  // General input change handler
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
 
+  // Submit form
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    // 1) Final değerleri belirle
+    // final values for clinic/profession/speciality
     const finalClinic = manualEntry.clinic
       ? formData.manualClinic
       : formData.clinic;
-
     const finalProfession = manualEntry.profession
       ? formData.manualProfession
       : formData.profession;
-
     const finalSpeciality = manualEntry.speciality
       ? formData.manualSpeciality
       : formData.speciality;
 
-    // 2) Validasyon
-    if (
-      !finalClinic ||
-      !finalProfession ||
-      !finalSpeciality ||
-      !formData.name ||
-      !formData.mobile ||
-      !formData.email ||
-      !formData.clinic ||
-      !formData.role ||
-      !formData.hireDate
-    ) {
+    // 1) Check if username is already used
+    const usernameExists = personnelData.some(
+      (person) => person.username === formData.username
+    );
+    if (usernameExists) {
       setAlertState({
-        message: "Lütfen tüm alanları doldurun.",
+        message:
+          "Bu kullanıcı adı zaten mevcut. Lütfen farklı bir kullanıcı adı seçin.",
         severity: "error",
         open: true,
       });
       return;
     }
 
-    // 3) En son console veya API call
+    // 2) Validate password (at least 8 chars,one number, one uppercase, one lowercase, one special char)
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    if (!passwordRegex.test(formData.password)) {
+      setAlertState({
+        message:
+          "Şifre en az 8 karakter, bir büyük harf ve bir küçük harf içermelidir.",
+        severity: "error",
+        open: true,
+      });
+      return;
+    }
+
+    // 3) Check if required fields are filled
+    if (
+      !finalClinic ||
+      !finalProfession ||
+      !finalSpeciality ||
+      !formData.firstName ||
+      !formData.lastName ||
+      !formData.username ||
+      !formData.password ||
+      !formData.phoneNumber ||
+      !formData.email ||
+      !formData.role ||
+      !formData.hireDate
+    ) {
+      setAlertState({
+        message: "Lütfen tüm zorunlu alanları doldurun.",
+        severity: "error",
+        open: true,
+      });
+      return;
+    }
+
+    // Here you can do your API call with the final cleaned data
     console.log("Form Data:", {
       ...formData,
+      clinic: finalClinic,
       profession: finalProfession,
       speciality: finalSpeciality,
-      clinic: finalClinic,
     });
 
     setAlertState({
@@ -182,11 +212,12 @@ export default function AddPersonnel({ personnelData }) {
       open: true,
     });
 
-    // 4) Temizleme
+    // Reset form
     setFormData({
       firstName: "",
       lastName: "",
-      mobile: "",
+      username: "",
+      password: "",
       phoneNumber: "",
       email: "",
       clinic: "",
@@ -195,19 +226,18 @@ export default function AddPersonnel({ personnelData }) {
       salary: "",
       role: "",
       hireDate: "",
-      //Manuel
       manualClinic: "",
       manualProfession: "",
       manualSpeciality: "",
     });
     setManualEntry({
-      clinic: "",
-      profession: "",
-      speciality: "",
+      clinic: false,
+      profession: false,
+      speciality: false,
     });
   };
 
-  // Alert'i 5 sn sonra kapat
+  // Auto-close alert after 5s
   useEffect(() => {
     if (alertState.open) {
       const timer = setTimeout(() => {
@@ -217,20 +247,21 @@ export default function AddPersonnel({ personnelData }) {
     }
   }, [alertState.open]);
 
-  const uniqueClinics = [
-    ...new Set(personnelData.map((person) => person.clinic)),
-  ];
-
+  // Gather unique values for dropdown
+  const uniqueClinics = [...new Set(personnelData.map((p) => p.clinic))];
   const uniqueProfessions = [
-    ...new Set(personnelData.map((person) => person.profession)),
+    ...new Set(personnelData.map((p) => p.profession)),
   ];
-
   const uniqueSpecialities = [
-    ...new Set(personnelData.map((person) => person.speciality)),
+    ...new Set(personnelData.map((p) => p.speciality)),
   ];
-
   const roles = ["Admin", "Consultant", "Doctor", "Manager"];
 
+  // Helper for label text
+  const capitalizeFirstLetter = (str) =>
+    str.charAt(0).toUpperCase() + str.slice(1);
+
+  // Renders a custom dropdown with fallback to manual entry
   const renderDropdown = (label, key, options, direction = "down") => {
     const isManual = manualEntry[key];
 
@@ -239,57 +270,66 @@ export default function AddPersonnel({ personnelData }) {
         <label htmlFor={key} className="text-gray-700 mb-2 block">
           {label}
         </label>
-        <div className="relative mb-3 dropdown-container">
-          {/* Dropdown veya Manuel Giriş gösterme durumu */}
-          <div
-            className={`px-4 py-2 border border-gray-300 rounded-lg bg-white flex justify-between items-center ${
-              isManual
-                ? "cursor-not-allowed opacity-70"
-                : "cursor-pointer hover:border-[#007E85]"
-            }`}
-            onClick={() => {
-              if (!isManual) toggleDropdown(key);
-            }}
-          >
-            {isManual
-              ? "Manuel Giriş Aktif"
-              : formData[key] || `${label} Seçin`}
 
-            {!isManual && (
+        {isManual ? (
+          // If "Diğer" was chosen, show manual input
+          <div className="flex gap-2 items-center mb-4">
+            <input
+              type="text"
+              name={`manual${capitalizeFirstLetter(key)}`}
+              value={formData[`manual${capitalizeFirstLetter(key)}`]}
+              onChange={handleInputChange}
+              className="w-full px-3 py-2 border rounded-[10px] focus:outline-none focus:ring-2 focus:ring-[#007E85]"
+            />
+            <button
+              type="button"
+              className="px-4 py-2 bg-red-500 text-white text-xs rounded-[10px] hover:bg-red-600"
+              onClick={() => handleDisableManualEntry(key)}
+            >
+              Manuel Kapat
+            </button>
+          </div>
+        ) : (
+          <div className="relative mb-4 dropdown-container">
+            <div
+              className={`px-4 py-2 border border-gray-300 rounded-lg bg-white flex justify-between items-center cursor-pointer hover:border-[#007E85]`}
+              onClick={() => toggleDropdown(key)}
+            >
+              {formData[key] ? formData[key] : `${label} Seçin`}
+
               <span className="ml-2 transform transition-transform duration-200 opacity-50">
                 {dropdownOpen[key] ? "▲" : "▼"}
               </span>
+            </div>
+
+            {dropdownOpen[key] && (
+              <ul
+                className={`absolute left-0 right-0 bg-white border border-gray-300 rounded-lg max-h-[120px] overflow-auto z-10 ${
+                  direction === "up" ? "bottom-full mb-1" : "top-full mt-1"
+                }`}
+              >
+                {options.map((option, index) => (
+                  <li
+                    key={index}
+                    className="px-4 py-2 hover:bg-[#007E85] hover:text-white cursor-pointer"
+                    onClick={() => handleSelect(key, option)}
+                  >
+                    {option}
+                  </li>
+                ))}
+                {/* "Diğer" option for adding manually */}
+                {key !== "role" && (
+                  <li
+                    className="px-4 py-2 hover:bg-[#007E85] hover:text-white cursor-pointer"
+                    onClick={() => handleSelect(key, "Diğer")}
+                  >
+                    Diğer (Manuel Ekle)
+                  </li>
+                )}
+              </ul>
             )}
           </div>
-
-          {/* Dropdown listesi */}
-          {dropdownOpen[key] && (
-            <ul
-              className={`absolute left-0 right-0 bg-white border border-gray-300 rounded-lg max-h-[120px] overflow-auto z-10 ${
-                direction === "up" ? "bottom-full mb-1" : "top-full mt-1"
-              }`}
-            >
-              {options.map((option, index) => (
-                <li
-                  key={index}
-                  className="px-4 py-2 hover:bg-[#007E85] hover:text-white cursor-pointer"
-                  onClick={() => handleSelect(key, option)}
-                >
-                  {option}
-                </li>
-              ))}
-              {/* "Diğer (Manuel Ekle)" seçeneği */}
-              {key !== "role" && (
-                <li
-                  className="px-4 py-2 hover:bg-[#007E85] hover:text-white cursor-pointer"
-                  onClick={() => handleSelect(key, "Diğer")}
-                >
-                  Diğer (Manuel Ekle)
-                </li>
-              )}
-            </ul>
-          )}
-        </div>
+        )}
       </>
     );
   };
@@ -304,21 +344,24 @@ export default function AddPersonnel({ personnelData }) {
       </button>
 
       {isPopUpOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center transition-opacity duration-300 ease-in-out">
+        <div className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center">
+          {/* Modal Container */}
           <div
-            className="bg-white p-6 rounded-[10px] shadow-lg w-[30%] px-12 py-8 transform scale-95 transition-transform duration-300 ease-out max-h-[95vh] overflow-y-auto"
+            className="bg-white relative p-6 rounded-[10px] shadow-lg w-[80%] max-w-[1000px] max-h-[90vh] overflow-auto"
             style={{
               animation: "popupSlideIn 0.3s forwards",
             }}
           >
+            {/* Close Button */}
             <button
               className="absolute top-4 right-4 text-red-500 hover:text-gray-600"
               onClick={() => setPopUpOpen(false)}
             >
               <IoIosCloseCircleOutline className="w-7 h-7" />
             </button>
+
             {/* Alert */}
-            <Collapse in={alertState.open}>
+            <Collapse in={alertState.open} className="mb-4">
               <Alert
                 severity={alertState.severity}
                 onClose={() => setAlertState({ ...alertState, open: false })}
@@ -326,183 +369,167 @@ export default function AddPersonnel({ personnelData }) {
                 {alertState.message}
               </Alert>
             </Collapse>
+            <h2 className="text-2xl font-semibold text-gray-800 mb-4">
+              Personel Ekle
+            </h2>
+
             <form onSubmit={handleSubmit}>
-              <div className="mb-4">
-                <label className="block text-gray-700 mb-2" htmlFor="firstName">
-                  İsim:
-                </label>
-                <input
-                  type="text"
-                  name="firstName"
-                  value={formData.firstName}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 border rounded-[10px] focus:outline-none focus:ring-2 focus:ring-[#007E85]"
-                  required
-                />
-              </div>
-              <div className="mb-4">
-                <label className="block text-gray-700 mb-2" htmlFor="lastName">
-                  Soyisim:
-                </label>
-                <input
-                  type="text"
-                  name="lastName"
-                  value={formData.lastName}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 border rounded-[10px] focus:outline-none focus:ring-2 focus:ring-[#007E85]"
-                  required
-                />
-              </div>
-              <div className="mb-4">
-                <label
-                  className="block text-gray-700 mb-2"
-                  htmlFor="phoneNumber"
-                >
-                  Telefon:
-                </label>
-                <input
-                  type="text"
-                  name="phoneNumber"
-                  value={formData.phoneNumber}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 border rounded-[10px] focus:outline-none focus:ring-2 focus:ring-[#007E85]"
-                  required
-                />
-              </div>
-              <div className="mb-4">
-                <label className="block text-gray-700 mb-2" htmlFor="email">
-                  Eposta:
-                </label>
-                <input
-                  type="text"
-                  id="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 border rounded-[10px] focus:outline-none focus:ring-2 focus:ring-[#007E85]"
-                  required
-                />
-              </div>
-              <div className="mb-4">
-                <label htmlFor="hireDate" className="text-gray-700 mb-2 block">
-                  İşe Giriş Tarihi
-                </label>
-                <input
-                  type="date"
-                  name="hireDate"
-                  value={formData.hireDate}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg mb-3 focus:outline-none focus:ring-2 focus:ring-[#007E85]"
-                />
-              </div>
-              <div className="mb-4">
-                {manualEntry.clinic ? (
-                  <div className="flex gap-2 items-center">
+              {/* 2 Column Layout */}
+              <div className="grid grid-cols-2 gap-6">
+                {/* LEFT COLUMN */}
+                <div>
+                  {/* First Name */}
+                  <label
+                    className="block text-gray-700 mb-2"
+                    htmlFor="firstName"
+                  >
+                    İsim
+                  </label>
+                  <input
+                    type="text"
+                    name="firstName"
+                    value={formData.firstName}
+                    onChange={handleInputChange}
+                    className="w-full mb-4 px-3 py-2 border rounded-[10px] focus:outline-none focus:ring-2 focus:ring-[#007E85]"
+                  />
+
+                  {/* Last Name */}
+                  <label
+                    className="block text-gray-700 mb-2"
+                    htmlFor="lastName"
+                  >
+                    Soyisim
+                  </label>
+                  <input
+                    type="text"
+                    name="lastName"
+                    value={formData.lastName}
+                    onChange={handleInputChange}
+                    className="w-full mb-4 px-3 py-2 border rounded-[10px] focus:outline-none focus:ring-2 focus:ring-[#007E85]"
+                  />
+
+                  {/* Username */}
+                  <label
+                    className="block text-gray-700 mb-2"
+                    htmlFor="username"
+                  >
+                    Kullanıcı Adı
+                  </label>
+                  <input
+                    type="text"
+                    name="username"
+                    value={formData.username}
+                    onChange={handleInputChange}
+                    className="w-full mb-4 px-3 py-2 border rounded-[10px] focus:outline-none focus:ring-2 focus:ring-[#007E85]"
+                  />
+
+                  {/* password + eye toggle */}
+                  <div>
                     <label
-                      htmlFor="manualClinic"
-                      className="text-gray-700 mb-2 block"
+                      className="block text-gray-700 mb-2"
+                      htmlFor="password"
                     >
-                      Klinik
+                      Şifre:
                     </label>
-                    <input
-                      type="text"
-                      name="manualClinic"
-                      value={formData.manualClinic}
-                      onChange={handleInputChange}
-                      className="w-full px-3 py-2 border rounded-[10px] focus:outline-none focus:ring-2 focus:ring-[#007E85]"
-                      required
-                    />
-                    <button
-                      type="button"
-                      className="px-4 py-2 bg-red-500 text-white text-xs rounded-[10px] hover:bg-red-600"
-                      onClick={() => handleDisableManualEntry("clinic")}
-                    >
-                      Manuel Girişi Kapat
-                    </button>
+                    <div className="relative">
+                      <input
+                        type={passwordVisible ? "text" : "password"}
+                        name="password"
+                        value={formData.password}
+                        onChange={handleInputChange}
+                        className="w-full mb-4 px-3 py-2 border rounded-[10px] focus:outline-none focus:ring-2 focus:ring-[#007E85]"
+                        required
+                      />
+                      <span
+                        className="absolute right-3 top-2.5 text-gray-600 cursor-pointer"
+                        onClick={() => setPasswordVisible((prev) => !prev)}
+                      >
+                        {passwordVisible ? (
+                          <AiOutlineEyeInvisible className="w-6 h-6" />
+                        ) : (
+                          <AiOutlineEye className="w-6 h-6" />
+                        )}
+                      </span>
+                    </div>
                   </div>
-                ) : (
-                  renderDropdown("Klinik", "clinic", uniqueClinics)
-                )}
-              </div>
-              <div className="mb-4">
-                {manualEntry.profession ? (
-                  <div className="flex gap-2 items-center">
-                    <label
-                      htmlFor="manualProfession"
-                      className="text-gray-700 mb-2 block"
-                    >
-                      Meslek
-                    </label>
-                    <input
-                      type="text"
-                      name="manualProfession"
-                      value={formData.manualProfession}
-                      onChange={handleInputChange}
-                      className="w-full px-3 py-2 border rounded-[10px] focus:outline-none focus:ring-2 focus:ring-[#007E85]"
-                      required
-                    />
-                    <button
-                      type="button"
-                      className="px-4 py-2 bg-red-500 text-white text-xs rounded-[10px] hover:bg-red-600"
-                      onClick={() => handleDisableManualEntry("profession")}
-                    >
-                      Manuel Girişi Kapat
-                    </button>
-                  </div>
-                ) : (
-                  renderDropdown("Meslek", "profession", uniqueProfessions)
-                )}
-              </div>
-              <div className="mb-4">
-                {manualEntry.speciality ? (
-                  <div className="flex gap-2 items-center">
-                    <label
-                      htmlFor="manualSpeciality"
-                      className="text-gray-700 mb-2 block"
-                    >
-                      Uzmanlık Alanı
-                    </label>
-                    <input
-                      type="text"
-                      name="manualSpeciality"
-                      value={formData.manualSpeciality}
-                      onChange={handleInputChange}
-                      className="w-full px-3 py-2 border rounded-[10px] focus:outline-none focus:ring-2 focus:ring-[#007E85]"
-                      required
-                    />
-                    <button
-                      type="button"
-                      className="px-4 py-2 bg-red-500 text-white text-xs rounded-[10px] hover:bg-red-600"
-                      onClick={() => handleDisableManualEntry("speciality")}
-                    >
-                      Manuel Girişi Kapat
-                    </button>
-                  </div>
-                ) : (
-                  renderDropdown(
+
+                  {/* Phone Number */}
+                  <label
+                    className="block text-gray-700 mb-2"
+                    htmlFor="phoneNumber"
+                  >
+                    Telefon
+                  </label>
+                  <input
+                    type="text"
+                    name="phoneNumber"
+                    value={formData.phoneNumber}
+                    onChange={handleInputChange}
+                    className="w-full mb-4 px-3 py-2 border rounded-[10px] focus:outline-none focus:ring-2 focus:ring-[#007E85]"
+                  />
+
+                  {/* E-Mail */}
+                  <label className="block text-gray-700 mb-2" htmlFor="email">
+                    E-Posta
+                  </label>
+                  <input
+                    type="text"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleInputChange}
+                    className="w-full mb-4 px-3 py-2 border rounded-[10px] focus:outline-none focus:ring-2 focus:ring-[#007E85]"
+                  />
+                </div>
+
+                {/* RIGHT COLUMN */}
+                <div>
+                  {/* Klinik */}
+                  {renderDropdown("Klinik", "clinic", uniqueClinics)}
+
+                  {/* Meslek */}
+                  {renderDropdown("Meslek", "profession", uniqueProfessions)}
+
+                  {/* Uzmanlık Alanı */}
+                  {renderDropdown(
                     "Uzmanlık Alanı",
                     "speciality",
                     uniqueSpecialities
-                  )
-                )}
-              </div>
-              <div className="mb-4">
-                <label htmlFor="salary" className="text-gray-700 mb-2 block">
-                  Maaş
-                </label>
-                <input
-                  type="number"
-                  name="salary"
-                  value={formData.salary}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg mb-3 focus:outline-none focus:ring-2 focus:ring-[#007E85]"
-                />
-              </div>
-              <div className="mb-4">
-                {renderDropdown("Rol", "role", roles, "up")}
+                  )}
+
+                  {/* Maaş */}
+                  <label htmlFor="salary" className="text-gray-700 mb-2 block">
+                    Maaş
+                  </label>
+                  <input
+                    type="number"
+                    name="salary"
+                    value={formData.salary}
+                    onChange={handleInputChange}
+                    className="w-full mb-4 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#007E85]"
+                  />
+
+                  {/* Rol */}
+                  {renderDropdown("Rol", "role", roles)}
+
+                  {/* İşe Giriş Tarihi */}
+                  <label
+                    htmlFor="hireDate"
+                    className="text-gray-700 mb-2 block"
+                  >
+                    İşe Giriş Tarihi
+                  </label>
+                  <input
+                    type="date"
+                    name="hireDate"
+                    value={formData.hireDate}
+                    onChange={handleInputChange}
+                    className="w-full mb-4 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#007E85]"
+                  />
+                </div>
               </div>
 
-              <div className="flex justify-end">
+              {/* Buttons */}
+              <div className="flex justify-end mt-4">
                 <button
                   type="button"
                   onClick={() => setPopUpOpen(false)}
