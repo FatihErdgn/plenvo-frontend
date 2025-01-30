@@ -17,6 +17,7 @@
     "react": "^19.0.0",
     "react-apexcharts": "^1.7.0",
     "react-chartjs-2": "^5.3.0",
+    "react-cookie": "^7.2.2",
     "react-data-table-component": "^7.6.2",
     "react-datepicker": "^7.6.0",
     "react-dom": "^19.0.0",

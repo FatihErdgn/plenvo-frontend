@@ -3,15 +3,22 @@ import { LuSquareMenu } from "react-icons/lu";
 import { IoPersonOutline } from "react-icons/io5";
 import { TbPresentationAnalytics } from "react-icons/tb";
 import { MdOutlineSpaceDashboard } from "react-icons/md";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
+import { logoutUser } from "../services/authService";
 
 export default function SideBar() {
   const location = useLocation();
   const isActive = (path) => location.pathname === path;
-  const navigate = useNavigate();
 
-  const handleNavigate = () => {
-    return navigate("/login");
+  const handleLogout = async () => {
+    try {
+      await logoutUser();
+      console.log("Başarıyla çıkış yapıldı.");
+      // Kullanıcıyı login sayfasına yönlendir
+      window.location.href = "/login";
+    } catch (error) {
+      console.error("Çıkış yaparken hata oluştu:", error);
+    }
   };
 
   return (
@@ -86,7 +93,7 @@ export default function SideBar() {
           </div>
         </div>
         <button
-          onClick={handleNavigate}
+          onClick={handleLogout}
           className="flex flex-row items-center justify-center bg-white w-full text-[#007E85] text-[17px] font-semibold px-4 py-2 rounded-md hover:bg-gray-200"
         >
           <CgLogOut className="mx-1 pt-0.5" size={25} />
