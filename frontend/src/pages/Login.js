@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import DoctorLoginImage from "../assets/images/doctor-login-1.png";
+import DoctorLoginImage from "../assets/images/doctor-login-3.png";
 import thunderImg from "../assets/images/login-thunder.png";
 import { LuUser } from "react-icons/lu";
 import { TbLockPassword } from "react-icons/tb";
@@ -134,7 +134,7 @@ export default function Login() {
 
   // Sisteme giriş yap (örneğin anasayfa veya dashboard'a)
   const handleGoToHome = () => {
-    navigate("/"); // veya "/dashboard"
+    navigate("/appointments"); // veya "/dashboard"
   };
 
   // Şifremi Unuttum butonuna basınca formu aç
@@ -157,7 +157,7 @@ export default function Login() {
       <div className="w-full h-auto flex flex-col md:flex-row overflow-hidden">
         {/* Sol taraf (Beyaz) */}
         <div className="flex flex-col items-center justify-center w-full md:w-1/2 bg-white p-6 md:p-0">
-          <h1 className="font-poppins font-bold text-[32px] md:text-[40px] mb-2 text-center">
+          <h1 className="font-poppins font-bold text-[40px] md:text-[46px] mb-2 text-center">
             PLENVO'YA HOŞ GELDİNİZ!
           </h1>
           <p className="font-poppins text-base md:text-lg mb-6 md:mb-10 text-gray-600 text-center">
@@ -177,7 +177,7 @@ export default function Login() {
                 <LuUser className="text-[#1C1C1C] mr-3" size={20} />
                 <input
                   type="text"
-                  placeholder="Username"
+                  placeholder="Kullanıcı adı"
                   className="w-full bg-transparent outline-none text-[#1C1C1C] placeholder-[#1C1C1C]"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
@@ -189,7 +189,7 @@ export default function Login() {
                 <TbLockPassword className="text-[#1C1C1C] mr-3" size={20} />
                 <input
                   type={showPassword ? "text" : "password"}
-                  placeholder="Password"
+                  placeholder="Şifre"
                   className="w-full bg-transparent outline-none text-[#1C1C1C] placeholder-[#1C1C1C]"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -232,7 +232,7 @@ export default function Login() {
                   Şifremi Unuttum
                 </p>
                 <p className="text-center text-sm text-gray-500">
-                  Lütfen telefon veya e-mail adresinizi giriniz
+                  Lütfen sisteme kayıtlı telefon veya e-mail adresinizi giriniz
                 </p>
                 <p className="text-center text-xs text-gray-500">
                   (Telefon için +90 kısmını da girmelisiniz)
@@ -308,7 +308,7 @@ export default function Login() {
               <div className="flex items-center w-full h-[50px] rounded-2xl bg-[#F0EDFF] px-4 shadow-sm">
                 <input
                   type={showCurrentPassword ? "text" : "password"}
-                  placeholder="Current Password"
+                  placeholder="Eski Şifre"
                   className="w-full bg-transparent outline-none text-[#1C1C1C] placeholder-[#1C1C1C]"
                   value={currentPassword}
                   onChange={(e) => setCurrentPassword(e.target.value)}
@@ -331,7 +331,7 @@ export default function Login() {
               <div className="flex items-center w-full h-[50px] rounded-2xl bg-[#F0EDFF] px-4 shadow-sm">
                 <input
                   type={showNewPassword ? "text" : "password"}
-                  placeholder="New Password"
+                  placeholder="Yeni Şifre"
                   className="w-full bg-transparent outline-none text-[#1C1C1C] placeholder-[#1C1C1C]"
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
@@ -372,7 +372,7 @@ export default function Login() {
           />
           <div className="h-[400px] md:h-screen bg-login-bg">
             <div className="absolute top-1/2 left-1/2 w-[80%] md:w-[60%] h-[60%] md:h-[70%] bg-white bg-opacity-20 border border-white rounded-[46px] transform -translate-x-1/2 -translate-y-1/2 shadow-md">
-              <h2 className="absolute font-poppins text-white font-bold text-[20px] md:text-[32px] max-w-[200px] max-h-[165px] m-4 md:m-6">
+              <h2 className="absolute font-poppins text-white font-bold text-[36px] md:text-[40px] max-w-[200px] max-h-[165px] m-4 md:m-6">
                 Tek bir platformla kliniğinizi yönetin!
               </h2>
               <img

@@ -9,6 +9,7 @@ import ViewAppointmentDetailsPopup from "./ViewAppointmentDetailsPopup";
 import RebookAppointment from "./RebookAppointment";
 import PaymentPopup from "./PayNowButton";
 import servicesData from "../../../servicesData.json"; // <-- Hizmetlerinizi içeren JSON dosyası
+import { useUser } from "../../../contexts/UserContext";
 
 // Bu tabloya özel wrapper
 export default function ConsultantTableWrapper({
@@ -101,8 +102,8 @@ export default function ConsultantTableWrapper({
         <span className={getStatusClass(row.status)}>{row.status}</span>
       ),
     },
-    {key: "clinic", label: "Klinik"},
-    {key: "doctor", label: "Doktor"},
+    { key: "clinic", label: "Klinik" },
+    { key: "doctor", label: "Doktor" },
     {
       key: "actions", // Excel'e giderken bu kolonu hariç bırakabilirsiniz
       label: "İşlem",
@@ -166,6 +167,17 @@ function ConsultantActions({
   const { setSelectedData, setIsEditable, setIsPopupOpen } = useTableContext();
   const [rebookOpen, setRebookOpen] = useState(false);
   const [paymentOpen, setPaymentOpen] = useState(false);
+  const { userProfile, loading } = useUser();
+  // console.log(userProfile);
+
+  // **Veriler yüklenene kadar bekle**
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <p className="text-lg font-semibold text-gray-700">Yükleniyor...</p>
+      </div>
+    );
+  }
 
   const handleReBook = () => {
     setRebookOpen(true);
@@ -216,7 +228,10 @@ function ConsultantActions({
 
   const handleEditClick = () => {
     setSelectedData(row);
-    if (row.status === "Tamamlandı") {
+    if (
+      row.status === "Tamamlandı" ||
+      userProfile?.roleId?.roleName === "manager"
+    ) {
       setIsEditable(false);
     } else {
       setIsEditable(true);
