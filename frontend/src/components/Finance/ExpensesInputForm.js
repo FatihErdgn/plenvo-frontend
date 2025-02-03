@@ -1,32 +1,33 @@
 import { useState, useEffect } from "react";
 import Alert from "@mui/material/Alert";
 import Collapse from "@mui/material/Collapse";
+import { createExpense } from "../../services/expenseService";
 
 export default function ExpensesInputForm({ expensesData }) {
   const [formData, setFormData] = useState({
-    ExpenseCategory: "",
-    ExpenseKind: "",
-    Currency: "",
-    ExpenseDesc: "",
-    ExpenseDate: "",
-    Amount: "",
+    expenseCategory: "",
+    expenseKind: "",
+    currencyName: "",
+    expenseDescription: "",
+    expenseDate: "",
+    expenseAmount: "",
     // Manuel alanlar
-    ManualExpenseCategory: "",
-    ManualExpenseKind: "",
-    ManualCurrency: "",
+    ManualexpenseCategory: "",
+    ManualexpenseKind: "",
+    ManualcurrencyName: "",
   });
 
   // Her dropdown için manuel giriş aktif mi?
   const [manualEntry, setManualEntry] = useState({
-    ExpenseCategory: false,
-    ExpenseKind: false,
-    Currency: false,
+    expenseCategory: false,
+    expenseKind: false,
+    currencyName: false,
   });
 
   const [dropdownOpen, setDropdownOpen] = useState({
-    ExpenseCategory: false,
-    ExpenseKind: false,
-    Currency: false,
+    expenseCategory: false,
+    expenseKind: false,
+    currencyName: false,
   });
 
   const [alertState, setAlertState] = useState({
@@ -49,9 +50,9 @@ export default function ExpensesInputForm({ expensesData }) {
 
       if (!clickedInside) {
         setDropdownOpen({
-          ExpenseCategory: false,
-          ExpenseKind: false,
-          Currency: false,
+          expenseCategory: false,
+          expenseKind: false,
+          currencyName: false,
         });
       }
     };
@@ -128,30 +129,33 @@ export default function ExpensesInputForm({ expensesData }) {
   /**
    * Form submit
    */
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // 1) Final değerleri belirle
-    const finalExpenseCategory = manualEntry.ExpenseCategory
-      ? formData.ManualExpenseCategory
-      : formData.ExpenseCategory;
+    // 🛠 Hata engelleme: Eğer manuel giriş boşsa, dropdown seçimi al
+    const finalexpenseCategory =
+      manualEntry.expenseCategory && formData.ManualexpenseCategory
+        ? formData.ManualexpenseCategory
+        : formData.expenseCategory || "Belirtilmedi";
 
-    const finalExpenseKind = manualEntry.ExpenseKind
-      ? formData.ManualExpenseKind
-      : formData.ExpenseKind;
+    const finalexpenseKind =
+      manualEntry.expenseKind && formData.ManualexpenseKind
+        ? formData.ManualexpenseKind
+        : formData.expenseKind || "Belirtilmedi";
 
-    const finalCurrency = manualEntry.Currency
-      ? formData.ManualCurrency
-      : formData.Currency;
+    const finalcurrencyName =
+      manualEntry.currencyName && formData.ManualcurrencyName
+        ? formData.ManualcurrencyName
+        : formData.currencyName || "Belirtilmedi";
 
-    // 2) Validasyon
+    // 🛠 Validasyon
     if (
-      !finalExpenseCategory ||
-      !finalExpenseKind ||
-      !finalCurrency ||
-      !formData.ExpenseDesc ||
-      !formData.ExpenseDate ||
-      !formData.Amount
+      !finalexpenseCategory ||
+      !finalexpenseKind ||
+      !finalcurrencyName ||
+      !formData.expenseDescription ||
+      !formData.expenseDate ||
+      !formData.expenseAmount
     ) {
       setAlertState({
         message: "Lütfen tüm alanları doldurun.",
@@ -161,37 +165,48 @@ export default function ExpensesInputForm({ expensesData }) {
       return;
     }
 
-    // 3) En son console veya API call
-    console.log("Form Data:", {
-      ...formData,
-      ExpenseCategory: finalExpenseCategory,
-      ExpenseKind: finalExpenseKind,
-      Currency: finalCurrency,
-    });
+    try {
+      const result = await createExpense({
+        expenseCategory: finalexpenseCategory,
+        expenseDescription: formData.expenseDescription,
+        expenseKind: finalexpenseKind,
+        expenseAmount: formData.expenseAmount,
+        expenseDate: formData.expenseDate,
+        currencyName: finalcurrencyName,
+      });
 
-    setAlertState({
-      message: "Başarılı bir şekilde eklendi.",
-      severity: "success",
-      open: true,
-    });
+      console.log(result.message);
+      setAlertState({
+        message: "Başarılı bir şekilde eklendi.",
+        severity: "success",
+        open: true,
+      });
 
-    // 4) Temizleme
-    setFormData({
-      ExpenseCategory: "",
-      ExpenseKind: "",
-      Currency: "",
-      ExpenseDesc: "",
-      ExpenseDate: "",
-      Amount: "",
-      ManualExpenseCategory: "",
-      ManualExpenseKind: "",
-      ManualCurrency: "",
-    });
-    setManualEntry({
-      ExpenseCategory: false,
-      ExpenseKind: false,
-      Currency: false,
-    });
+      setFormData({
+        expenseCategory: "",
+        expenseKind: "",
+        currencyName: "",
+        expenseDescription: "",
+        expenseDate: "",
+        expenseAmount: "",
+        ManualexpenseCategory: "",
+        ManualexpenseKind: "",
+        ManualcurrencyName: "",
+      });
+
+      setManualEntry({
+        expenseCategory: false,
+        expenseKind: false,
+        currencyName: false,
+      });
+    } catch (error) {
+      console.error("Create Expense Error:", error);
+      setAlertState({
+        message: "Bir hata oluştu.",
+        severity: "error",
+        open: true,
+      });
+    }
   };
 
   // Alert'i 5 sn sonra kapat
@@ -206,13 +221,13 @@ export default function ExpensesInputForm({ expensesData }) {
 
   // Dropdown verilerini uniq hale getirme
   const uniqueCategories = [
-    ...new Set(expensesData.map((item) => item.ExpenseCategory)),
+    ...new Set(expensesData.map((item) => item.expenseCategory)),
   ];
   const uniqueKinds = [
-    ...new Set(expensesData.map((item) => item.ExpenseKind)),
+    ...new Set(expensesData.map((item) => item.expenseKind)),
   ];
   const uniqueCurrencies = [
-    ...new Set(expensesData.map((item) => item.Currency)),
+    ...new Set(expensesData.map((item) => item.currencyName)),
   ];
 
   const renderDropdown = (label, key, options) => {
@@ -288,127 +303,130 @@ export default function ExpensesInputForm({ expensesData }) {
         <h2 className="text-xl font-semibold mb-6">Maliyet Formu</h2>
 
         <div>
-          {manualEntry.ExpenseCategory ? (
+          {manualEntry.expenseCategory ? (
             <div className="mb-3">
               <label
-                htmlFor="ManualExpenseCategory"
+                htmlFor="ManualexpenseCategory"
                 className="text-gray-700 mb-2 block"
               >
                 Yeni Kategori
               </label>
               <input
                 type="text"
-                name="ManualExpenseCategory"
-                value={formData.ManualExpenseCategory}
+                name="ManualexpenseCategory"
+                value={formData.ManualexpenseCategory}
                 onChange={handleInputChange}
                 className="px-4 py-2 border border-gray-300 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-[#007E85] mb-1"
               />
               {/* Manuel girişi geri al butonu */}
               <button
                 type="button"
-                onClick={() => handleDisableManualEntry("ExpenseCategory")}
+                onClick={() => handleDisableManualEntry("expenseCategory")}
                 className="bg-gray-300 text-gray-700 px-3 py-1 rounded hover:bg-gray-400"
               >
                 Seçeneklere Geri Dön
               </button>
             </div>
           ) : (
-            renderDropdown("Kategori", "ExpenseCategory", uniqueCategories)
+            renderDropdown("Kategori", "expenseCategory", uniqueCategories)
           )}
         </div>
 
         {/* Açıklama */}
-        <label htmlFor="ExpenseDesc" className="text-gray-700 mb-2 block">
+        <label
+          htmlFor="expenseDescription"
+          className="text-gray-700 mb-2 block"
+        >
           Açıklama
         </label>
         <textarea
-          name="ExpenseDesc"
-          value={formData.ExpenseDesc}
+          name="expenseDescription"
+          value={formData.expenseDescription}
           onChange={handleInputChange}
           rows="3"
           className="px-4 py-2 border border-gray-300 rounded-lg mb-3 focus:outline-none focus:ring-2 focus:ring-[#007E85] resize-none overflow-auto"
         />
 
         <div>
-          {manualEntry.ExpenseKind ? (
+          {manualEntry.expenseKind ? (
             <div className="mb-3">
               <label
-                htmlFor="ManualExpenseKind"
+                htmlFor="ManualexpenseKind"
                 className="text-gray-700 mb-2 block"
               >
                 Yeni Kalem Türü
               </label>
               <input
                 type="text"
-                name="ManualExpenseKind"
-                value={formData.ManualExpenseKind}
+                name="ManualexpenseKind"
+                value={formData.ManualexpenseKind}
                 onChange={handleInputChange}
                 className="px-4 py-2 border border-gray-300 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-[#007E85] mb-1"
               />
               {/* Manuel girişi geri al butonu */}
               <button
                 type="button"
-                onClick={() => handleDisableManualEntry("ExpenseKind")}
+                onClick={() => handleDisableManualEntry("expenseKind")}
                 className="bg-gray-300 text-gray-700 px-3 py-1 rounded hover:bg-gray-400"
               >
                 Seçeneklere Geri Dön
               </button>
             </div>
           ) : (
-            renderDropdown("Kalem Türü", "ExpenseKind", uniqueKinds)
+            renderDropdown("Kalem Türü", "expenseKind", uniqueKinds)
           )}
         </div>
 
         {/* Fiyat */}
-        <label htmlFor="Amount" className="text-gray-700 mb-2 block">
+        <label htmlFor="expenseAmount" className="text-gray-700 mb-2 block">
           Fiyat
         </label>
         <input
           type="number"
-          name="Amount"
-          value={formData.Amount}
+          name="expenseAmount"
+          value={formData.expenseAmount}
           onChange={handleInputChange}
           className="px-4 py-2 border border-gray-300 rounded-lg mb-3 focus:outline-none focus:ring-2 focus:ring-[#007E85]"
         />
 
         <div>
-          {manualEntry.Currency ? (
+          {manualEntry.currencyName ? (
             <div className="mb-3">
               <label
-                htmlFor="ManualCurrency"
+                htmlFor="ManualcurrencyName"
                 className="text-gray-700 mb-2 block"
               >
                 Yeni Para Birimi
               </label>
               <input
                 type="text"
-                name="ManualCurrency"
-                value={formData.ManualCurrency}
+                name="ManualcurrencyName"
+                value={formData.ManualcurrencyName}
                 onChange={handleInputChange}
                 className="px-4 py-2 border border-gray-300 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-[#007E85] mb-1"
               />
               {/* Manuel girişi geri al butonu */}
               <button
                 type="button"
-                onClick={() => handleDisableManualEntry("Currency")}
+                onClick={() => handleDisableManualEntry("currencyName")}
                 className="bg-gray-300 text-gray-700 px-3 py-1 rounded hover:bg-gray-400"
               >
                 Seçeneklere Geri Dön
               </button>
             </div>
           ) : (
-            renderDropdown("Para Birimi", "Currency", uniqueCurrencies)
+            renderDropdown("Para Birimi", "currencyName", uniqueCurrencies)
           )}
         </div>
 
         {/* Tarih */}
-        <label htmlFor="ExpenseDate" className="text-gray-700 mb-2 block">
+        <label htmlFor="expenseDate" className="text-gray-700 mb-2 block">
           Tarih
         </label>
         <input
           type="date"
-          name="ExpenseDate"
-          value={formData.ExpenseDate}
+          name="expenseDate"
+          value={formData.expenseDate}
           onChange={handleInputChange}
           className="px-4 py-2 border border-gray-300 rounded-lg mb-3 focus:outline-none focus:ring-2 focus:ring-[#007E85]"
         />
