@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import DoctorLoginImage from "../assets/images/doctor-login-3.png";
 import thunderImg from "../assets/images/login-thunder.png";
@@ -17,7 +17,6 @@ export default function Login() {
   // Form state
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-
 
   // Şifre görünürlüğü toggle (Login için)
   const [showPassword, setShowPassword] = useState(false);
@@ -46,15 +45,15 @@ export default function Login() {
   const handleLogin = async () => {
     setErrorMessage("");
     setSuccessMessage("");
-  
+
     if (!username || !password) {
       setErrorMessage("Lütfen kullanıcı bilgilerini giriniz.");
       return;
     }
-  
+
     try {
       const data = await loginUser(username, password);
-  
+
       if (data.success) {
         setSuccessMessage("Login successful!");
         setIsLoginCompleted(true);
@@ -70,7 +69,20 @@ export default function Login() {
       setErrorMessage(msg);
     }
   };
-  
+
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      if (event.key === "Enter") {
+        handleLogin();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [username, password]); // Username ve password değiştikçe güncellenir
 
   // 2) ŞİFRE DEĞİŞTİR TIKLAMA
   const handleChangePassword = async () => {

@@ -28,7 +28,7 @@ export function TableProvider({
 
   // Eğer tablo verilerini searchQuery ile filtreleyecekseniz:
   const filteredData = useMemo(() => {
-    let newData = data;
+    let newData = Array.isArray(data) ? data : [data];
 
     // 1. ÖNCE arama filtresi
     if (customFilterFn && searchQuery) {

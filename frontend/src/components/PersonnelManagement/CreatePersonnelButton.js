@@ -140,15 +140,15 @@ export default function AddPersonnel({ personnelData = [] }) {
     e.preventDefault();
 
     // final values for clinic/profession/speciality
-    const finalClinic = manualEntry.clinic
+    const finalClinic = manualEntry.clinic && formData.manualClinic
       ? formData.manualClinic
-      : formData.clinic;
-    const finalProfession = manualEntry.profession
+      : formData.clinic || "Belirtilmedi";
+    const finalProfession = manualEntry.profession && formData.manualProfession
       ? formData.manualProfession
-      : formData.profession;
-    const finalSpeciality = manualEntry.speciality
+      : formData.profession || "Belirtilmedi";
+    const finalSpeciality = manualEntry.speciality && formData.manualSpeciality
       ? formData.manualSpeciality
-      : formData.speciality;
+      : formData.speciality || "Belirtilmedi";
 
     // 1) Check if username is already used
     const usernameExists = personnelData.some(

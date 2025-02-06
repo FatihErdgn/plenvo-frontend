@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
 import Alert from "@mui/material/Alert";
 import Collapse from "@mui/material/Collapse";
-import { createExpense } from "../../services/expenseService";
+// import { createExpense } from "../../services/expenseService";
 
-export default function ExpensesInputForm({ expensesData }) {
+export default function ExpensesInputForm({ onAddExpense, uniqueCategories, uniqueKinds, uniqueCurrencies }) {
   const [formData, setFormData] = useState({
     expenseCategory: "",
     expenseKind: "",
@@ -166,16 +166,20 @@ export default function ExpensesInputForm({ expensesData }) {
     }
 
     try {
-      const result = await createExpense({
+      const newExpense = {
         expenseCategory: finalexpenseCategory,
         expenseDescription: formData.expenseDescription,
         expenseKind: finalexpenseKind,
         expenseAmount: formData.expenseAmount,
         expenseDate: formData.expenseDate,
         currencyName: finalcurrencyName,
-      });
+      };
 
-      console.log(result.message);
+      if (onAddExpense) {
+        onAddExpense(newExpense); // API çağrısını direkt burada değil, parent component'te yap
+      }
+
+      // console.log(result.message);
       setAlertState({
         message: "Başarılı bir şekilde eklendi.",
         severity: "success",
@@ -218,17 +222,6 @@ export default function ExpensesInputForm({ expensesData }) {
       return () => clearTimeout(timer);
     }
   }, [alertState.open]);
-
-  // Dropdown verilerini uniq hale getirme
-  const uniqueCategories = [
-    ...new Set(expensesData.map((item) => item.expenseCategory)),
-  ];
-  const uniqueKinds = [
-    ...new Set(expensesData.map((item) => item.expenseKind)),
-  ];
-  const uniqueCurrencies = [
-    ...new Set(expensesData.map((item) => item.currencyName)),
-  ];
 
   const renderDropdown = (label, key, options) => {
     const isManual = manualEntry[key];
