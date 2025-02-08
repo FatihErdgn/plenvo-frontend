@@ -10,10 +10,12 @@ import {
   createAppointment,
 } from "../services/appointmentService";
 import { getUsers } from "../services/userService";
+import { getServices } from "../services/serviceService";
 
 export default function ConsultantPage() {
   const [appointmentData, setAppointmentData] = useState([]);
   const [userData, setUserData] = useState([]);
+  const [servicesData, setServicesData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [startDate, setStartDate] = useState("");
@@ -53,6 +55,23 @@ export default function ConsultantPage() {
     fetchAppointments();
   }, []);
 
+  const fetchServices = async () => {
+    try {
+      setLoading(true);
+      const response = await getServices();
+      setServicesData(response.data || []);
+      console.log("Hizmetler alındı:", servicesData);
+    } catch (error) {
+      console.error("Hizmetleri alırken hata oluştu:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchServices();
+  }, []);
+
   const handleAddAppointment = async (appointmentData) => {
     try {
       console.log("📤 API'ye Gönderilen Veri:", appointmentData);
@@ -79,25 +98,29 @@ export default function ConsultantPage() {
     setEndDate(event.target.value);
   };
 
-  // Bu tabloya özel dropdown verileri
-  const clinicOptions = [
-    ...new Set(
-      userData.map(
-        (item) => item?.clinicId?.clinicName || "Klinik Belirtilmedi"
-      )
-    ),
-  ];
-  const doctorOptions = [
-    ...new Set(
-      userData
-        .filter((item) => item?.roleName === "doctor") // Sadece "doctor" olanları filtrele
-        .map(
-          (item) =>
-            (item?.firstName + " " + item?.lastName).trim() ||
-            "Klinik Belirtilmedi"
-        )
-    ),
-  ];
+// Klinik seçenekleri (sadece klinik isimleri)
+const clinicOptions = [
+  ...new Set(
+    userData.map(
+      (item) => item?.clinicId?.clinicName || "Klinik Belirtilmedi"
+    )
+  ),
+];
+
+// Doktorlar için detaylı liste (filtreleme için kullanılacak)
+const doctorList = userData.filter(
+  (item) => item?.roleName === "doctor"
+);
+// İsteğe bağlı: tüm doktor isimlerini de içeren basit liste oluşturabilirsin.
+const doctorOptions = [
+  ...new Set(
+    doctorList.map(
+      (item) =>
+        (item?.firstName + " " + item?.lastName).trim() ||
+        "Doktor Bilgisi Yok"
+    )
+  ),
+];
 
   const genderOptions = ["Erkek", "Kadın"];
 
@@ -117,8 +140,10 @@ export default function ConsultantPage() {
             options={{
               clinicOptions,
               doctorOptions,
+              doctorList,
               genderOptions,
             }}
+            appointments={appointmentData} // Bu satırı ekleyin
           />
         </div>
       </div>
@@ -135,6 +160,7 @@ export default function ConsultantPage() {
             genderOptions,
           }}
           fetchAppointments={fetchAppointments}
+          servicesData={servicesData}
         />
       </div>
     </div>

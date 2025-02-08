@@ -5,8 +5,9 @@ import GroupAppointmentForm from "./GroupAppointmentForm";
 
 export default function AddAppointment({
   onAddAppointment, // <-- API'ye yeni randevu eklemek için kullanılacak fonksiyon
-  options: { clinicOptions, doctorOptions, genderOptions },
+  options: { clinicOptions, doctorOptions, genderOptions,doctorList }, // <-- select input seçenekleri
   prefilledData = null, // <-- tablo satırından gelecek veriler (opsiyonel)
+  appointments, // <-- randevu verileri
 }) {
   const [isPopUpOpen, setPopUpOpen] = useState(false);
   // Randevu tipi (single/group)
@@ -45,7 +46,7 @@ export default function AddAppointment({
     setAppointmentType(null);
   };
 
-  // Bu butonu sadece "Randevu Ekle" için kullanıyorsanız, 
+  // Bu butonu sadece "Randevu Ekle" için kullanıyorsanız,
   // isterseniz metinini condition'a göre değiştirebilirsiniz (Örn. "Randevu Yenile"?)
   return (
     <div className="flex justify-center items-center font-poppins min-w-[160px]">
@@ -99,10 +100,12 @@ export default function AddAppointment({
                   Tek Kişilik Randevu
                 </h2>
                 <SingleAppointmentForm
+                  appointments={appointments}
                   onClose={handleClosePopup}
                   options={{
                     clinicOptions,
                     doctorOptions,
+                    doctorList,
                     genderOptions,
                   }}
                   // prefilledData'yı form bileşenine gönderiyoruz
@@ -111,6 +114,7 @@ export default function AddAppointment({
                       ? prefilledData
                       : null
                   }
+                  onAddAppointment={onAddAppointment}
                 />
               </div>
             )}
@@ -133,6 +137,7 @@ export default function AddAppointment({
                       ? prefilledData
                       : null
                   }
+                  onAddAppointment={onAddAppointment}
                 />
               </div>
             )}

@@ -6,16 +6,16 @@ import AppointmentDatePicker from "./DatePicker";
 
 export default function SingleAppointmentForm({
   onClose,
-  options: { clinicOptions, doctorOptions, genderOptions },
+  options: { clinicOptions, doctorOptions, doctorList, genderOptions },
   prefilledData,
+  onAddAppointment,
+  appointments,
 }) {
   const initialState = prefilledData
     ? {
         clientFirstName: prefilledData.clientFirstName || "",
         clientLastName: prefilledData.clientLastName || "",
-        day: prefilledData.day || "",
-        month: prefilledData.month || "",
-        year: prefilledData.year || "",
+        age: prefilledData.age || "",
         gender: prefilledData.gender || "",
         phoneNumber: prefilledData.phoneNumber || "",
         clinic: prefilledData.clinic || "",
@@ -26,9 +26,7 @@ export default function SingleAppointmentForm({
     : {
         clientFirstName: "",
         clientLastName: "",
-        day: "",
-        month: "",
-        year: "",
+        age: "",
         gender: "",
         phoneNumber: "",
         clinic: "",
@@ -62,9 +60,7 @@ export default function SingleAppointmentForm({
     if (
       !formData.clientFirstName ||
       !formData.clientLastName ||
-      !formData.day ||
-      !formData.month ||
-      !formData.year ||
+      !formData.age ||
       !formData.gender ||
       !formData.phoneNumber ||
       !formData.clinic ||
@@ -79,12 +75,43 @@ export default function SingleAppointmentForm({
       return;
     }
 
-    console.log("Form Data:", formData);
-    setAlertState({
-      message: "Başarılı bir şekilde eklendi.",
-      severity: "success",
-      open: true,
-    });
+    try {
+      if (!formData.datetime) {
+        setAlertState({
+          message: "Lütfen tarih ve saat seçiniz.",
+          severity: "error",
+          open: true,
+        });
+        return;
+      }
+
+      // Tarih kontrolü
+      if (formData.datetime < new Date()) {
+        setAlertState({
+          message: "Geçmiş tarihli randevu oluşturamazsınız.",
+          severity: "error",
+          open: true,
+        });
+        return;
+      }
+
+      const appointmentData = {
+        ...formData,
+        type: "single",
+        // Tarihi ISO formatına çevir
+        datetime: formData.datetime.toISOString(),
+      };
+
+      onAddAppointment(appointmentData);
+      onClose();
+    } catch (error) {
+      console.error("Randevu oluşturulurken hata oluştu:", error);
+      setAlertState({
+        message: "Randevu oluşturulurken bir hata oluştu.",
+        severity: "error",
+        open: true,
+      });
+    }
   };
 
   // Dropdown aç/kapa
@@ -106,6 +133,17 @@ export default function SingleAppointmentForm({
       [key]: false,
     }));
   };
+
+  // Doktor dropdown seçeneklerini, seçili kliniğe göre filtreleyelim:
+  const filteredDoctorOptions = doctorList
+    .filter((doctor) => {
+      // Eğer bir klinik seçildiyse, sadece o kliniğe ait doktorları göster.
+      // Klinik seçilmediyse tüm doktorlar gelsin.
+      return formData.clinic
+        ? doctor?.clinicId?.clinicName === formData.clinic
+        : true;
+    })
+    .map((doctor) => (doctor?.firstName + " " + doctor?.lastName).trim());
 
   // Ortak dropdown (status, clinic, doctor)
   const renderDropdown = (label, key, options, direction = "down") => (
@@ -180,33 +218,15 @@ export default function SingleAppointmentForm({
 
         {/* Doğum Tarihi */}
         <div className="mb-4">
-          <label className="block text-gray-700 mb-1">Doğum Tarihi</label>
+          <label className="block text-gray-700 mb-1">Yaş</label>
           <div className="flex gap-2">
             <input
-              type="text"
-              name="day"
-              value={formData.day}
+              type="number"
+              name="age"
+              value={formData.age}
               onChange={handleInputChange}
-              placeholder="Gün"
-              className="w-1/3 px-3 py-2 border rounded"
-              required
-            />
-            <input
-              type="text"
-              name="month"
-              value={formData.month}
-              onChange={handleInputChange}
-              placeholder="Ay"
-              className="w-1/3 px-3 py-2 border rounded"
-              required
-            />
-            <input
-              type="text"
-              name="year"
-              value={formData.year}
-              onChange={handleInputChange}
-              placeholder="Yıl"
-              className="w-1/3 px-3 py-2 border rounded"
+              placeholder=""
+              className="w-full px-3 py-2 border rounded"
               required
             />
           </div>
@@ -237,12 +257,20 @@ export default function SingleAppointmentForm({
 
         {/* Doktor */}
         <div className="mb-4">
-          {renderDropdown("Doktor", "doctor", doctorOptions, "down")}
+          {renderDropdown("Doktor", "doctor", filteredDoctorOptions, "down")}
         </div>
 
         {/* Randevu Tarihi ve Saati */}
         <div className="mb-4">
-          <AppointmentDatePicker />
+          <AppointmentDatePicker
+            selectedDate={formData.datetime}
+            onDateChange={(date) =>
+              setFormData((prev) => ({ ...prev, datetime: date }))
+            }
+            appointments={appointments}
+            selectedClinic={formData.clinic}
+            selectedDoctor={formData.doctor}
+          />
           {/* <label className="block text-gray-700 mb-1">
             Randevu Tarihi ve Saati
           </label>

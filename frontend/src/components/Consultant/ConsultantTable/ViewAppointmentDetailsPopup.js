@@ -7,11 +7,8 @@ export default function ViewAppointmentDetailsPopup({
   data,
   isEditable,
   onClose,
-  options: {
-    clinicOptions,
-    doctorOptions,
-    genderOptions,
-  },
+  options: { clinicOptions, doctorOptions, genderOptions },
+  onEditAppointment,
 }) {
   const [formData, setFormData] = useState(data || {});
   const [participants, setParticipants] = useState(
@@ -85,6 +82,29 @@ export default function ViewAppointmentDetailsPopup({
       [key]: false,
     }));
   };
+
+  const formattedDate = (dateString) => {
+    if (!dateString) return ""; // Eğer tarih boşsa hata vermemesi için boş string döndür
+    const dateObj = new Date(dateString);
+    if (isNaN(dateObj)) return ""; // Eğer geçersiz tarihse hata vermesin
+
+    const day = String(dateObj.getDate()).padStart(2, "0");
+    const month = String(dateObj.getMonth() + 1).padStart(2, "0");
+    const year = dateObj.getFullYear();
+    const hours = String(dateObj.getHours()).padStart(2, "0");
+    const minutes = String(dateObj.getMinutes()).padStart(2, "0");
+
+    return `${day}.${month}.${year} ${hours}:${minutes}`;
+  };
+
+  useEffect(() => {
+    if (data?.datetime) {
+      setFormData((prev) => ({
+        ...prev,
+        datetime: formattedDate(data.datetime), // hireDate'i formatlı olarak ata
+      }));
+    }
+  }, [data?.datetime]);
 
   // Ortak input değişimi
   const handleInputChange = (e) => {
@@ -195,9 +215,13 @@ export default function ViewAppointmentDetailsPopup({
         ? { ...formData, participants }
         : { ...formData };
 
-    console.log("Form submitted with data:", finalData);
-    // API PUT/PATCH isteği -> finalData
-
+    // Burada API isteği gönderebilirsiniz (PUT/PATCH).
+    try {
+      console.log("formData", finalData);
+      onEditAppointment(finalData);
+    } catch (error) {
+      console.error(error);
+    }
     setAlertState({
       message: "Randevu başarıyla güncellendi.",
       severity: "success",
@@ -309,66 +333,58 @@ export default function ViewAppointmentDetailsPopup({
           </Alert>
         </Collapse>
 
-        <form onSubmit={handleEditSubmit} className="max-h-[80vh] overflow-auto pr-2">
-
+        <form
+          onSubmit={handleEditSubmit}
+          className="max-h-[80vh] overflow-auto pr-2"
+        >
           {/* Randevu Tarihi/Saati */}
           <div className="mb-4">
-            <label className="block text-gray-700">Randevu Tarihi ve Saati</label>
-            {isEditable ? (
-              <input
-                type="datetime-local"
-                name="appointmentDateTime"
-                value={formData.appointmentDateTime || ""}
-                onChange={handleInputChange}
-                className="w-full px-4 py-2 border rounded-lg border-gray-300"
-              />
-            ) : (
-              <input
-                type="text"
-                name="appointmentDateTime"
-                value={formData.appointmentDateTime || ""}
-                disabled
-                className="w-full px-4 py-2 border rounded-lg bg-gray-100"
-              />
-            )}
+            <label className="block text-gray-700">
+              Randevu Tarihi ve Saati
+            </label>
+            <input
+              type="text"
+              name="datetime"
+              value={formData.datetime || ""}
+              disabled
+              className="w-full px-4 py-2 border rounded-lg bg-gray-100"
+            />
           </div>
 
           {/* Klinik */}
           <div className="mb-4">
-            {isEditable
-              ? renderDropdown("Klinik", "clinic", clinicOptions)
-              : (
-                <>
-                  <label className="block text-gray-700">Klinik</label>
-                  <input
-                    type="text"
-                    name="clinic"
-                    value={formData.clinic || ""}
-                    disabled
-                    className="w-full px-4 py-2 border rounded-lg bg-gray-100"
-                  />
-                </>
-              )
-            }
+            {isEditable ? (
+              renderDropdown("Klinik", "clinicName", clinicOptions)
+            ) : (
+              <>
+                <label className="block text-gray-700">Klinik</label>
+                <input
+                  type="text"
+                  name="clinicName"
+                  value={formData.clinicName || ""}
+                  disabled
+                  className="w-full px-4 py-2 border rounded-lg bg-gray-100"
+                />
+              </>
+            )}
           </div>
 
           {/* Doktor */}
           <div className="mb-4">
-            {isEditable
-              ? renderDropdown("Doktor", "doctor", doctorOptions)
-              : (
-                <>
-                  <label className="block text-gray-700">Doktor</label>
-                  <input
-                    type="text"
-                    name="doctor"
-                    value={formData.doctor || ""}
-                    disabled
-                    className="w-full px-4 py-2 border rounded-lg bg-gray-100"
-                  />
-                </>
-              )
-            }
+            {isEditable ? (
+              renderDropdown("Doktor", "doctorName", doctorOptions)
+            ) : (
+              <div>
+                <label className="block text-gray-700">Doktor</label>
+                <input
+                  type="text"
+                  name="doctorName"
+                  value={formData.doctorName || ""}
+                  disabled
+                  className="w-full px-4 py-2 border rounded-lg bg-gray-100"
+                />
+              </div>
+            )}
           </div>
 
           {/* Tekil Randevu Alanları */}
@@ -462,16 +478,18 @@ export default function ViewAppointmentDetailsPopup({
                   key={idx}
                   className="border border-gray-300 rounded-md p-4 mb-4 relative"
                 >
-                  <div className="text-gray-600 mb-2">
-                    Katılımcı #{idx + 1}
-                  </div>
+                  <div className="text-gray-600 mb-2">Katılımcı #{idx + 1}</div>
                   <div className="mb-2">
                     <label className="block text-gray-700">First Name</label>
                     <input
                       type="text"
                       value={p.clientFirstName || ""}
                       onChange={(e) =>
-                        handleParticipantChange(idx, "clientFirstName", e.target.value)
+                        handleParticipantChange(
+                          idx,
+                          "clientFirstName",
+                          e.target.value
+                        )
                       }
                       disabled={!isEditable}
                       className={`w-full px-3 py-2 border rounded ${
@@ -487,7 +505,11 @@ export default function ViewAppointmentDetailsPopup({
                       type="text"
                       value={p.clientLastName || ""}
                       onChange={(e) =>
-                        handleParticipantChange(idx, "clientLastName", e.target.value)
+                        handleParticipantChange(
+                          idx,
+                          "clientLastName",
+                          e.target.value
+                        )
                       }
                       disabled={!isEditable}
                       className={`w-full px-3 py-2 border rounded ${
@@ -503,7 +525,11 @@ export default function ViewAppointmentDetailsPopup({
                       type="text"
                       value={p.phoneNumber || ""}
                       onChange={(e) =>
-                        handleParticipantChange(idx, "phoneNumber", e.target.value)
+                        handleParticipantChange(
+                          idx,
+                          "phoneNumber",
+                          e.target.value
+                        )
                       }
                       disabled={!isEditable}
                       className={`w-full px-3 py-2 border rounded ${

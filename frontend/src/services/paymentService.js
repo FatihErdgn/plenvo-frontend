@@ -65,20 +65,20 @@ export const softDeletePayment = async (paymentId) => {
   }
 };
 
-/**
- * Ödemeleri Getirme (Sayfalama ve sıralama)
- * @param {object} params Query parametreleri (örn. { page: 1, limit: 10 })
- * @returns {Promise<object>} API cevabı (ödeme listesi, total, page, pages)
- */
-export const getPayments = async (params = {}) => {
-  try {
-    const response = await api.get("/payments", { params });
-    return response.data;
-  } catch (error) {
-    console.error(
-      "Get Payments Hatası:",
-      error.response?.data || error.message
-    );
-    throw error.response?.data || error.message;
-  }
-};
+// /**
+//  * Ödemeleri Getirme (Sayfalama ve sıralama)
+//  * @param {object} params Query parametreleri (örn. { page: 1, limit: 10 })
+//  * @returns {Promise<object>} API cevabı (ödeme listesi, total, page, pages)
+//  */
+// export const getPayments = async (params = {}) => {
+//   try {
+//     const response = await api.get("/payments", { params });
+//     return response.data;
+//   } catch (error) {
+//     console.error(
+//       "Get Payments Hatası:",
+//       error.response?.data || error.message
+//     );
+//     throw error.response?.data || error.message;
+//   }
+// };

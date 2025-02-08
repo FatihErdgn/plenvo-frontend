@@ -8,7 +8,7 @@ import { IoEyeOutline } from "react-icons/io5";
 import ViewAppointmentDetailsPopup from "./ViewAppointmentDetailsPopup";
 import RebookAppointment from "./RebookAppointment";
 import PaymentPopup from "./PayNowButton";
-import servicesData from "../../../servicesData.json"; // <-- Hizmetlerinizi içeren JSON dosyası
+// import servicesData from "../../../servicesData.json"; // <-- Hizmetlerinizi içeren JSON dosyası
 import { useUser } from "../../../contexts/UserContext";
 
 // Bu tabloya özel wrapper
@@ -19,18 +19,19 @@ export default function ConsultantTableWrapper({
   endDate,
   options: { clinicOptions, doctorOptions, genderOptions },
   fetchAppointments, // <-- API'den randevu verisi çekmek için kullanılacak fonksiyon
+  servicesData,
 }) {
   // Duruma göre rozet/badge CSS'leri
   const getStatusClass = (status) => {
     switch (status) {
       case "Açık":
-        return "flex flex-row items-center justify-center bg-[#EBF9F1] border-[1px] border-[#41BC63] text-[#41BC63] py-[6px] ml-6 max-w-36 min-w-16 rounded-full text-center";
+        return "flex flex-row items-center justify-center bg-[#EBF9F1] border-[1px] border-[#41BC63] text-[#41BC63] py-[6px] max-w-36 min-w-16 rounded-full text-center";
       case "Ödeme Bekleniyor":
-        return "flex flex-row items-center justify-center bg-[#FBF9F4] border-[1px] border-[#BC9241] text-[#BC9241] py-[6px] ml-6 max-w-36 min-w-16 rounded-full text-center text-[14px]";
+        return "flex flex-row items-center justify-center bg-[#FBF9F4] border-[1px] border-[#BC9241] text-[#BC9241] py-[6px] max-w-36 min-w-16 rounded-full text-center text-[14px]";
       case "Tamamlandı":
-        return "flex flex-row items-center justify-center bg-gray-100 border-[1px] border-gray-500 text-gray-500 py-[6px] ml-6 max-w-36 min-w-16 rounded-full text-center";
+        return "flex flex-row items-center justify-center bg-gray-100 border-[1px] border-gray-500 text-gray-500 py-[6px] max-w-36 min-w-16 rounded-full text-center";
       case "İptal Edildi":
-        return "flex flex-row items-center justify-center bg-[#FBF4F4] border-[1px] border-[#BC4141] text-[#BC4141] py-[6px] ml-6 max-w-36 min-w-16 rounded-full text-center";
+        return "flex flex-row items-center justify-center bg-[#FBF4F4] border-[1px] border-[#BC4141] text-[#BC4141] py-[6px] max-w-36 min-w-16 rounded-full text-center";
       default:
         return "";
     }
@@ -40,7 +41,8 @@ export default function ConsultantTableWrapper({
   const customFilterFn = useCallback((items, query) => {
     const _query = query.toLowerCase();
     return items.filter((item) => {
-      const fullName = `${item.clientFirstName} ${item.clientLastName}`.toLowerCase();
+      const fullName =
+        `${item.clientFirstName} ${item.clientLastName}`.toLowerCase();
       const phoneNumber = item.phoneNumber.toLowerCase();
       const status = item.status.toLowerCase();
       return (
@@ -68,7 +70,20 @@ export default function ConsultantTableWrapper({
     { key: "clientFirstName", label: "İsim" },
     { key: "clientLastName", label: "Soyisim" },
     { key: "phoneNumber", label: "Cep Numarası" },
-    { key: "appointmentDateTime", label: "Randevu Tarihi ve Saati" },
+    {
+      key: "datetime",
+      label: "Randevu Tarihi ve Saati",
+      renderCell: (row) => {
+        const dateObj = new Date(row.datetime);
+        const day = String(dateObj.getDate()).padStart(2, "0");
+        const month = String(dateObj.getMonth() + 1).padStart(2, "0");
+        const year = dateObj.getFullYear();
+        const hour = String(dateObj.getHours()).padStart(2, "0");
+        const minute = String(dateObj.getMinutes()).padStart(2, "0");
+
+        return `${day}.${month}.${year} ${hour}:${minute}`;
+      },
+    },
     {
       key: "status",
       label: "Durum",
@@ -95,7 +110,20 @@ export default function ConsultantTableWrapper({
     { key: "clientLastName", label: "Soyisim" },
     { key: "age", label: "Yaş" },
     { key: "phoneNumber", label: "Cep Numarası" },
-    { key: "appointmentDateTime", label: "Randevu Tarihi ve Saati" },
+    {
+      key: "datetime",
+      label: "Randevu Tarihi ve Saati",
+      renderCell: (row) => {
+        const dateObj = new Date(row.datetime);
+        const day = String(dateObj.getDate()).padStart(2, "0");
+        const month = String(dateObj.getMonth() + 1).padStart(2, "0");
+        const year = dateObj.getFullYear();
+        const hour = String(dateObj.getHours()).padStart(2, "0");
+        const minute = String(dateObj.getMinutes()).padStart(2, "0");
+
+        return `${day}.${month}.${year} ${hour}:${minute}`;
+      },
+    },
     {
       key: "status",
       label: "Durum",
@@ -103,19 +131,8 @@ export default function ConsultantTableWrapper({
         <span className={getStatusClass(row.status)}>{row.status}</span>
       ),
     },
-    { key: "clinic", label: "Klinik" },
-    { key: "doctor", label: "Doktor" },
-    {
-      key: "actions", // Excel'e giderken bu kolonu hariç bırakabilirsiniz
-      label: "İşlem",
-      renderCell: (row) => (
-        <ConsultantActions
-          row={row}
-          options={{ clinicOptions, doctorOptions, genderOptions }}
-          servicesData={servicesData}
-        />
-      ),
-    },
+    { key: "clinicName", label: "Klinik" },
+    { key: "clinicName", label: "Doktor" },
   ];
 
   return (
@@ -153,6 +170,7 @@ export default function ConsultantTableWrapper({
             doctorOptions,
             genderOptions,
           }}
+          fetchAppointments={fetchAppointments}
         />
       </div>
     </TableProvider>
@@ -307,12 +325,26 @@ function ConsultantActions({
 // Popup Alanı
 function ConsultantPopupArea({
   options: { clinicOptions, doctorOptions, genderOptions },
+  fetchAppointments,
 }) {
   const { isPopupOpen, setIsPopupOpen, selectedData, isEditable } =
     useTableContext();
 
   const handleClosePopup = () => {
     setIsPopupOpen(false);
+  };
+
+  const handleEditAppointment = async (formData) => {
+    try {
+      console.log("Güncellenecek randevu verisi:", formData);
+      // await updateAppointment(formData._id, formData);
+      fetchAppointments();
+      setTimeout(() => {
+        setIsPopupOpen(false);
+      }, 500);
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   if (!isPopupOpen) return null;
@@ -326,6 +358,7 @@ function ConsultantPopupArea({
         }}
       >
         <ViewAppointmentDetailsPopup
+          onEditAppointment={handleEditAppointment}
           data={selectedData}
           isEditable={isEditable}
           onClose={handleClosePopup}
