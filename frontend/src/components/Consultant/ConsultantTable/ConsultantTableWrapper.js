@@ -39,7 +39,7 @@ export default function ConsultantTableWrapper({
   const customFilterFn = useCallback((items, query) => {
     const _query = query.toLowerCase();
     return items.filter((item) => {
-      const fullName = `${item.firstName} ${item.lastName}`.toLowerCase();
+      const fullName = `${item.clientFirstName} ${item.clientLastName}`.toLowerCase();
       const phoneNumber = item.phoneNumber.toLowerCase();
       const status = item.status.toLowerCase();
       return (
@@ -64,8 +64,8 @@ export default function ConsultantTableWrapper({
 
   // Kolon konfigürasyonu:
   const columns = [
-    { key: "firstName", label: "İsim" },
-    { key: "lastName", label: "Soyisim" },
+    { key: "clientFirstName", label: "İsim" },
+    { key: "clientLastName", label: "Soyisim" },
     { key: "phoneNumber", label: "Cep Numarası" },
     { key: "appointmentDateTime", label: "Randevu Tarihi ve Saati" },
     {
@@ -90,8 +90,8 @@ export default function ConsultantTableWrapper({
 
   // Kolon konfigürasyonu:
   const excelColumns = [
-    { key: "firstName", label: "İsim" },
-    { key: "lastName", label: "Soyisim" },
+    { key: "clientFirstName", label: "İsim" },
+    { key: "clientLastName", label: "Soyisim" },
     { key: "age", label: "Yaş" },
     { key: "phoneNumber", label: "Cep Numarası" },
     { key: "appointmentDateTime", label: "Randevu Tarihi ve Saati" },
@@ -196,8 +196,8 @@ function ConsultantActions({
         // vs. ...
         participants: row.participants || [
           {
-            firstName: row.firstName,
-            lastName: row.lastName,
+            clientFirstName: row.clientFirstName,
+            clientLastName: row.clientLastName,
             phoneNumber: row.phoneNumber,
             gender: row.gender,
             age: row.age,
@@ -208,8 +208,8 @@ function ConsultantActions({
       // Tek kişi
       return {
         type: "single",
-        firstName: row.firstName,
-        lastName: row.lastName,
+        clientFirstName: row.clientFirstName,
+        clientLastName: row.clientLastName,
         day: row.day,
         month: row.month,
         year: row.year,

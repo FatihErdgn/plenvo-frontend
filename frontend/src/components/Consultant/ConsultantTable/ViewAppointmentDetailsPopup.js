@@ -146,8 +146,8 @@ export default function ViewAppointmentDetailsPopup({
     // Tekil randevu validasyonu
     if (formData.type === "single") {
       if (
-        !formData.firstName?.trim() ||
-        !formData.lastName?.trim() ||
+        !formData.clientFirstName?.trim() ||
+        !formData.clientLastName?.trim() ||
         !formData.phoneNumber ||
         !formData.gender ||
         !formData.age
@@ -173,8 +173,8 @@ export default function ViewAppointmentDetailsPopup({
       for (let i = 0; i < participants.length; i++) {
         const p = participants[i];
         if (
-          !p.firstName?.trim() ||
-          !p.lastName?.trim() ||
+          !p.clientFirstName?.trim() ||
+          !p.clientLastName?.trim() ||
           !p.phoneNumber ||
           !p.gender ||
           !p.age
@@ -378,8 +378,8 @@ export default function ViewAppointmentDetailsPopup({
                 <label className="block text-gray-700">First Name</label>
                 <input
                   type="text"
-                  name="firstName"
-                  value={formData.firstName || ""}
+                  name="clientFirstName"
+                  value={formData.clientFirstName || ""}
                   onChange={handleInputChange}
                   disabled={!isEditable}
                   className={`w-full px-4 py-2 border rounded-lg ${
@@ -393,8 +393,8 @@ export default function ViewAppointmentDetailsPopup({
                 <label className="block text-gray-700">Last Name</label>
                 <input
                   type="text"
-                  name="lastName"
-                  value={formData.lastName || ""}
+                  name="clientLastName"
+                  value={formData.clientLastName || ""}
                   onChange={handleInputChange}
                   disabled={!isEditable}
                   className={`w-full px-4 py-2 border rounded-lg ${
@@ -469,9 +469,9 @@ export default function ViewAppointmentDetailsPopup({
                     <label className="block text-gray-700">First Name</label>
                     <input
                       type="text"
-                      value={p.firstName || ""}
+                      value={p.clientFirstName || ""}
                       onChange={(e) =>
-                        handleParticipantChange(idx, "firstName", e.target.value)
+                        handleParticipantChange(idx, "clientFirstName", e.target.value)
                       }
                       disabled={!isEditable}
                       className={`w-full px-3 py-2 border rounded ${
@@ -485,9 +485,9 @@ export default function ViewAppointmentDetailsPopup({
                     <label className="block text-gray-700">Last Name</label>
                     <input
                       type="text"
-                      value={p.lastName || ""}
+                      value={p.clientLastName || ""}
                       onChange={(e) =>
-                        handleParticipantChange(idx, "lastName", e.target.value)
+                        handleParticipantChange(idx, "clientLastName", e.target.value)
                       }
                       disabled={!isEditable}
                       className={`w-full px-3 py-2 border rounded ${

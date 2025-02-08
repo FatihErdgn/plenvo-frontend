@@ -2,8 +2,8 @@
   {
     "id": 1,
     "type": "single",
-    "firstName": "Jane",
-    "lastName": "Cooper",
+    "clientFirstName": "Jane",
+    "clientLastName": "Cooper",
     "phoneNumber": "+90 8876543210",
     "appointmentDateTime": "13-Aug-2024 10:00:00",
     "status": "Açık",
@@ -21,8 +21,8 @@
   {
     "id": 2,
     "type": "single",
-    "firstName": "Wade",
-    "lastName": "Warren",
+    "clientFirstName": "Wade",
+    "clientLastName": "Warren",
     "phoneNumber": "+90 9876543210",
     "appointmentDateTime": "13-Aug-2023 10:00:00",
     "status": "Ödeme Bekleniyor",
@@ -40,8 +40,8 @@
   {
     "id": 3,
     "type": "group",
-    "firstName": "Grup",
-    "lastName": "Randevusu",
+    "clientFirstName": "Grup",
+    "clientLastName": "Randevusu",
     "phoneNumber": "+90 987654321",
     "appointmentDateTime": "13-Aug-2023 10:00:00",
     "status": "Tamamlandı",
@@ -55,15 +55,15 @@
     "doctor": "Dr. John Doe",
     "participants": [
       {
-        "firstName": "Brooklyn",
-        "lastName": "Simmons",
+        "clientFirstName": "Brooklyn",
+        "clientLastName": "Simmons",
         "phoneNumber": "+90 9876543210",
         "gender": "Kadın",
         "age": 29
       },
       {
-        "firstName": "Melanie",
-        "lastName": "Foster",
+        "clientFirstName": "Melanie",
+        "clientLastName": "Foster",
         "phoneNumber": "+90 5556655443",
         "gender": "Kadın",
         "age": 27
@@ -73,8 +73,8 @@
   {
     "id": 4,
     "type": "single",
-    "firstName": "Cameron",
-    "lastName": "Williamson",
+    "clientFirstName": "Cameron",
+    "clientLastName": "Williamson",
     "phoneNumber": "+90 9876543210",
     "appointmentDateTime": "13-Aug-2023 10:00:00",
     "status": "İptal Edildi",
@@ -92,8 +92,8 @@
   {
     "id": 5,
     "type": "single",
-    "firstName": "Leslie",
-    "lastName": "Alexander",
+    "clientFirstName": "Leslie",
+    "clientLastName": "Alexander",
     "phoneNumber": "+90 9876543210",
     "appointmentDateTime": "13-Aug-2023 10:00:00",
     "status": "Açık",
@@ -111,8 +111,8 @@
   {
     "id": 6,
     "type": "group",
-    "firstName": "Grup",
-    "lastName": "Randevusu",
+    "clientFirstName": "Grup",
+    "clientLastName": "Randevusu",
     "phoneNumber": "+90 987654321",
     "appointmentDateTime": "13-Aug-2023 10:00:00",
     "status": "Açık",
@@ -126,15 +126,15 @@
     "doctor": "Dr. John Doe",
     "participants": [
       {
-        "firstName": "Savannah",
-        "lastName": "Nguyen",
+        "clientFirstName": "Savannah",
+        "clientLastName": "Nguyen",
         "phoneNumber": "+90 9876543210",
         "gender": "Kadın",
         "age": 31
       },
       {
-        "firstName": "Ethan",
-        "lastName": "Smith",
+        "clientFirstName": "Ethan",
+        "clientLastName": "Smith",
         "phoneNumber": "+90 5554433221",
         "gender": "Erkek",
         "age": 26
@@ -144,8 +144,8 @@
   {
     "id": 7,
     "type": "single",
-    "firstName": "Darlene",
-    "lastName": "Robertson",
+    "clientFirstName": "Darlene",
+    "clientLastName": "Robertson",
     "phoneNumber": "+90 9876543210",
     "appointmentDateTime": "13-Aug-2023 10:00:00",
     "status": "Tamamlandı",
@@ -163,8 +163,8 @@
   {
     "id": 8,
     "type": "group",
-    "firstName": "Grup",
-    "lastName": "Randevusu",
+    "clientFirstName": "Grup",
+    "clientLastName": "Randevusu",
     "phoneNumber": "+90 987654321",
     "appointmentDateTime": "13-Aug-2023 10:00:00",
     "status": "Açık",
@@ -178,22 +178,22 @@
     "doctor": "Dr. Sydney Sweeney",
     "participants": [
       {
-        "firstName": "Ronald",
-        "lastName": "Richards",
+        "clientFirstName": "Ronald",
+        "clientLastName": "Richards",
         "phoneNumber": "+90 9876543210",
         "gender": "Erkek",
         "age": 40
       },
       {
-        "firstName": "Caroline",
-        "lastName": "Miller",
+        "clientFirstName": "Caroline",
+        "clientLastName": "Miller",
         "phoneNumber": "+90 5311122334",
         "gender": "Kadın",
         "age": 38
       },
       {
-        "firstName": "Victor",
-        "lastName": "Young",
+        "clientFirstName": "Victor",
+        "clientLastName": "Young",
         "phoneNumber": "+90 5311122339",
         "gender": "Erkek",
         "age": 29
@@ -203,8 +203,8 @@
   {
     "id": 9,
     "type": "single",
-    "firstName": "Kathryn",
-    "lastName": "Murphy",
+    "clientFirstName": "Kathryn",
+    "clientLastName": "Murphy",
     "phoneNumber": "+90 9876543210",
     "appointmentDateTime": "13-Aug-2023 10:00:00",
     "status": "Açık",
@@ -222,8 +222,8 @@
   {
     "id": 10,
     "type": "single",
-    "firstName": "Darrell",
-    "lastName": "Steward",
+    "clientFirstName": "Darrell",
+    "clientLastName": "Steward",
     "phoneNumber": "+90 9876543210",
     "appointmentDateTime": "13-Aug-2023 10:00:00",
     "status": "Açık",
@@ -242,8 +242,8 @@
   {
     "id": 11,
     "type": "single",
-    "firstName": "Alice",
-    "lastName": "Morgan",
+    "clientFirstName": "Alice",
+    "clientLastName": "Morgan",
     "phoneNumber": "+90 5353334455",
     "appointmentDateTime": "14-Sep-2023 14:00:00",
     "status": "Açık",
@@ -261,8 +261,8 @@
   {
     "id": 12,
     "type": "single",
-    "firstName": "Henry",
-    "lastName": "Cavill",
+    "clientFirstName": "Henry",
+    "clientLastName": "Cavill",
     "phoneNumber": "+90 5320001111",
     "appointmentDateTime": "20-Sep-2023 16:30:00",
     "status": "Ödeme Bekleniyor",
@@ -280,8 +280,8 @@
   {
     "id": 13,
     "type": "group",
-    "firstName": "Grup",
-    "lastName": "Randevusu",
+    "clientFirstName": "Grup",
+    "clientLastName": "Randevusu",
     "phoneNumber": "+90 987654321",
     "appointmentDateTime": "01-Oct-2023 09:30:00",
     "status": "Açık",
@@ -295,15 +295,15 @@
     "doctor": "Dr. Bruce Wayne",
     "participants": [
       {
-        "firstName": "Aria",
-        "lastName": "Shaw",
+        "clientFirstName": "Aria",
+        "clientLastName": "Shaw",
         "phoneNumber": "+90 5551122334",
         "gender": "Kadın",
         "age": 23
       },
       {
-        "firstName": "Joel",
-        "lastName": "Miller",
+        "clientFirstName": "Joel",
+        "clientLastName": "Miller",
         "phoneNumber": "+90 5415566778",
         "gender": "Erkek",
         "age": 46
@@ -313,8 +313,8 @@
   {
     "id": 14,
     "type": "group",
-    "firstName": "Grup",
-    "lastName": "Randevusu",
+    "clientFirstName": "Grup",
+    "clientLastName": "Randevusu",
     "phoneNumber": "+90 987654321",
     "appointmentDateTime": "05-Oct-2023 11:00:00",
     "status": "Tamamlandı",
@@ -328,15 +328,15 @@
     "doctor": "Dr. Tony Stark",
     "participants": [
       {
-        "firstName": "Harper",
-        "lastName": "Lee",
+        "clientFirstName": "Harper",
+        "clientLastName": "Lee",
         "phoneNumber": "+90 5415566778",
         "gender": "Kadın",
         "age": 29
       },
       {
-        "firstName": "Atticus",
-        "lastName": "Finch",
+        "clientFirstName": "Atticus",
+        "clientLastName": "Finch",
         "phoneNumber": "+90 5415566999",
         "gender": "Erkek",
         "age": 55
@@ -346,8 +346,8 @@
   {
     "id": 15,
     "type": "single",
-    "firstName": "Emma",
-    "lastName": "Watson",
+    "clientFirstName": "Emma",
+    "clientLastName": "Watson",
     "phoneNumber": "+90 5332223344",
     "appointmentDateTime": "10-Oct-2023 15:45:00",
     "status": "İptal Edildi",

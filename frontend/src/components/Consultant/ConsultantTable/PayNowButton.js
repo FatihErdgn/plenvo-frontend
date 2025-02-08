@@ -107,7 +107,7 @@ export default function PaymentPopup({ isOpen, onClose, row, servicesData }) {
               {/* Hasta & Doktor */}
               <p className="text-lg text-gray-600">
                 <strong className="text-gray-700">Hasta:</strong>{" "}
-                {row.firstName} {row.lastName}
+                {row.clientFirstName} {row.clientLastName}
               </p>
               <p className="text-lg text-gray-600">
                 <strong className="text-gray-700">Doktor:</strong> {row.doctor}

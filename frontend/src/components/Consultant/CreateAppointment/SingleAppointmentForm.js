@@ -11,8 +11,8 @@ export default function SingleAppointmentForm({
 }) {
   const initialState = prefilledData
     ? {
-        firstName: prefilledData.firstName || "",
-        lastName: prefilledData.lastName || "",
+        clientFirstName: prefilledData.clientFirstName || "",
+        clientLastName: prefilledData.clientLastName || "",
         day: prefilledData.day || "",
         month: prefilledData.month || "",
         year: prefilledData.year || "",
@@ -24,8 +24,8 @@ export default function SingleAppointmentForm({
         datetime: "",
       }
     : {
-        firstName: "",
-        lastName: "",
+        clientFirstName: "",
+        clientLastName: "",
         day: "",
         month: "",
         year: "",
@@ -60,8 +60,8 @@ export default function SingleAppointmentForm({
   const handleSubmit = (e) => {
     e.preventDefault();
     if (
-      !formData.firstName ||
-      !formData.lastName ||
+      !formData.clientFirstName ||
+      !formData.clientLastName ||
       !formData.day ||
       !formData.month ||
       !formData.year ||
@@ -158,8 +158,8 @@ export default function SingleAppointmentForm({
           <label className="block text-gray-700 mb-1">Ad</label>
           <input
             type="text"
-            name="firstName"
-            value={formData.firstName}
+            name="clientFirstName"
+            value={formData.clientFirstName}
             onChange={handleInputChange}
             className="w-full px-3 py-2 border rounded"
             required
@@ -170,8 +170,8 @@ export default function SingleAppointmentForm({
           <label className="block text-gray-700 mb-1">Soyad</label>
           <input
             type="text"
-            name="lastName"
-            value={formData.lastName}
+            name="clientLastName"
+            value={formData.clientLastName}
             onChange={handleInputChange}
             className="w-full px-3 py-2 border rounded"
             required

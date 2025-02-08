@@ -63,12 +63,15 @@ export const deleteUser = async (userId) => {
  * Kullanıcıları Getirme (Listeleme)
  * @returns {Promise<object>} { success, data } – aktif kullanıcılar listesi
  */
-export const getUsers = async () => {
+export const getUsers = async (params = {}) => {
   try {
-    const response = await api.get("/users");
+    const response = await api.get("/users", { params });
     return response.data;
   } catch (error) {
-    console.error("Get Users Error:", error.response?.data || error.message);
+    console.error(
+      "Get Users Hatası:",
+      error.response?.data || error.message
+    );
     throw error.response?.data || error.message;
   }
 };
@@ -87,7 +90,10 @@ export const changePassword = async (currentPassword, newPassword) => {
     });
     return response.data;
   } catch (error) {
-    console.error("Change Password Error:", error.response?.data || error.message);
+    console.error(
+      "Change Password Error:",
+      error.response?.data || error.message
+    );
     throw error.response?.data || error.message;
   }
 };
@@ -106,7 +112,10 @@ export const forgotPassword = async (phoneOrEmail) => {
     });
     return response.data;
   } catch (error) {
-    console.error("Forgot Password Error:", error.response?.data || error.message);
+    console.error(
+      "Forgot Password Error:",
+      error.response?.data || error.message
+    );
     throw error.response?.data || error.message;
   }
 };

@@ -1,11 +1,12 @@
 // ViewPersonnelDetailsPopup.js
-import React, { useState, useEffect,useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { IoIosCloseCircleOutline } from "react-icons/io";
 import { Alert, Collapse } from "@mui/material";
 
 export default function ViewPersonnelDetailsPopup({
   data,
   isEditable,
+  onEditUser,
   onClose,
   options: {
     profession: professionOptions,
@@ -70,6 +71,27 @@ export default function ViewPersonnelDetailsPopup({
     });
   };
 
+  const formattedDate = (dateString) => {
+    if (!dateString) return ""; // Eğer tarih boşsa hata vermemesi için boş string döndür
+    const dateObj = new Date(dateString);
+    if (isNaN(dateObj)) return ""; // Eğer geçersiz tarihse hata vermesin
+
+    const day = String(dateObj.getDate()).padStart(2, "0");
+    const month = String(dateObj.getMonth() + 1).padStart(2, "0");
+    const year = dateObj.getFullYear();
+
+    return `${year}-${month}-${day}`;
+  };
+
+  useEffect(() => {
+    if (data?.hireDate) {
+      setFormData((prev) => ({
+        ...prev,
+        hireDate: formattedDate(data.hireDate), // hireDate'i formatlı olarak ata
+      }));
+    }
+  }, [data?.hireDate]);
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -89,14 +111,15 @@ export default function ViewPersonnelDetailsPopup({
       !formData.firstName?.trim() ||
       !formData.lastName?.trim() ||
       !formData.phoneNumber ||
-      !formData.email ||
-      !formData.clinic ||
+      !formData.userMail ||
+      !formData.clinicName ||
       !formData.profession ||
       !formData.speciality ||
       !formData.salary ||
-      !formData.role ||
+      !formData.roleName ||
       !formData.hireDate
     ) {
+      console.log("📤 API'ye Gönderilen Veri:", formData);
       setAlertState({
         message: "Lütfen tüm alanları doldurun.",
         severity: "error",
@@ -113,8 +136,11 @@ export default function ViewPersonnelDetailsPopup({
       return;
     }
 
-    // Backend'e gönderilecek form verisi
-    console.log("Form submitted with data:", formData);
+    try {
+      onEditUser(formData);
+    } catch (error) {
+      console.error("Personel güncelleme hatası:", error);
+    }
 
     setAlertState({
       message: "Personel bilgileri başarıyla güncellendi.",
@@ -128,17 +154,6 @@ export default function ViewPersonnelDetailsPopup({
         top: 0,
         behavior: "smooth", // Yumuşak kaydırma
       });
-    }
-  };
-
-  // Silme butonu için fonksiyon
-  const handleDelete = () => {
-    const confirmed = window.confirm("Silmek istediğinize emin misiniz?");
-    if (confirmed) {
-      // Burada silme işlemini gerçekleştirin (API çağrısı, state güncelleme vb.)
-      console.log("Personel silindi, ID:", data?.id);
-      // Örnek olarak pop-up'ı kapatabilirsiniz:
-      onClose();
     }
   };
 
@@ -190,7 +205,10 @@ export default function ViewPersonnelDetailsPopup({
 
   return (
     <div className="fixed inset-0 flex justify-center items-center">
-      <div ref={popupContentRef} className="bg-white p-6 rounded-lg shadow-lg w-1/2 max-h-[95vh] overflow-y-auto">
+      <div
+        ref={popupContentRef}
+        className="bg-white p-6 rounded-lg shadow-lg w-1/2 max-h-[95vh] overflow-y-auto"
+      >
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-semibold">
             {isEditable
@@ -259,8 +277,8 @@ export default function ViewPersonnelDetailsPopup({
             <label className="block text-gray-700">Eposta</label>
             <input
               type="text"
-              name="email"
-              value={formData.email || ""}
+              name="userMail"
+              value={formData.userMail || ""}
               onChange={handleInputChange}
               disabled={!isEditable}
               className={`w-full px-4 py-2 border rounded-lg ${
@@ -302,14 +320,14 @@ export default function ViewPersonnelDetailsPopup({
 
           <div className="mb-4">
             {isEditable ? (
-              renderDropdown("Klinik", "clinic", clinicOptions, "up")
+              renderDropdown("Klinik", "clinicName", clinicOptions, "up")
             ) : (
               <>
                 <label className="block text-gray-700">Klinik</label>
                 <input
                   type="text"
-                  name="clinic"
-                  value={formData.clinic || ""}
+                  name="clinicName"
+                  value={formData.clinicName || ""}
                   onChange={handleInputChange}
                   disabled={!isEditable}
                   className={`w-full px-4 py-2 border rounded-lg ${
@@ -385,14 +403,14 @@ export default function ViewPersonnelDetailsPopup({
           </div>
           <div className="mb-4">
             {isEditable ? (
-              renderDropdown("Sistemdeki Rol", "role", roleOptions, "up")
+              renderDropdown("Sistemdeki Rol", "roleName", roleOptions, "up")
             ) : (
               <>
                 <label className="block text-gray-700">Sistemdeki Rol</label>
                 <input
                   type="text"
-                  name="role"
-                  value={formData.role || ""}
+                  name="roleName"
+                  value={formData.roleName || ""}
                   onChange={handleInputChange}
                   disabled={!isEditable}
                   className={`w-full px-4 py-2 border rounded-lg ${
@@ -418,14 +436,6 @@ export default function ViewPersonnelDetailsPopup({
                 </button>
               ) : (
                 <>
-                  {/* Sil Butonu */}
-                  <button
-                    type="button"
-                    onClick={handleDelete}
-                    className="px-12 py-2 bg-red-500 text-white rounded-full hover:bg-red-600 cursor-pointer w-[150px]"
-                  >
-                    Sil
-                  </button>
                   <button
                     type="submit"
                     className="px-12 py-2 bg-[#399AA1] text-white rounded-full hover:bg-[#007E85] cursor-pointer w-[150px]"

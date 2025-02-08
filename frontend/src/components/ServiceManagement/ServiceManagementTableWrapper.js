@@ -3,14 +3,20 @@ import React, { useCallback } from "react";
 import { TableProvider, useTableContext } from "../../contexts/TableContext";
 import GenericTable from "../Table/GenericTable";
 import { LiaEdit } from "react-icons/lia";
+import { MdDelete } from "react-icons/md";
 import ViewServiceDetailsPopup from "./ViewServiceDetailsPopup";
 import ExportExcel from "../../utils/ExportExcel";
+import {
+  softDeleteService,
+  updateService,
+} from "../../services/serviceService";
 
 export default function ServiceManagementTableWrapper({
   data,
   searchQuery,
   startDate,
   endDate,
+  fetchServices,
 }) {
   const getStatusClass = (status) => {
     switch (status) {
@@ -28,7 +34,7 @@ export default function ServiceManagementTableWrapper({
       const serviceName = item.serviceName.toLowerCase();
       const provider = item.provider.toLowerCase();
       const validityDate = item.validityDate.toLowerCase();
-      const currency = item.currency.toLowerCase();
+      const currency = item.currencyName.toLowerCase();
       const _query = query.toLowerCase();
       return (
         serviceName.includes(_query) ||
@@ -56,7 +62,18 @@ export default function ServiceManagementTableWrapper({
   const columns = [
     { key: "serviceName", label: "Hizmet Adı" },
     { key: "provider", label: "Hizmet Sağlayıcı" },
-    { key: "validityDate", label: "Hizmet Geçerlilik Tarihi" },
+    {
+      key: "validityDate",
+      label: "İşe Giriş Tarihi",
+      renderCell: (row) => {
+        const dateObj = new Date(row.validityDate);
+        const day = String(dateObj.getDate()).padStart(2, "0");
+        const month = String(dateObj.getMonth() + 1).padStart(2, "0");
+        const year = dateObj.getFullYear();
+
+        return `${day}.${month}.${year}`;
+      },
+    },
     {
       key: "status",
       label: "Durum",
@@ -65,18 +82,47 @@ export default function ServiceManagementTableWrapper({
       ),
     },
     { key: "serviceFee", label: "Hizmet Bedeli" },
-    { key: "currency", label: "Para Birimi" },
+    { key: "currencyName", label: "Para Birimi" },
     {
       key: "actions",
       label: "İşlem",
-      renderCell: (row) => <ServiceManagementActions row={row} />,
+      renderCell: (row) => (
+        <ServiceManagementActions row={row} fetchServices={fetchServices} />
+      ),
     },
+  ];
+
+  const excelColumns = [
+    { key: "serviceName", label: "Hizmet Adı" },
+    { key: "provider", label: "Hizmet Sağlayıcı" },
+    {
+      key: "validityDate",
+      label: "İşe Giriş Tarihi",
+      renderCell: (row) => {
+        const dateObj = new Date(row.validityDate);
+        const day = String(dateObj.getDate()).padStart(2, "0");
+        const month = String(dateObj.getMonth() + 1).padStart(2, "0");
+        const year = dateObj.getFullYear();
+
+        return `${day}.${month}.${year}`;
+      },
+    },
+    {
+      key: "status",
+      label: "Durum",
+      renderCell: (row) => (
+        <span className={getStatusClass(row.status)}>{row.status}</span>
+      ),
+    },
+    { key: "serviceFee", label: "Hizmet Bedeli" },
+    { key: "currencyName", label: "Para Birimi" },
   ];
 
   return (
     <TableProvider
       data={data}
       columns={columns}
+      excelColumns={excelColumns}
       searchQuery={searchQuery}
       startDate={startDate}
       endDate={endDate}
@@ -99,37 +145,57 @@ export default function ServiceManagementTableWrapper({
         <div className="flex-1 overflow-y-auto">
           <GenericTable />
         </div>
-        <ServicePopupArea />
+        <ServicePopupArea fetchServices={fetchServices} />
       </div>
     </TableProvider>
   );
 }
 
-function ServiceManagementActions({ row }) {
+function ServiceManagementActions({ row, fetchServices }) {
   const { setSelectedData, setIsPopupOpen, setIsEditable } = useTableContext();
 
   const handleEditClick = () => {
     setSelectedData(row);
     setIsEditable(true);
-    setIsPopupOpen(true);
+    setTimeout(() => {
+      setIsPopupOpen(true);
+    }, 100);
+  };
+
+  const handleDeleteService = async (id) => {
+    if (window.confirm("Hizmeti silmek istediğinize emin misiniz?")) {
+      try {
+        await softDeleteService(id);
+        fetchServices();
+      } catch (error) {
+        console.error(error);
+      }
+    }
   };
 
   return (
     <div className="flex flex-row justify-center text-sm items-center px-4 py-[14px] space-x-2">
       <button
         className="flex items-center justify-center text-red-500 px-2 py-2 rounded-full hover:bg-red-600 hover:text-white"
-        disabled={!row.actions?.edit}
+        // disabled={!row.actions?.edit}
         aria-label="edit"
         onClick={handleEditClick}
       >
         <LiaEdit className="w-6 h-6" />
+      </button>
+      <button
+        onClick={() => handleDeleteService(row._id)}
+        className="text-red-500 px-2 py-2 rounded-full hover:bg-red-600 hover:text-white"
+        title="Hizmeti Sil"
+      >
+        <MdDelete size={20} />
       </button>
       {/* Örnek olarak "view" butonu devre dışı bırakıldı */}
     </div>
   );
 }
 
-function ServicePopupArea() {
+function ServicePopupArea({ fetchServices }) {
   const {
     data,
     isPopupOpen,
@@ -138,8 +204,24 @@ function ServicePopupArea() {
     // isEditable,
   } = useTableContext();
 
+  // Eğer seçili veri henüz yüklenmediyse (undefined/null ise) pop-up açılmasın
+  if (!isPopupOpen || !selectedData) return null;
+
   const handleClosePopup = () => {
     setIsPopupOpen(false);
+  };
+
+  const handleEditService = async (formData) => {
+    try {
+      console.log("Güncellenecek servis verisi:", formData);
+      await updateService(formData._id, formData);
+      fetchServices();
+      setTimeout(() => {
+        setIsPopupOpen(false);
+      }, 500);
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   const providerOptions =
@@ -160,6 +242,7 @@ function ServicePopupArea() {
         }}
       >
         <ViewServiceDetailsPopup
+          onEditService={handleEditService}
           data={selectedData}
           onClose={handleClosePopup}
           options={{

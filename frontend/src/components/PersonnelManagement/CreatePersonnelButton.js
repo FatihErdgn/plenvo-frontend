@@ -3,7 +3,14 @@ import { useState, useEffect } from "react";
 import { IoIosCloseCircleOutline } from "react-icons/io";
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
 
-export default function AddPersonnel({ personnelData = [] }) {
+export default function AddPersonnel({
+  onAddUser,
+  uniqueRoles,
+  uniqueClinics,
+  uniqueProfessions,
+  uniqueSpecialities,
+  existingUsers,
+}) {
   const [isPopUpOpen, setPopUpOpen] = useState(false);
   const [passwordVisible, setPasswordVisible] = useState(false);
 
@@ -14,12 +21,12 @@ export default function AddPersonnel({ personnelData = [] }) {
     username: "",
     password: "",
     phoneNumber: "",
-    email: "",
+    userMail: "",
     clinic: "",
     profession: "",
     speciality: "",
     salary: "",
-    role: "",
+    roleName: "",
     hireDate: "",
     // Manual entries
     manualClinic: "",
@@ -32,7 +39,7 @@ export default function AddPersonnel({ personnelData = [] }) {
     clinic: false,
     profession: false,
     speciality: false,
-    role: false,
+    roleName: false,
   });
 
   // Whether the user selected "Diğer" (manual input) for each dropdown
@@ -66,7 +73,7 @@ export default function AddPersonnel({ personnelData = [] }) {
           clinic: false,
           profession: false,
           speciality: false,
-          role: false,
+          roleName: false,
         });
       }
     };
@@ -140,18 +147,31 @@ export default function AddPersonnel({ personnelData = [] }) {
     e.preventDefault();
 
     // final values for clinic/profession/speciality
-    const finalClinic = manualEntry.clinic && formData.manualClinic
-      ? formData.manualClinic
-      : formData.clinic || "Belirtilmedi";
-    const finalProfession = manualEntry.profession && formData.manualProfession
-      ? formData.manualProfession
-      : formData.profession || "Belirtilmedi";
-    const finalSpeciality = manualEntry.speciality && formData.manualSpeciality
-      ? formData.manualSpeciality
-      : formData.speciality || "Belirtilmedi";
+    const finalClinic =
+      manualEntry.clinic && formData.manualClinic
+        ? formData.manualClinic
+        : formData.clinic || "Belirtilmedi";
+    const finalProfession =
+      manualEntry.profession && formData.manualProfession
+        ? formData.manualProfession
+        : formData.profession || "Belirtilmedi";
+    const finalSpeciality =
+      manualEntry.speciality && formData.manualSpeciality
+        ? formData.manualSpeciality
+        : formData.speciality || "Belirtilmedi";
+
+    // Validation
+    if (!formData.userMail.includes("@")) {
+      setAlertState({
+        message: "Geçersiz e-posta adresi.",
+        severity: "error",
+        open: true,
+      });
+      return;
+    }
 
     // 1) Check if username is already used
-    const usernameExists = personnelData.some(
+    const usernameExists = existingUsers.some(
       (person) => person.username === formData.username
     );
     if (usernameExists) {
@@ -165,7 +185,8 @@ export default function AddPersonnel({ personnelData = [] }) {
     }
 
     // 2) Validate password (at least 8 chars,one number, one uppercase, one lowercase, one special char)
-    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    const passwordRegex =
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
     if (!passwordRegex.test(formData.password)) {
       setAlertState({
         message:
@@ -186,8 +207,8 @@ export default function AddPersonnel({ personnelData = [] }) {
       !formData.username ||
       !formData.password ||
       !formData.phoneNumber ||
-      !formData.email ||
-      !formData.role ||
+      !formData.userMail ||
+      !formData.roleName ||
       !formData.hireDate
     ) {
       setAlertState({
@@ -198,43 +219,52 @@ export default function AddPersonnel({ personnelData = [] }) {
       return;
     }
 
-    // Here you can do your API call with the final cleaned data
-    console.log("Form Data:", {
-      ...formData,
-      clinic: finalClinic,
-      profession: finalProfession,
-      speciality: finalSpeciality,
-    });
+    try {
+      // Send data to parent component
+      onAddUser({
+        ...formData,
+        clinic: finalClinic,
+        profession: finalProfession,
+        speciality: finalSpeciality,
+      });
 
-    setAlertState({
-      message: "Başarılı bir şekilde eklendi.",
-      severity: "success",
-      open: true,
-    });
+      // Reset form data
+      setFormData({
+        firstName: "",
+        lastName: "",
+        username: "",
+        password: "",
+        phoneNumber: "",
+        userMail: "",
+        clinic: "",
+        profession: "",
+        speciality: "",
+        salary: "",
+        roleName: "",
+        hireDate: "",
+        manualClinic: "",
+        manualProfession: "",
+        manualSpeciality: "",
+      });
 
-    // Reset form
-    setFormData({
-      firstName: "",
-      lastName: "",
-      username: "",
-      password: "",
-      phoneNumber: "",
-      email: "",
-      clinic: "",
-      profession: "",
-      speciality: "",
-      salary: "",
-      role: "",
-      hireDate: "",
-      manualClinic: "",
-      manualProfession: "",
-      manualSpeciality: "",
-    });
-    setManualEntry({
-      clinic: false,
-      profession: false,
-      speciality: false,
-    });
+      // Show success alert
+      setAlertState({
+        message: "Personel başarıyla eklendi.",
+        severity: "success",
+        open: true,
+      });
+
+      // Close popup
+      setTimeout(() => setPopUpOpen(false), 500);
+
+    } catch (error) {
+      console.error("Personel eklenirken hata oluştu:", error);
+      setAlertState({
+        message: "Personel eklenirken hata oluştu.",
+        severity: "error",
+        open: true,
+      });
+    }
   };
 
   // Auto-close alert after 5s
@@ -246,16 +276,6 @@ export default function AddPersonnel({ personnelData = [] }) {
       return () => clearTimeout(timer);
     }
   }, [alertState.open]);
-
-  // Gather unique values for dropdown
-  const uniqueClinics = [...new Set(personnelData.map((p) => p.clinic))];
-  const uniqueProfessions = [
-    ...new Set(personnelData.map((p) => p.profession)),
-  ];
-  const uniqueSpecialities = [
-    ...new Set(personnelData.map((p) => p.speciality)),
-  ];
-  const roles = ["Admin", "Consultant", "Doctor", "Manager"];
 
   // Helper for label text
   const capitalizeFirstLetter = (str) =>
@@ -318,7 +338,7 @@ export default function AddPersonnel({ personnelData = [] }) {
                   </li>
                 ))}
                 {/* "Diğer" option for adding manually */}
-                {key !== "role" && (
+                {key !== "roleName" && (
                   <li
                     className="px-4 py-2 hover:bg-[#007E85] hover:text-white cursor-pointer"
                     onClick={() => handleSelect(key, "Diğer")}
@@ -469,13 +489,16 @@ export default function AddPersonnel({ personnelData = [] }) {
                   />
 
                   {/* E-Mail */}
-                  <label className="block text-gray-700 mb-2" htmlFor="email">
+                  <label
+                    className="block text-gray-700 mb-2"
+                    htmlFor="userMail"
+                  >
                     E-Posta
                   </label>
                   <input
                     type="text"
-                    name="email"
-                    value={formData.email}
+                    name="userMail"
+                    value={formData.userMail}
                     onChange={handleInputChange}
                     className="w-full mb-4 px-3 py-2 border rounded-[10px] focus:outline-none focus:ring-2 focus:ring-[#007E85]"
                   />
@@ -509,7 +532,7 @@ export default function AddPersonnel({ personnelData = [] }) {
                   />
 
                   {/* Rol */}
-                  {renderDropdown("Rol", "role", roles)}
+                  {renderDropdown("Rol", "roleName", uniqueRoles)}
 
                   {/* İşe Giriş Tarihi */}
                   <label

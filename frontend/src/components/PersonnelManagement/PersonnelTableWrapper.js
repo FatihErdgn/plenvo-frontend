@@ -4,25 +4,29 @@ import { TableProvider, useTableContext } from "../../contexts/TableContext";
 import GenericTable from "../Table/GenericTable";
 import { LiaEdit } from "react-icons/lia";
 import { IoEyeOutline } from "react-icons/io5";
+import { MdDelete } from "react-icons/md";
 import ViewPersonnelDetailsPopup from "./ViewPersonnelDetailsPopup";
 import ExportExcel from "../../utils/ExportExcel";
+import { deleteUser, updateUser } from "../../services/userService";
+import { useUser } from "../../contexts/UserContext";
 
 export default function PersonnelTableWrapper({
   data,
   searchQuery,
   startDate,
   endDate,
+  fetchUsers,
 }) {
   // Roller için badge css sınıfı
   const getStatusClass = (role) => {
     switch (role) {
-      case "Manager":
+      case "manager":
         return "inline-block bg-[#41BC63] border-[1px] border-[#41BC63] text-[#ffffff] py-[6px] px-[12px] rounded-md font-semibold text-sm";
-      case "Consultant":
+      case "consultant":
         return "inline-block bg-[#BC9241] border-[1px] border-[#BC9241] text-[#ffffff] py-[6px] px-[12px] rounded-md font-semibold text-sm";
-      case "Admin":
+      case "admin":
         return "inline-block bg-[#BC4141] border-[1px] border-[#BC4141] text-[#ffffff] py-[6px] px-[12px] rounded-md font-semibold text-sm";
-      case "Doctor":
+      case "doctor":
         return "inline-block bg-[#025E86] border-[1px] border-[#025E86] text-[#ffffff] py-[6px] px-[12px] rounded-md font-semibold text-sm";
       default:
         return "";
@@ -32,14 +36,16 @@ export default function PersonnelTableWrapper({
   // Filtre fonksiyonu
   const customFilterFn = useCallback((items, query) => {
     return items.filter((item) => {
-      const fullName = `${item.firstName} ${item.lastName}`.toLowerCase();
-      const userRole = item.role.toLowerCase();
-      const clinic = item.clinic.toLowerCase();
+      const fullName = `${item?.firstName ?? ""} ${
+        item?.lastName ?? ""
+      }`.toLowerCase();
+      const userRole = item.roleName?.toLowerCase();
+      const clinic = item.clinicName?.toLowerCase();
       const _query = query.toLowerCase();
       return (
-        fullName.includes(_query) ||
-        userRole.includes(_query) ||
-        clinic.includes(_query)
+        fullName?.includes(_query) ||
+        userRole?.includes(_query) ||
+        clinic?.includes(_query)
       );
     });
   }, []);
@@ -66,20 +72,33 @@ export default function PersonnelTableWrapper({
   const columns = [
     { key: "firstName", label: "İsim" },
     { key: "lastName", label: "Soyisim" },
-    { key: "clinic", label: "Klinik" },
-    { key: "email", label: "E-posta" },
-    { key: "hireDate", label: "İşe Giriş Tarihi" },
+    { key: "clinicName", label: "Klinik" },
+    { key: "userMail", label: "E-posta" },
     {
-      key: "role",
+      key: "hireDate",
+      label: "İşe Giriş Tarihi",
+      renderCell: (row) => {
+        const dateObj = new Date(row.hireDate);
+        const day = String(dateObj.getDate()).padStart(2, "0");
+        const month = String(dateObj.getMonth() + 1).padStart(2, "0");
+        const year = dateObj.getFullYear();
+
+        return `${day}.${month}.${year}`;
+      },
+    },
+    {
+      key: "roleName",
       label: "Rol",
       renderCell: (row) => (
-        <span className={getStatusClass(row.role)}>{row.role}</span>
+        <span className={getStatusClass(row.roleName)}>{row.roleName}</span>
       ),
     },
     {
       key: "actions",
       label: "İşlem",
-      renderCell: (row) => <PersonnelTableActions row={row} />,
+      renderCell: (row) => (
+        <PersonnelTableActions row={row} fetchUsers={fetchUsers} />
+      ),
     },
   ];
 
@@ -87,24 +106,30 @@ export default function PersonnelTableWrapper({
   const excelColumns = [
     { key: "firstName", label: "İsim" },
     { key: "lastName", label: "Soyisim" },
-    { key: "clinic", label: "Klinik" },
+    { key: "clinicName", label: "Klinik" },
     { key: "profession", label: "Meslek" },
     { key: "speciality", label: "Uzmanlık" },
     { key: "salary", label: "Maaş" },
     { key: "phoneNumber", label: "Telefon Numarası" },
-    { key: "email", label: "E-posta" },
-    { key: "hireDate", label: "İşe Giriş Tarihi" },
+    { key: "userMail", label: "E-posta" },
     {
-      key: "role",
+      key: "hireDate",
+      label: "İşe Giriş Tarihi",
+      renderCell: (row) => {
+        const dateObj = new Date(row.hireDate);
+        const day = String(dateObj.getDate()).padStart(2, "0");
+        const month = String(dateObj.getMonth() + 1).padStart(2, "0");
+        const year = dateObj.getFullYear();
+
+        return `${day}.${month}.${year}`;
+      },
+    },
+    {
+      key: "roleName",
       label: "Rol",
       renderCell: (row) => (
         <span className={getStatusClass(row.role)}>{row.role}</span>
       ),
-    },
-    {
-      key: "actions",
-      label: "İşlem",
-      renderCell: (row) => <PersonnelTableActions row={row} />,
     },
   ];
 
@@ -137,33 +162,57 @@ export default function PersonnelTableWrapper({
         </div>
 
         {/* Popup alanı */}
-        <PersonnelPopupArea />
+        <PersonnelPopupArea fetchUsers={fetchUsers} />
       </div>
     </TableProvider>
   );
 }
 
 // Aksiyon butonlarını ayrı bir component’te tanımlayabilirsiniz.
-function PersonnelTableActions({ row }) {
+function PersonnelTableActions({ row, fetchUsers }) {
   const { setSelectedData, setIsEditable, setIsPopupOpen } = useTableContext();
-
+  // **Context'ten userProfile'ı al**
+  const { userProfile } = useUser();
   const handleEditClick = () => {
     setSelectedData(row);
     setIsEditable(true);
-    setIsPopupOpen(true);
+
+    // 100ms gecikmeyle pop-up aç, böylece `selectedData` yüklenmiş olur
+    setTimeout(() => {
+      setIsPopupOpen(true);
+    }, 100);
   };
 
   const handleViewClick = () => {
     setSelectedData(row);
     setIsEditable(false);
-    setIsPopupOpen(true);
+
+    setTimeout(() => {
+      setIsPopupOpen(true);
+    }, 100);
+  };
+
+  // Soft Delete İşlemi
+  const handleDeleteUser = async (userId) => {
+    if (!window.confirm("Bu kullanıcıyı silmek istediğinize emin misiniz?"))
+      return;
+    try {
+      if (userId !== userProfile._id) {
+        await deleteUser(userId);
+        fetchUsers(); // Güncellenmiş veriyi çek
+      } else {
+        alert("Kendi hesabınızı silemezsiniz.");
+      }
+    } catch (error) {
+      console.error("Silme işlemi sırasında hata oluştu:", error);
+    }
   };
 
   return (
     <div className="flex flex-row justify-center text-sm items-center px-4 py-[14px] space-x-2">
       <button
         className="flex items-center justify-center text-red-500 px-2 py-2 rounded-full hover:bg-red-600 hover:text-white"
-        disabled={!row.actions?.edit}
+        // disabled={!row.actions?.edit}
         aria-label="edit"
         onClick={handleEditClick}
       >
@@ -171,43 +220,73 @@ function PersonnelTableActions({ row }) {
       </button>
       <button
         className="flex items-center justify-center text-gray-500 px-2 py-2 rounded-full hover:bg-gray-600 hover:text-white"
-        disabled={!row.actions?.view}
+        // disabled={!row.actions?.view}
         aria-label="View"
         onClick={handleViewClick}
       >
         <IoEyeOutline className="w-6 h-6" />
+      </button>
+      <button
+        onClick={() => handleDeleteUser(row._id)}
+        className="text-red-500 px-2 py-2 rounded-full hover:bg-red-600 hover:text-white"
+        title="Kullanıcıyı Sil"
+      >
+        <MdDelete size={20} />
       </button>
     </div>
   );
 }
 
 // Pop-up alanı
-function PersonnelPopupArea() {
+function PersonnelPopupArea({ fetchUsers }) {
   const { data, isPopupOpen, setIsPopupOpen, selectedData, isEditable } =
     useTableContext();
 
-  // Bu örnekte sadece context verisini aldık. Popup kapama:
+  // Eğer seçili veri henüz yüklenmediyse (undefined/null ise) pop-up açılmasın
+  if (!isPopupOpen || !selectedData) return null;
+
+  // Pop-up kapama fonksiyonu
   const handleClosePopup = () => {
     setIsPopupOpen(false);
   };
 
-  // Profesyon, specialty, role gibi opsiyonlar
-  // Bu örnek için veriyi context içinden alabilir
+  const handleEditUser = async (updatedUserData) => {
+    try {
+      // 1) Kullanıcı güncelleme işlemi
+      console.log(
+        "handleEditUser çağrıldı. Güncellenecek veri:",
+        updatedUserData
+      );
+      await updateUser(updatedUserData._id, updatedUserData);
+      fetchUsers();
+
+      // 3) Pop-up'ı kapatabilirsiniz:
+      setTimeout(() => {
+        setIsPopupOpen(false);
+      }, 500);
+    } catch (err) {
+      console.error("Kullanıcı güncelleme hatası:", err);
+      // Hata gösterimi yapabilirsiniz
+    }
+  };
+
+  // Veriler boş olabilir, bu yüzden ?. operatörünü kullanıyoruz
   const professionOptions =
     data && Array.isArray(data)
-      ? [...new Set(data.map((item) => item.profession))]
+      ? [...new Set(data.map((item) => item.profession ?? "Bilinmiyor"))]
       : [];
+
   const specialityOptions =
     data && Array.isArray(data)
-      ? [...new Set(data.map((item) => item.speciality))]
+      ? [...new Set(data.map((item) => item.speciality ?? "Bilinmiyor"))]
       : [];
+
   const clinicOptions =
     data && Array.isArray(data)
-      ? [...new Set(data.map((item) => item.clinic))]
+      ? [...new Set(data.map((item) => item.clinic ?? "Bilinmiyor"))]
       : [];
-  const roleOptions = ["Consultant", "Doctor", "Manager", "Admin"];
 
-  if (!isPopupOpen) return null;
+  const roleOptions = ["Consultant", "Doctor", "Manager", "Admin"];
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center transition-opacity duration-300 ease-in-out">
@@ -218,6 +297,7 @@ function PersonnelPopupArea() {
         }}
       >
         <ViewPersonnelDetailsPopup
+          onEditUser={handleEditUser}
           data={selectedData}
           isEditable={isEditable}
           onClose={handleClosePopup}

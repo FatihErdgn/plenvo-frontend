@@ -13,12 +13,14 @@ export default function GenericTable() {
     goToPrevPage,
   } = useTableContext();
 
+  // console.log("Tabloya gelen veri:", currentData);
+
   return (
     <div className="w-full h-full flex flex-col justify-between">
       <table className="table-auto w-full border-collapse bg-white shadow-sm rounded-lg">
         <thead>
           <tr className="text-gray-700 text-center">
-            {columns.map((col) => (
+            {columns?.map((col) => (
               <th key={col.key} className="px-4 py-2 text-center">
                 {col.label}
               </th>
@@ -26,16 +28,21 @@ export default function GenericTable() {
           </tr>
         </thead>
         <tbody>
-          {currentData.map((row, rowIndex) => {
+          {currentData?.map((row, rowIndex) => {
+            // row yoksa (undefined/null) => satır oluşturma
+            if (!row) return null;
+
+            // (Örnek) isGroupRow kontrolü
             const isGroupRow =
-              row.firstName === "Grup" && row.lastName === "Randevusu";
+              row?.clientFirstName === "Grup" &&
+              row?.clientLastName === "Randevusu";
 
             return (
               <tr
-                key={row.id || rowIndex}
+                key={row?._id || rowIndex}
                 className="odd:bg-[#F7F6FE] even:bg-white hover:bg-green-50 text-center"
               >
-                {columns.map((col, colIndex) => {
+                {columns?.map((col, colIndex) => {
                   // Eğer isGroupRow ve kolonu ilk iki kolondan biriyse (colIndex < 2) => font-bold
                   const cellClass =
                     isGroupRow && colIndex < 2
@@ -51,7 +58,8 @@ export default function GenericTable() {
                   }
                   return (
                     <td key={col.key} className={cellClass}>
-                      {row[col.key]}
+                      {/* eğer col.renderCell varsa onu kullan, yoksa direkt row[col.key] */}
+                      {col.renderCell ? col.renderCell(row) : row[col.key] ?? "-"}
                     </td>
                   );
                 })}

@@ -6,6 +6,7 @@ import { Alert, Collapse } from "@mui/material";
 export default function ViewServiceDetailsPopup({
   data,
   onClose,
+  onEditService,
   options: {
     provider: providerOptions,
     status: statusOptions,
@@ -68,6 +69,27 @@ export default function ViewServiceDetailsPopup({
     });
   };
 
+  const formattedDate = (dateString) => {
+    if (!dateString) return ""; // Eğer tarih boşsa hata vermemesi için boş string döndür
+    const dateObj = new Date(dateString);
+    if (isNaN(dateObj)) return ""; // Eğer geçersiz tarihse hata vermesin
+
+    const day = String(dateObj.getDate()).padStart(2, "0");
+    const month = String(dateObj.getMonth() + 1).padStart(2, "0");
+    const year = dateObj.getFullYear();
+
+    return `${year}-${month}-${day}`;
+  };
+
+  useEffect(() => {
+    if (data?.validityDate) {
+      setFormData((prev) => ({
+        ...prev,
+        validityDate: formattedDate(data.validityDate), // hireDate'i formatlı olarak ata
+      }));
+    }
+  }, [data?.validityDate]);
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -83,7 +105,7 @@ export default function ViewServiceDetailsPopup({
       !formData.provider ||
       !formData.validityDate ||
       !formData.serviceFee ||
-      !formData.currency ||
+      !formData.currencyName ||
       !formData.status
     ) {
       setAlertState({
@@ -93,7 +115,12 @@ export default function ViewServiceDetailsPopup({
       });
       return;
     }
-    console.log("Form submitted with data:", formData);
+    try {
+      console.log("formData", formData);
+      onEditService(formData);
+    } catch (error) {
+      console.error(error);
+    }
     setAlertState({
       message: "Randevu başarıyla güncellendi.",
       severity: "success",
@@ -151,7 +178,9 @@ export default function ViewServiceDetailsPopup({
     <div className="fixed inset-0 flex justify-center items-center">
       <div className="bg-white p-6 rounded-lg shadow-lg w-1/2">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-semibold">Servis Ayrıntılarını Düzenle</h2>
+          <h2 className="text-xl font-semibold">
+            Servis Ayrıntılarını Düzenle
+          </h2>
           <button onClick={onClose}>
             <IoIosCloseCircleOutline className="w-6 h-6 text-gray-500 hover:text-gray-700" />
           </button>
@@ -219,7 +248,12 @@ export default function ViewServiceDetailsPopup({
             />
           </div>
           <div className="mb-4">
-            {renderDropdown("Para Birimi", "currency", currencyOptions, "up")}
+            {renderDropdown(
+              "Para Birimi",
+              "currencyName",
+              currencyOptions,
+              "up"
+            )}
           </div>
           <div className="flex justify-center">
             {alertState.open ? (

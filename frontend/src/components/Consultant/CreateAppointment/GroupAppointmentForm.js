@@ -15,8 +15,8 @@ export default function GroupAppointmentForm({
       ? prefilledData.participants
       : [
           {
-            firstName: "",
-            lastName: "",
+            clientFirstName: "",
+            clientLastName: "",
             phoneNumber: "",
             gender: "",
             age: "",
@@ -49,7 +49,7 @@ export default function GroupAppointmentForm({
   const addParticipant = () => {
     setParticipants((prev) => [
       ...prev,
-      { firstName: "", lastName: "", phoneNumber: "", gender: "", age: "" },
+      { clientFirstName: "", clientLastName: "", phoneNumber: "", gender: "", age: "" },
     ]);
   };
 
@@ -80,7 +80,7 @@ export default function GroupAppointmentForm({
 
     // Basit kontrol (örnek)
     if (
-      participants.some((p) => !p.firstName || !p.lastName || !p.gender) ||
+      participants.some((p) => !p.clientFirstName || !p.clientLastName || !p.gender) ||
       !groupData.clinic ||
       !groupData.doctor ||
       !groupData.datetime
@@ -246,8 +246,8 @@ export default function GroupAppointmentForm({
               <label className="block text-gray-700 mb-1">Ad</label>
               <input
                 type="text"
-                name="firstName"
-                value={p.firstName}
+                name="clientFirstName"
+                value={p.clientFirstName}
                 onChange={(e) => handleParticipantChange(index, e)}
                 className="w-full px-3 py-2 border rounded"
                 required
@@ -257,8 +257,8 @@ export default function GroupAppointmentForm({
               <label className="block text-gray-700 mb-1">Soyad</label>
               <input
                 type="text"
-                name="lastName"
-                value={p.lastName}
+                name="clientLastName"
+                value={p.clientLastName}
                 onChange={(e) => handleParticipantChange(index, e)}
                 className="w-full px-3 py-2 border rounded"
                 required

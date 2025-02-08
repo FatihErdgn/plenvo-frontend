@@ -3,14 +3,18 @@ import { useState, useEffect } from "react";
 import { IoIosCloseCircleOutline } from "react-icons/io";
 // import CustomDateTimePicker from "./Datepicker.js"
 
-export default function AddService({ servicesData }) {
+export default function AddService({
+  onAddService,
+  uniqueServiceNames,
+  uniqueProviders,
+}) {
   const [isPopUpOpen, setPopUpOpen] = useState(false);
   const [formData, setFormData] = useState({
     serviceName: "",
     provider: "",
     validityDate: "",
     serviceFee: "",
-    currency: "",
+    currencyName: "",
     status: "",
     //Manuel
     manualServiceName: "",
@@ -24,7 +28,7 @@ export default function AddService({ servicesData }) {
     serviceName: false,
     provider: false,
     status: false,
-    currency: false,
+    currencyName: false,
   });
 
   const [alertState, setAlertState] = useState({
@@ -83,7 +87,7 @@ export default function AddService({ servicesData }) {
         ...prev,
         [key]: "",
         // Manuel alanı da sıfırla
-        [`Manual${key}`]: "",
+        [`manual${key}`]: "",
       }));
     } else {
       // Normal seçim yapıldı, manuel girişi kapat
@@ -114,7 +118,7 @@ export default function AddService({ servicesData }) {
     // Geri dönüldüğünde manuel inputu temizlemek isterseniz:
     setFormData((prev) => ({
       ...prev,
-      [`Manual${key}`]: "",
+      [`manual${key}`]: "",
     }));
   };
 
@@ -127,9 +131,10 @@ export default function AddService({ servicesData }) {
     e.preventDefault();
 
     // 1) Final değerleri belirle
-    const finalServiceName = manualEntry.serviceName
-      ? formData.manualServiceName
-      : formData.serviceName;
+    const finalServiceName =
+      manualEntry.serviceName && formData.manualServiceName
+        ? formData.manualServiceName
+        : formData.serviceName || "";
 
     // 2) Validasyon
     if (
@@ -137,7 +142,7 @@ export default function AddService({ servicesData }) {
       !formData.provider ||
       !formData.validityDate ||
       !formData.serviceFee ||
-      !formData.currency ||
+      !formData.currencyName ||
       !formData.status
     ) {
       setAlertState({
@@ -148,33 +153,46 @@ export default function AddService({ servicesData }) {
       return;
     }
 
-    // 3) En son console veya API call
-    console.log("Form Data:", {
-      ...formData,
-      serviceName: finalServiceName,
-    });
-
-    setAlertState({
-      message: "Başarılı bir şekilde eklendi.",
-      severity: "success",
-      open: true,
-    });
-
-    // 4) Temizleme
-    setFormData({
-      serviceName: "",
-      provider: "",
-      validityDate: "",
-      serviceFee: "",
-      currency: "",
-      status: "",
-      //Manuel
-      manualServiceName: "",
-      manualProvider: "",
-    });
-    setManualEntry({
-      serviceName: "",
-    });
+    try {
+      onAddService({
+        serviceName: finalServiceName,
+        provider: formData.provider,
+        validityDate: formData.validityDate,
+        serviceFee: formData.serviceFee,
+        currencyName: formData.currencyName,
+        status: formData.status,
+      });
+      // 4) Temizleme
+      setFormData({
+        serviceName: "",
+        provider: "",
+        validityDate: "",
+        serviceFee: "",
+        currencyName: "",
+        status: "",
+        //Manuel
+        manualServiceName: "",
+        manualProvider: "",
+      });
+      setManualEntry({
+        serviceName: "",
+      });
+      setAlertState({
+        message: "Hizmet başarıyla eklendi.",
+        severity: "success",
+        open: true,
+      });
+      setTimeout(() => {
+        setPopUpOpen(false);
+      }, 500);
+    } catch (error) {
+      setAlertState({
+        message: "Hizmet eklenirken bir hata oluştu.",
+        severity: "error",
+        open: true,
+      });
+      return;
+    }
   };
 
   // Alert'i 5 sn sonra kapat
@@ -187,18 +205,7 @@ export default function AddService({ servicesData }) {
     }
   }, [alertState.open]);
 
-  const uniqueServiceNames = [
-    ...new Set(servicesData.map((service) => service.serviceName)),
-  ];
-
-  const uniqueProviders = [
-    ...new Set(servicesData.map((provider) => provider.provider)),
-    "(Klinik Hizmeti)",
-  ];
-
-  const uniqueCurrencies = [
-    ...new Set(servicesData.map((currency) => currency.currency)),
-  ];
+  const uniqueCurrencies = ["TRY", "USD", "EUR"];
 
   const renderDropdown = (label, key, options, direction = "down") => {
     const isManual = manualEntry[key];
@@ -322,7 +329,11 @@ export default function AddService({ servicesData }) {
                     </button>
                   </div>
                 ) : (
-                  renderDropdown("Hizmet Adı", "serviceName", uniqueServiceNames)
+                  renderDropdown(
+                    "Hizmet Adı",
+                    "serviceName",
+                    uniqueServiceNames
+                  )
                 )}
               </div>
               <div className="mb-4">
@@ -366,7 +377,7 @@ export default function AddService({ servicesData }) {
                 />
               </div>
               <div className="mb-4">
-                {renderDropdown("Para Birimi", "currency", uniqueCurrencies)}
+                {renderDropdown("Para Birimi", "currencyName", uniqueCurrencies, "up")}
               </div>
               <div className="flex justify-end">
                 <button
