@@ -18,6 +18,7 @@ export default function ConsultantTableWrapper({
   startDate,
   endDate,
   options: { clinicOptions, doctorOptions, genderOptions },
+  fetchAppointments, // <-- API'den randevu verisi çekmek için kullanılacak fonksiyon
 }) {
   // Duruma göre rozet/badge CSS'leri
   const getStatusClass = (status) => {

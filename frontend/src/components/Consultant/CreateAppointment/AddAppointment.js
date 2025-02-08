@@ -4,6 +4,7 @@ import SingleAppointmentForm from "./SingleAppointmentForm";
 import GroupAppointmentForm from "./GroupAppointmentForm";
 
 export default function AddAppointment({
+  onAddAppointment, // <-- API'ye yeni randevu eklemek için kullanılacak fonksiyon
   options: { clinicOptions, doctorOptions, genderOptions },
   prefilledData = null, // <-- tablo satırından gelecek veriler (opsiyonel)
 }) {

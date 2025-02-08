@@ -1,15 +1,71 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import ConsultantSearchContainer from "../components/SearchContainer";
 import ConsultantTableWrapper from "../components/Consultant/ConsultantTable/ConsultantTableWrapper";
 // import AddAppointment from "../components/Consultant/CreateAppointmentButton";
 import AddAppointment from "../components/Consultant/CreateAppointment/AddAppointment";
-import appointmentData from "../appointmentData.json";
+// import appointmentData from "../appointmentData.json";
 import DateFilter from "../components/DateFilter";
+import {
+  getAppointments,
+  createAppointment,
+} from "../services/appointmentService";
+import { getUsers } from "../services/userService";
 
 export default function ConsultantPage() {
+  const [appointmentData, setAppointmentData] = useState([]);
+  const [userData, setUserData] = useState([]);
+  const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+
+  const fetchUsers = async () => {
+    try {
+      setLoading(true);
+      const response = await getUsers();
+      setUserData(response.data || []);
+      // console.log("Personel alındı:", response.data);
+    } catch (error) {
+      console.error("Personelleri alırken hata oluştu:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  const fetchAppointments = async () => {
+    try {
+      setLoading(true);
+      const response = await getAppointments();
+      setAppointmentData(response.data || []);
+      console.log("Randevular alındı:", response.data);
+    } catch (error) {
+      console.error("Randevuları alırken hata oluştu:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchAppointments();
+  }, []);
+
+  const handleAddAppointment = async (appointmentData) => {
+    try {
+      console.log("📤 API'ye Gönderilen Veri:", appointmentData);
+      const newAppointment = await createAppointment(appointmentData);
+      setAppointmentData((prevData) => [
+        newAppointment.appointment,
+        ...prevData,
+      ]);
+      await fetchAppointments();
+    } catch (error) {
+      console.error("Randevu eklerken hata oluştu:", error);
+    }
+  };
 
   const handleSearchChange = (event) => {
     setSearchQuery(event.target.value);
@@ -24,14 +80,25 @@ export default function ConsultantPage() {
   };
 
   // Bu tabloya özel dropdown verileri
-  const clinicOptions =
-    appointmentData && Array.isArray(appointmentData)
-      ? [...new Set(appointmentData.map((item) => item.clinic))]
-      : [];
-  const doctorOptions =
-    appointmentData && Array.isArray(appointmentData)
-      ? [...new Set(appointmentData.map((item) => item.doctor))]
-      : [];
+  const clinicOptions = [
+    ...new Set(
+      userData.map(
+        (item) => item?.clinicId?.clinicName || "Klinik Belirtilmedi"
+      )
+    ),
+  ];
+  const doctorOptions = [
+    ...new Set(
+      userData
+        .filter((item) => item?.roleName === "doctor") // Sadece "doctor" olanları filtrele
+        .map(
+          (item) =>
+            (item?.firstName + " " + item?.lastName).trim() ||
+            "Klinik Belirtilmedi"
+        )
+    ),
+  ];
+
   const genderOptions = ["Erkek", "Kadın"];
 
   return (
@@ -46,6 +113,7 @@ export default function ConsultantPage() {
             onEndDateChange={handleEndDateChange}
           />
           <AddAppointment
+            onAddAppointment={handleAddAppointment}
             options={{
               clinicOptions,
               doctorOptions,
@@ -59,13 +127,14 @@ export default function ConsultantPage() {
         <ConsultantTableWrapper
           data={appointmentData}
           searchQuery={searchQuery}
-          startDate={startDate} 
+          startDate={startDate}
           endDate={endDate}
           options={{
             clinicOptions,
             doctorOptions,
             genderOptions,
           }}
+          fetchAppointments={fetchAppointments}
         />
       </div>
     </div>
