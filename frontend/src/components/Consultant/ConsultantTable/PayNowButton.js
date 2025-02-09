@@ -1,40 +1,56 @@
 import React, { useEffect, useState } from "react";
 import { IoIosCloseCircleOutline } from "react-icons/io";
+import {
+  createPayment,
+  updatePayment, // updatePayment fonksiyonunu da ekliyoruz
+  getPaymentsByAppointment,
+} from "../../../services/paymentService";
 
 /**
- * PaymentPopup bileşeni (Tasarım geliştirilmiş sürüm)
- * - isOpen: popup açık mı?
- * - onClose: popup'ı kapatma fonksiyonu
- * - row: Tablodan gelen randevu verisi (içinde hasta adı, doctor vb.)
- * - servicesData: Doktor/hizmet JSON verisi
+ * PaymentPopup bileşeni
+ * Props:
+ * - isOpen: Popup açık mı?
+ * - onClose: Popup'ı kapatma fonksiyonu
+ * - row: Randevu (appointment) bilgileri (appointmentId, doktor, hasta bilgileri vb.)
+ * - servicesData: Hizmetlerin listesini içeren JSON (doktor hizmetleri ve "Genel Hizmet" kayıtları)
+ * - onPaymentSuccess: (Opsiyonel) Ödeme başarılı olduktan sonra çağrılacak callback (örn. randevuları yeniden sorgulamak için)
  */
-export default function PaymentPopup({ isOpen, onClose, row, servicesData }) {
-  // Doktor ücretini bulalım (örnek: provider === row.doctor)
+export default function PaymentPopup({
+  isOpen,
+  onClose,
+  row,
+  servicesData,
+  onPaymentSuccess,
+}) {
+  // Doktora ait hizmeti bul (doktor adı ve "Aktif" durumu kontrolü)
   const matchedService = servicesData.find(
-    (s) => s.provider === row.doctor && s.status === "Aktif"
+    (s) => s.provider === row.doctorName && s.status === "Aktif"
   );
   const doctorFee = matchedService ? matchedService.serviceFee : 0;
 
-  // Ek hizmetler (örnek - sabit)
-  const extraServices = [
-    { id: 1, name: "Röntgen", price: 50 },
-    { id: 2, name: "Bandaj", price: 30 },
-    { id: 3, name: "Ekstra Danışmanlık", price: 80 },
-  ];
+  // Ek hizmetler: "Genel Hizmet" sağlayıcısı ve aktif olanlar
+  const extraServices = servicesData.filter(
+    (s) => s.provider === "Genel Hizmet" && s.status === "Aktif"
+  );
 
+  // Bileşen state'leri
   const [selectedExtras, setSelectedExtras] = useState([]);
-  const [paymentMode, setPaymentMode] = useState("full"); // "full" | "partial"
-  const [paymentType, setPaymentType] = useState(null); // "nakit" | "kredi" | "sigorta"
+  const [paymentMode, setPaymentMode] = useState(null); // "full" veya "partial"
+  const [paymentType, setPaymentType] = useState(null); // "nakit", "kredi", "sigorta"
   const [partialAmount, setPartialAmount] = useState("");
   const [paymentNote, setPaymentNote] = useState("");
+  const [sumPaid, setSumPaid] = useState(0);
+  const [existingPayment, setExistingPayment] = useState(null);
 
-  // Toplam: Doktor ücreti + seçilen ek hizmet fiyatları
-  const baseTotal =
-    doctorFee +
-    selectedExtras.reduce((acc, ex) => acc + ex.price, 0) -
-    partialAmount;
+  // Eğer daha önce ödeme yapılmışsa, toplam tutar Payment belgesindeki serviceFee üzerinden alınır.
+  // Aksi halde, toplam tutar doktor ücreti + seçilen ek hizmetlerin toplamıdır.
+  const totalCost = existingPayment
+    ? Number(existingPayment.serviceFee)
+    : doctorFee + selectedExtras.reduce((acc, svc) => acc + svc.serviceFee, 0);
+  // Kalan tutar = (toplam ücret) - (daha önce ödenen)
+  const remainingAmount = Math.max(totalCost - sumPaid, 0);
 
-  // ESC ile kapatma
+  // ESC tuşuna basıldığında popup'ı kapat
   useEffect(() => {
     const handleEsc = (e) => {
       if (e.key === "Escape") onClose();
@@ -43,42 +59,124 @@ export default function PaymentPopup({ isOpen, onClose, row, servicesData }) {
     return () => window.removeEventListener("keydown", handleEsc);
   }, [isOpen, onClose]);
 
+  // Popup açıldığında ilgili randevuya ait ödeme kayıtlarını getir
+  useEffect(() => {
+    async function fetchPayments() {
+      try {
+        const res = await getPaymentsByAppointment(row._id);
+        if (res.payments && res.payments.length > 0) {
+          const payments = res.payments;
+          const totalPaid = payments.reduce(
+            (acc, payment) => acc + Number(payment.paymentAmount),
+            0
+          );
+          setSumPaid(totalPaid);
+          setExistingPayment(payments[0]); // İlk ödeme kaydı üzerinden bilgiler alınır
+        } else {
+          setSumPaid(0);
+          setExistingPayment(null);
+        }
+      } catch (err) {
+        console.error("Önceki ödemeler alınamadı:", err);
+      }
+    }
+    if (isOpen && row && row._id) {
+      fetchPayments();
+    }
+  }, [isOpen, row]);
+
   if (!isOpen) return null;
 
-  // Ek hizmet seç / kaldır
+  // Mevcut ödeme varsa, ek hizmet seçimlerine izin vermiyoruz.
   const handleExtraChange = (service) => {
-    const alreadySelected = selectedExtras.find((ex) => ex.id === service.id);
+    if (existingPayment) return;
+    const alreadySelected = selectedExtras.find((ex) => ex._id === service._id);
     if (alreadySelected) {
-      setSelectedExtras((prev) => prev.filter((ex) => ex.id !== service.id));
+      setSelectedExtras(selectedExtras.filter((ex) => ex._id !== service._id));
     } else {
-      setSelectedExtras((prev) => [...prev, service]);
+      setSelectedExtras([...selectedExtras, service]);
     }
   };
 
-  // Ödemeyi tamamla
-  const handlePaymentComplete = () => {
-    if (paymentMode === "full") {
-      // Tüm tutar ödendi => status = "Tamamlandı"
-      console.log("Tam ödeme yapıldı -> status = Tamamlandı");
-    } else {
-      // Kısmi ödeme => status = "Ödeme Bekleniyor"
-      console.log("Kısmi ödeme yapıldı -> status = Ödeme Bekleniyor");
+  // Ödeme tamamlanma işlemi
+  const handlePaymentComplete = async () => {
+    // Ödenecek tutar:
+    // - Tam ödeme modunda "kalan tutar" ödeniyor.
+    // - Kısmi ödeme modunda kullanıcı tarafından girilen tutar.
+    const paymentAmountValue =
+      paymentMode === "full" ? remainingAmount : Number(partialAmount);
+
+    // Ödeme için kullanılacak hizmet ID'leri: Doktor hizmeti (matchedService) + seçilen ek hizmetler
+    const serviceIds = [];
+    if (matchedService) {
+      serviceIds.push(matchedService._id);
     }
-    onClose();
+    serviceIds.push(...selectedExtras.map((svc) => svc._id));
+
+    // Kısmi ödeme için tutar kontrolü: Girilen tutar 0'dan büyük ve kalan tutarı aşmamalı.
+    if (
+      paymentMode === "partial" &&
+      (paymentAmountValue <= 0 || paymentAmountValue > remainingAmount)
+    ) {
+      alert(
+        "Lütfen geçerli bir kısmi ödeme tutarı giriniz. Kalan tutar: " +
+          remainingAmount +
+          " TL"
+      );
+      return;
+    }
+
+    // Gönderilecek payload
+    const payload = {
+      currencyName: "TRY", // Varsayılan para birimi (gerekirse güncellenebilir)
+      serviceIds, // Seçilen hizmetlerin ID'leri
+      paymentMethod: paymentType,
+      paymentAmount: paymentAmountValue,
+      paymentDescription: paymentNote,
+      appointmentId: row._id, // Randevu ID'si
+      // paymentDate: new Date().toISOString(), // Opsiyonel
+    };
+
+    try {
+      // Eğer daha önce ödeme yapılmışsa, updatePayment çalışsın; yoksa createPayment
+      if (existingPayment) {
+        const updatedPayload = {
+          currencyName: "TRY", // Varsayılan para birimi (gerekirse güncellenebilir)
+          serviceIds, // Seçilen hizmetlerin ID'leri
+          paymentMethod: paymentType,
+          paymentAmount: paymentAmountValue + remainingAmount,
+          paymentDescription: paymentNote,
+          appointmentId: row._id, // Randevu ID'si
+          // paymentDate: new Date().toISOString(), // Opsiyonel
+        };
+        await updatePayment(existingPayment._id, updatedPayload);
+        console.log("Ödeme güncellendi:", payload);
+      } else {
+        await createPayment(payload);
+      }
+      alert("Ödeme başarıyla gerçekleştirildi.");
+      // Ödeme başarılı olduktan sonra callback çalışsın
+      if (typeof onPaymentSuccess === "function") {
+        onPaymentSuccess();
+      }
+      onClose();
+    } catch (error) {
+      console.error("Ödeme oluşturulamadı:", error);
+      alert("Ödeme gerçekleştirilirken bir hata oluştu.");
+    }
   };
 
-  // Buton aktif mi?
-  const isPaymentCompleteDisabled = (() => {
-    if (!paymentMode) return true; // henüz full/partial seçilmedi
+  // "Ödemeyi Tamamla" butonunun aktif olup olmamasını kontrol eden fonksiyon
+  const isPaymentCompleteDisabled = () => {
+    if (!paymentMode) return true;
     if (paymentMode === "full") {
-      return !paymentType; // nakit / kredi / sigorta seçili değilse
+      return !paymentType || remainingAmount <= 0;
+    } else if (paymentMode === "partial") {
+      const amt = Number(partialAmount);
+      return !paymentType || amt <= 0 || amt > remainingAmount;
     }
-    if (paymentMode === "partial") {
-      if (!paymentType) return true; // nakit/kredi
-      if (partialAmount <= 0) return true;
-    }
-    return false;
-  })();
+    return true;
+  };
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50">
@@ -96,21 +194,21 @@ export default function PaymentPopup({ isOpen, onClose, row, servicesData }) {
           Ödeme Ekranı
         </h2>
 
-        {/* İçerik: İki sütun (detaylar solda, ödeme sağda) */}
+        {/* İçerik: İki sütun */}
         <div className="flex flex-col md:flex-row gap-8">
-          {/* SOL SÜTUN: Hasta, doktor, ek hizmetler */}
+          {/* SOL SÜTUN: Ücret Detayları */}
           <div className="flex-1 bg-gray-50 p-4 rounded-md border border-gray-200 shadow-sm">
             <h3 className="text-xl font-semibold mb-3 text-gray-700">
               Ücret Detayları
             </h3>
             <div className="space-y-2">
-              {/* Hasta & Doktor */}
               <p className="text-lg text-gray-600">
                 <strong className="text-gray-700">Hasta:</strong>{" "}
                 {row.clientFirstName} {row.clientLastName}
               </p>
               <p className="text-lg text-gray-600">
-                <strong className="text-gray-700">Doktor:</strong> {row.doctor}
+                <strong className="text-gray-700">Doktor:</strong>{" "}
+                {row.doctorName}
               </p>
               <p className="text-lg text-gray-600">
                 <strong className="text-gray-700">Muayene Ücreti:</strong>{" "}
@@ -122,10 +220,10 @@ export default function PaymentPopup({ isOpen, onClose, row, servicesData }) {
             <div className="mt-4">
               <p className="font-semibold text-gray-700 mb-2">Ek Hizmetler</p>
               {extraServices.map((svc) => {
-                const checked = selectedExtras.some((ex) => ex.id === svc.id);
+                const checked = selectedExtras.some((ex) => ex._id === svc._id);
                 return (
                   <label
-                    key={svc.id}
+                    key={svc._id}
                     className="block text-lg text-gray-700 mb-1"
                   >
                     <input
@@ -133,8 +231,9 @@ export default function PaymentPopup({ isOpen, onClose, row, servicesData }) {
                       className="mr-2"
                       checked={checked}
                       onChange={() => handleExtraChange(svc)}
+                      disabled={existingPayment}
                     />
-                    {svc.name} (+{svc.price} TL)
+                    {svc.serviceName} (+{svc.serviceFee} TL)
                   </label>
                 );
               })}
@@ -143,12 +242,15 @@ export default function PaymentPopup({ isOpen, onClose, row, servicesData }) {
             {/* Toplam Tutar */}
             <div className="flex justify-end mt-4 border-t pt-2">
               <span className="text-lg font-semibold text-gray-800">
-                Toplam: {baseTotal} TL
+                Toplam: {totalCost} TL
+              </span>
+              <span className="ml-4 text-lg font-semibold text-gray-800">
+                Kalan: {remainingAmount} TL
               </span>
             </div>
           </div>
 
-          {/* SAĞ SÜTUN: Ödeme seçenekleri */}
+          {/* SAĞ SÜTUN: Ödeme Seçenekleri */}
           <div className="flex-1 bg-gray-50 p-4 rounded-md border border-gray-200 shadow-sm">
             <h3 className="text-lg font-semibold mb-3 text-gray-700">
               Ödeme Seçenekleri
@@ -192,7 +294,7 @@ export default function PaymentPopup({ isOpen, onClose, row, servicesData }) {
                 <p className="text-lg font-semibold text-gray-700 mb-2">
                   Tam Ödeme Yöntemi
                 </p>
-                <div className="flex gap-4 items-center mb-3 items-center justify-center">
+                <div className="flex gap-4 items-center mb-3 justify-center">
                   <label className="flex items-center gap-1 text-gray-600">
                     <input
                       type="radio"
@@ -226,17 +328,16 @@ export default function PaymentPopup({ isOpen, onClose, row, servicesData }) {
                 </div>
                 <div>
                   <label
-                    htmlFor="partialAmount"
+                    htmlFor="fullPaymentAmount"
                     className="block mb-1 text-lg font-medium text-gray-700"
                   >
                     Ödenecek Tutar (TL):
                   </label>
                   <input
                     type="number"
-                    id="baseTotal"
+                    id="fullPaymentAmount"
                     className="border px-2 py-1 rounded w-40"
-                    placeholder={baseTotal}
-                    value={baseTotal}
+                    value={remainingAmount}
                     disabled
                   />
                 </div>
@@ -249,7 +350,7 @@ export default function PaymentPopup({ isOpen, onClose, row, servicesData }) {
                 <p className="text-lg font-semibold text-gray-700 mb-2">
                   Kısmi Ödeme Yöntemi
                 </p>
-                <div className="flex gap-4 items-center mb-3 items-center justify-center">
+                <div className="flex gap-4 items-center mb-3 justify-center">
                   <label className="flex items-center gap-1 text-gray-600">
                     <input
                       type="radio"
@@ -270,7 +371,7 @@ export default function PaymentPopup({ isOpen, onClose, row, servicesData }) {
                     />
                     Kredi Kartı
                   </label>
-                  {/* Sigorta opsiyonu yok */}
+                  {/* Sigorta seçeneği kısmi ödemede yok */}
                 </div>
                 <div>
                   <label
@@ -287,6 +388,11 @@ export default function PaymentPopup({ isOpen, onClose, row, servicesData }) {
                     value={partialAmount}
                     onChange={(e) => setPartialAmount(e.target.value)}
                   />
+                </div>
+                <div className="mt-2">
+                  <span className="text-lg font-semibold text-gray-800">
+                    Kalan Tutar: {remainingAmount} TL
+                  </span>
                 </div>
               </div>
             )}
@@ -313,11 +419,11 @@ export default function PaymentPopup({ isOpen, onClose, row, servicesData }) {
             <div className="flex justify-end mt-6">
               <button
                 className={`px-6 py-2 rounded font-semibold ${
-                  isPaymentCompleteDisabled
+                  isPaymentCompleteDisabled()
                     ? "bg-gray-300 text-gray-500 cursor-not-allowed"
                     : "bg-[#399AA1] text-white hover:bg-[#007E85]"
                 }`}
-                disabled={isPaymentCompleteDisabled}
+                disabled={isPaymentCompleteDisabled()}
                 onClick={handlePaymentComplete}
               >
                 Ödemeyi Tamamla

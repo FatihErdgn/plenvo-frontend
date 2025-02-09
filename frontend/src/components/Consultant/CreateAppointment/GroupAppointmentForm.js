@@ -5,9 +5,11 @@ import Collapse from "@mui/material/Collapse";
 import AppointmentDatePicker from "./DatePicker";
 
 export default function GroupAppointmentForm({
+  appointments,
   onClose,
-  options: { clinicOptions, doctorOptions, genderOptions },
+  options: { clinicOptions, doctorOptions, doctorList, genderOptions },
   prefilledData,
+  onAddAppointment,
 }) {
   // Katılımcılar
   const [participants, setParticipants] = useState(
@@ -49,7 +51,13 @@ export default function GroupAppointmentForm({
   const addParticipant = () => {
     setParticipants((prev) => [
       ...prev,
-      { clientFirstName: "", clientLastName: "", phoneNumber: "", gender: "", age: "" },
+      {
+        clientFirstName: "",
+        clientLastName: "",
+        phoneNumber: "",
+        gender: "",
+        age: "",
+      },
     ]);
   };
 
@@ -80,7 +88,9 @@ export default function GroupAppointmentForm({
 
     // Basit kontrol (örnek)
     if (
-      participants.some((p) => !p.clientFirstName || !p.clientLastName || !p.gender) ||
+      participants.some(
+        (p) => !p.clientFirstName || !p.clientLastName || !p.gender
+      ) ||
       !groupData.clinic ||
       !groupData.doctor ||
       !groupData.datetime
@@ -93,18 +103,76 @@ export default function GroupAppointmentForm({
       return;
     }
 
-    // Tüm veri
-    const finalData = {
-      ...groupData,
-      participants: participants,
-    };
-    console.log("Form Data:", finalData);
+    try {
+      if (!groupData.datetime) {
+        setAlertState({
+          message: "Lütfen tarih ve saat seçiniz.",
+          severity: "error",
+          open: true,
+        });
+        return;
+      }
 
-    setAlertState({
-      message: "Başarılı bir şekilde eklendi.",
-      severity: "success",
-      open: true,
-    });
+      if (participants.length < 2) {
+        setAlertState({
+          message:
+            "Grup randevusu oluşturabilmek için en az 2 katılımcı ekleyin.",
+          severity: "error",
+          open: true,
+        });
+        return;
+      }
+
+      if (participants.length > 10) {
+        setAlertState({
+          message: "Bir grup randevusunda en fazla 10 katılımcı olabilir.",
+          severity: "error",
+          open: true,
+        });
+        return;
+      }
+
+      if (groupData.datetime < new Date()) {
+        setAlertState({
+          message: "Geçmiş bir tarih seçemezsiniz.",
+          severity: "error",
+          open: true,
+        });
+        return;
+      }
+
+      // Tüm veri
+      const finalData = {
+        ...groupData,
+        participants: participants,
+        type: "group",
+        datetime: new Date(groupData.datetime).toISOString(),
+      };
+
+      console.log("Group form Data:", finalData);
+      onAddAppointment(finalData);
+      onClose();
+    } catch (error) {
+      console.error("Grup randevu oluşturulurken hata oluştu:", error);
+      setAlertState({
+        message: "Grup randevu oluşturulurken bir hata oluştu.",
+        severity: "error",
+        open: true,
+      });
+    }
+
+    // // Tüm veri
+    // const finalData = {
+    //   ...groupData,
+    //   participants: participants,
+    // };
+    // console.log("Form Data:", finalData);
+
+    // setAlertState({
+    //   message: "Başarılı bir şekilde eklendi.",
+    //   severity: "success",
+    //   open: true,
+    // });
   };
 
   // Ortak dropdown aç/kapa
@@ -114,6 +182,17 @@ export default function GroupAppointmentForm({
       [dropdownKey]: !prev[dropdownKey],
     }));
   };
+
+  // Doktor dropdown seçeneklerini, seçili kliniğe göre filtreleyelim:
+  const filteredDoctorOptions = doctorList
+    .filter((doctor) => {
+      // Eğer bir klinik seçildiyse, sadece o kliniğe ait doktorları göster.
+      // Klinik seçilmediyse tüm doktorlar gelsin.
+      return groupData.clinic
+        ? doctor?.clinicId?.clinicName === groupData.clinic
+        : true;
+    })
+    .map((doctor) => (doctor?.firstName + " " + doctor?.lastName).trim());
 
   /**
    * Grup seviyesindeki "clinic" ve "doctor" dropdown
@@ -315,10 +394,23 @@ export default function GroupAppointmentForm({
           {renderGroupDropdown("Klinik", "clinic", clinicOptions, "down")}
         </div>
         <div className="mb-4">
-          {renderGroupDropdown("Doktor", "doctor", doctorOptions, "down")}
+          {renderGroupDropdown(
+            "Doktor",
+            "doctor",
+            filteredDoctorOptions,
+            "down"
+          )}
         </div>
         <div className="mb-4">
-          <AppointmentDatePicker />
+          <AppointmentDatePicker
+            selectedDate={groupData.datetime}
+            onDateChange={(date) =>
+              setGroupData((prev) => ({ ...prev, datetime: date }))
+            }
+            appointments={appointments}
+            selectedClinic={groupData.clinic}
+            selectedDoctor={groupData.doctor}
+          />
           {/* <label className="block text-gray-700 mb-1">
             Randevu Tarihi ve Saati
           </label>

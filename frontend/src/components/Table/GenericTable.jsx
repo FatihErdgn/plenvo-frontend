@@ -34,8 +34,7 @@ export default function GenericTable() {
 
             // (Örnek) isGroupRow kontrolü
             const isGroupRow =
-              row?.clientFirstName === "Grup" &&
-              row?.clientLastName === "Randevusu";
+              row?.type === "group";
 
             return (
               <tr

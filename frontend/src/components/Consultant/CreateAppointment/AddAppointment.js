@@ -5,7 +5,7 @@ import GroupAppointmentForm from "./GroupAppointmentForm";
 
 export default function AddAppointment({
   onAddAppointment, // <-- API'ye yeni randevu eklemek için kullanılacak fonksiyon
-  options: { clinicOptions, doctorOptions, genderOptions,doctorList }, // <-- select input seçenekleri
+  options: { clinicOptions, doctorOptions, genderOptions, doctorList }, // <-- select input seçenekleri
   prefilledData = null, // <-- tablo satırından gelecek veriler (opsiyonel)
   appointments, // <-- randevu verileri
 }) {
@@ -126,10 +126,12 @@ export default function AddAppointment({
                   Grup Randevusu
                 </h2>
                 <GroupAppointmentForm
+                  appointments={appointments}
                   onClose={handleClosePopup}
                   options={{
                     clinicOptions,
                     doctorOptions,
+                    doctorList,
                     genderOptions,
                   }}
                   prefilledData={

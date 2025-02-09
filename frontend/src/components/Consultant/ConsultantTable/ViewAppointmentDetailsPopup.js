@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { IoIosCloseCircleOutline } from "react-icons/io";
 import { Alert, Collapse } from "@mui/material";
+import { parse } from "date-fns";
 
 export default function ViewAppointmentDetailsPopup({
   data,
@@ -151,10 +152,11 @@ export default function ViewAppointmentDetailsPopup({
     // Öncelikle ortak alanları kontrol et
     if (
       !formData.status ||
-      !formData.appointmentDateTime ||
-      !formData.clinic ||
-      !formData.doctor
+      !formData.datetime ||
+      !formData.clinicName ||
+      !formData.doctorName
     ) {
+      console.log("formData", formData);
       setAlertState({
         message: "Lütfen (status, tarih, klinik, doktor) alanlarını doldurun.",
         severity: "error",
@@ -209,11 +211,15 @@ export default function ViewAppointmentDetailsPopup({
       }
     }
 
+    const parsedDate = parse(formData.datetime, 'dd.MM.yyyy HH:mm', new Date());
+
+    const isoDate = new Date(parsedDate).toISOString();
+
     // Final veriyi oluştur
     const finalData =
       formData.type === "group"
-        ? { ...formData, participants }
-        : { ...formData };
+        ? { ...formData, participants, datetime: isoDate }
+        : { ...formData, datetime: isoDate };
 
     // Burada API isteği gönderebilirsiniz (PUT/PATCH).
     try {
@@ -228,6 +234,13 @@ export default function ViewAppointmentDetailsPopup({
       open: true,
     });
   };
+
+  const statusOptions = [
+    "Açık",
+    "Ödeme Bekleniyor",
+    "Tamamlandı",
+    "İptal Edildi",
+  ];
 
   // Ortak dropdown (status, clinic, doctor)
   const renderDropdown = (label, key, options, direction = "down") => (
@@ -384,6 +397,23 @@ export default function ViewAppointmentDetailsPopup({
                   className="w-full px-4 py-2 border rounded-lg bg-gray-100"
                 />
               </div>
+            )}
+          </div>
+
+          <div className="mb-4">
+            {isEditable ? (
+              renderDropdown("Randevu Durumu", "status", statusOptions, "up")
+            ) : (
+              <>
+                <label className="block text-gray-700">Randevu Durumu</label>
+                <input
+                  type="text"
+                  name="status"
+                  value={formData.status || ""}
+                  disabled
+                  className="w-full px-4 py-2 border rounded-lg bg-gray-100"
+                />
+              </>
             )}
           </div>
 

@@ -17,13 +17,13 @@ export default function ExpensesTableWrapper({
   const getStatusClass = (kind) => {
     switch (kind) {
       case "Gelir":
-        return "flex flex-row items-center justify-center bg-[#EBF9F1] border-[1px] border-[#41BC63] text-[#41BC63] py-[6px] ml-6 max-w-32 min-w-16 rounded-full text-center";
+        return "items-center justify-center bg-[#EBF9F1] border-[1px] border-[#41BC63] text-[#41BC63] py-2 px-6 max-w-32 min-w-16 rounded-full text-center";
       case "Sabit":
-        return "flex flex-row items-center justify-center bg-[#FBF9F4] border-[1px] border-[#BC9241] text-[#BC9241] py-[6px] ml-6 w-32 min-w-16 rounded-full text-center";
+        return "items-center justify-center bg-[#FBF9F4] border-[1px] border-[#BC9241] text-[#BC9241] py-2 px-6 w-32 min-w-16 rounded-full text-center";
       case "Genel":
-        return "flex flex-row items-center justify-center bg-[#FBF4F4] border-[1px] border-[#BC4141] text-[#BC4141] py-[6px] ml-6 w-32 min-w-16 rounded-full text-center";
+        return "items-center justify-center bg-[#FBF4F4] border-[1px] border-[#BC4141] text-[#BC4141] py-2 px-6 w-32 min-w-16 rounded-full text-center";
       default:
-        return "flex flex-row items-center justify-center bg-gray-100 border-[1px] border-gray-500 text-gray-500 py-[6px] ml-6 w-32 min-w-16 rounded-full text-center";
+        return "items-center justify-center bg-gray-100 border-[1px] border-gray-500 text-gray-500 py-2 px-6 w-32 min-w-16 rounded-full text-center";
     }
   };
 

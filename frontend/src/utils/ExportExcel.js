@@ -1,22 +1,37 @@
 // utils/ExportExcel.js
 import React from "react";
-import { useTableContext } from "../contexts/TableContext"; // kendi dosya yolunuza göre düzenleyin
+import { useTableContext } from "../contexts/TableContext"; // Kendi dosya yolunuza göre düzenleyin
 import * as XLSX from "xlsx";
 import { RiFileExcel2Line } from "react-icons/ri";
 
 export default function ExportExcel({ fileName = "Export.xlsx" }) {
   const { data, excelColumns } = useTableContext();
 
-  // Excel’e aktarılacak veriye dönüştürme
+  // Excel’e aktarılacak veriyi dönüştürme:
+  // Önce her sütun için, getValue varsa onu, yoksa renderCell varsa onu çalıştırıp değeri alıyoruz.
   const transformDataForExcel = () => {
     if (!data || data.length === 0) return [];
-
-    // actions key’ini dışarıda bırakıyoruz, kalanı "label" -> "value" eşlemesi
     return data.map((row) => {
       const newObj = {};
       excelColumns.forEach((col) => {
         if (col.key !== "actions") {
-          newObj[col.label] = row[col.key];
+          let value = "";
+          if (typeof col.getValue === "function") {
+            value = col.getValue(row);
+          } else if (typeof col.renderCell === "function") {
+            const rendered = col.renderCell(row);
+            if (typeof rendered === "string" || typeof rendered === "number") {
+              value = rendered.toString();
+            } else if (React.isValidElement(rendered)) {
+              const children = rendered.props.children;
+              value = Array.isArray(children) ? children.join("") : children;
+            } else {
+              value = "";
+            }
+          } else {
+            value = row[col.key] ?? "";
+          }
+          newObj[col.label] = value;
         }
       });
       return newObj;
@@ -24,7 +39,7 @@ export default function ExportExcel({ fileName = "Export.xlsx" }) {
   };
 
   const handleExport = () => {
-    // Data
+    // Excel verisini hazırlıyoruz
     const excelData = transformDataForExcel();
 
     if (excelData.length === 0) {
@@ -32,26 +47,22 @@ export default function ExportExcel({ fileName = "Export.xlsx" }) {
       return;
     }
 
-    // 1) JSON -> Worksheet
+    // 1) JSON veriyi Worksheet'e dönüştürme
     const worksheet = XLSX.utils.json_to_sheet(excelData);
 
-    // 2) Worksheet’e (örneğin) kolon genişlikleri ekleme
-    // "wch" (width in characters) değeriyle yaklaşık kolon genişliği ayarlayabiliriz
-    // columns uzunluğunda bir dizi oluşturup, istediğiniz genişlik değerlerini girebilirsiniz
+    // 2) Worksheet'e kolon genişlikleri ekleme (örneğin tüm kolonlara 20 karakter genişlik)
     const wsCols = excelColumns
       .filter((col) => col.key !== "actions")
-      .map(() => ({ wch: 20 })); // Tüm kolonlara 20 karakter genişlik
+      .map(() => ({ wch: 20 }));
     worksheet["!cols"] = wsCols;
 
-    // 3) Çalışma alanının (sheet) aralığını buluyoruz
-    // Örn. A1'den E10'a kadarsa, orada gezinerek stil atayabiliriz
+    // 3) Worksheet'in veri aralığını alıyoruz
     const range = XLSX.utils.decode_range(worksheet["!ref"]);
 
-    // 4) Header (ilk satır) hücre stilleri
-    // (Örn. kalın metin, gri arka plan, ortalama vb.)
+    // 4) Header (ilk satır) hücre stillerini ayarlıyoruz
     const headerStyle = {
-      font: { bold: true, color: { rgb: "FFFFFFFF" } }, // beyaz font
-      fill: { fgColor: { rgb: "FF4F81BD" } }, // koyu mavi/ gri arkaplan
+      font: { bold: true, color: { rgb: "FFFFFFFF" } },
+      fill: { fgColor: { rgb: "FF4F81BD" } },
       alignment: { horizontal: "center", vertical: "center" },
       border: {
         top: { style: "thin", color: { rgb: "FFFFFFFF" } },
@@ -68,8 +79,7 @@ export default function ExportExcel({ fileName = "Export.xlsx" }) {
       }
     }
 
-    // 5) Veri hücreleri için (1. satır haricindeki hücreler) temel border ekleyelim
-    // Dilerseniz aynı şekilde arkaplan rengi vb. de ayarlayabilirsiniz
+    // 5) Veri hücreleri için temel stil (border vb.) ekleme
     const bodyStyle = {
       border: {
         top: { style: "thin", color: { rgb: "FFAAAAAA" } },
@@ -89,7 +99,7 @@ export default function ExportExcel({ fileName = "Export.xlsx" }) {
       }
     }
 
-    // 6) Workbook yarat, Worksheet'i ekle, yazdır
+    // 6) Workbook oluşturma, Worksheet'i ekleme ve dosyayı yazdırma
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Data");
     XLSX.writeFile(workbook, fileName);
@@ -100,7 +110,7 @@ export default function ExportExcel({ fileName = "Export.xlsx" }) {
       onClick={handleExport}
       className="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-700"
     >
-        <RiFileExcel2Line className="w-6 h-6" />
+      <RiFileExcel2Line className="w-6 h-6" />
     </button>
   );
 }

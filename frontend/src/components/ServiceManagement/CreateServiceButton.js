@@ -303,7 +303,12 @@ export default function AddService({
               </Alert>
             </Collapse>
             <form onSubmit={handleSubmit}>
-              <div className="mb-4">
+              <label className="text-xs text-red-500 pb-6">
+                (Kişi bazlı hizmetlerde doktorun o hizmeti her randevuda sunduğu
+                varsayılacaktır. Değişken hizmetlerde 'Genel Hizmet' seçeneğini
+                kullanabilirsiniz.)
+              </label>
+              <div className="my-4">
                 {manualEntry.serviceName ? (
                   <div className="flex gap-2 items-center">
                     <label
@@ -377,7 +382,12 @@ export default function AddService({
                 />
               </div>
               <div className="mb-4">
-                {renderDropdown("Para Birimi", "currencyName", uniqueCurrencies, "up")}
+                {renderDropdown(
+                  "Para Birimi",
+                  "currencyName",
+                  uniqueCurrencies,
+                  "up"
+                )}
               </div>
               <div className="flex justify-end">
                 <button
