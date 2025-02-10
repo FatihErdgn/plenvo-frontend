@@ -1,7 +1,8 @@
 import axios from "axios";
 
 // Backend API URL'si (Geliştirme ve Prod ortamına göre ayarlanabilir)
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || "http://localhost:5000/api";
+const API_BASE_URL =
+  process.env.REACT_APP_API_BASE_URL || "http://localhost:5000/api";
 
 // Axios instance oluşturduk (Tüm isteklerde `credentials: true` olacak)
 const api = axios.create({
@@ -25,6 +26,8 @@ export const loginUser = async (username, password) => {
       { username, password },
       { withCredentials: true }
     );
+    const userProfile = await getUserProfile();
+    console.log("👤 Kullanıcı Bilgileri:", userProfile);
     return response.data; // { success: true, token: '...' }
   } catch (error) {
     console.error("Login hatası:", error.response?.data || error.message);
