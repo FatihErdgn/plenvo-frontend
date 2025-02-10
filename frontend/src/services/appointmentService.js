@@ -5,7 +5,7 @@ const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || "http://localhost:500
 
 // Axios instance oluşturduk (Tüm isteklerde `credentials: true` olacak)
 const api = axios.create({
-  baseURL: API_BASE_URL,
+  baseURL: `${API_BASE_URL}/api`,
   withCredentials: true, // Cookie'yi istekle birlikte gönderir
   headers: {
     "Content-Type": "application/json",
