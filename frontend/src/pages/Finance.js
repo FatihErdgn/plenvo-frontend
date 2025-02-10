@@ -11,6 +11,8 @@ export default function FinancePage() {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [loading, setLoading] = useState(false);
+  // Küçük ekranlarda input formu açmak için state
+  const [showInputForm, setShowInputForm] = useState(false);
 
   // ✅ Verileri çekme fonksiyonu
   const fetchExpenses = async () => {
@@ -26,7 +28,7 @@ export default function FinancePage() {
     }
   };
 
-  // ✅ Sayfa yüklendiğinde giderleri getir
+  // Sayfa yüklendiğinde giderleri getir
   useEffect(() => {
     fetchExpenses();
   }, []);
@@ -36,7 +38,6 @@ export default function FinancePage() {
     try {
       console.log("📤 API'ye Gönderilen Veri:", expenseData);
       const newExpense = await createExpense(expenseData);
-
       setExpensesData((prevData) => [newExpense.expense, ...prevData]);
       await fetchExpenses();
     } catch (error) {
@@ -48,43 +49,105 @@ export default function FinancePage() {
   const handleStartDateChange = (event) => setStartDate(event.target.value);
   const handleEndDateChange = (event) => setEndDate(event.target.value);
 
-  // ✅ Dropdown için unique değerleri hesapla
+  // ✅ Dropdown için unique değerler
   const uniqueCategories = [
     ...new Set(expensesData.map((item) => item.expenseCategory)),
   ];
   const uniqueKinds = ["Sabit", "Genel"];
-  // const uniqueKinds = [...new Set(expensesData.map((item) => item.expenseKind))];
   const uniqueCurrencies = ["TRY", "USD", "EUR"];
 
   return (
     <div className="w-screen bg-[#f4f7fe] p-8 overflow-auto rounded-l-[40px] relative z-20">
-      <div className="flex flex-row justify-between items-center">
-        <h1 className="text-3xl font-bold mb-6">Maliyet Yönetimi</h1>
-        <div className="flex flex-row justify-end gap-4">
-          <SearchContainer onSearchChange={handleSearchChange} />
-          <DateFilter
-            onStartDateChange={handleStartDateChange}
-            onEndDateChange={handleEndDateChange}
-          />
+      <div className="max-w-7xl mx-auto">
+        {/* Üst başlık ve kontrol elemanları */}
+        <div className="flex flex-col md:flex-row justify-between items-center mb-6">
+          <h1 className="text-3xl font-bold">Maliyet Yönetimi</h1>
+          <div className="flex items-center gap-4">
+            <SearchContainer onSearchChange={handleSearchChange} />
+            <DateFilter
+              onStartDateChange={handleStartDateChange}
+              onEndDateChange={handleEndDateChange}
+            />
+            {/* Büyük ekranlarda input form görünür, küçük ekranlarda hamburger buton */}
+            <div className="hidden md:block">
+              <ExpensesInputForm
+                onAddExpense={handleAddExpense}
+                uniqueCategories={uniqueCategories}
+                uniqueKinds={uniqueKinds}
+                uniqueCurrencies={uniqueCurrencies}
+              />
+            </div>
+            <button
+              className="block md:hidden p-2 bg-white rounded shadow"
+              onClick={() => setShowInputForm(true)}
+            >
+              {/* Hamburger ikon SVG */}
+              <svg
+                className="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M4 6h16M4 12h16M4 18h16"
+                ></path>
+              </svg>
+            </button>
+          </div>
         </div>
-      </div>
 
-      <div className="flex flex-row gap-8">
-        {/* ✅ Unique değerleri buradan yolla */}
-        <ExpensesInputForm
-          onAddExpense={handleAddExpense}
-          uniqueCategories={uniqueCategories}
-          uniqueKinds={uniqueKinds}
-          uniqueCurrencies={uniqueCurrencies}
-        />
-        <ExpensesTableWrapper
-          searchQuery={searchQuery}
-          data={expensesData}
-          startDate={startDate}
-          endDate={endDate}
-          loading={loading}
-          fetchExpenses={fetchExpenses} // Silme sonrası tabloyu güncelle
-        />
+        {/* İçerik: Giderler tablosu */}
+        <div className="md:flex md:flex-row gap-8">
+          {/* Büyük ekranlarda input form zaten üstte gösterildiği için burada sadece tablo */}
+          <div className="w-full">
+            <ExpensesTableWrapper
+              searchQuery={searchQuery}
+              data={expensesData}
+              startDate={startDate}
+              endDate={endDate}
+              loading={loading}
+              fetchExpenses={fetchExpenses} // Silme sonrası tabloyu güncellemek için
+            />
+          </div>
+        </div>
+
+        {/* Küçük ekranlarda hamburger butona tıklandığında açılan modal */}
+        {showInputForm && (
+          <div className="fixed inset-0 z-30 flex items-center justify-center bg-black bg-opacity-50">
+            <div className="bg-white w-11/12 p-4 rounded shadow-lg relative">
+              <button
+                className="absolute top-2 right-2 text-gray-700"
+                onClick={() => setShowInputForm(false)}
+              >
+                {/* Kapatma ikonu */}
+                <svg
+                  className="w-6 h-6"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M6 18L18 6M6 6l12 12"
+                  ></path>
+                </svg>
+              </button>
+              <ExpensesInputForm
+                onAddExpense={handleAddExpense}
+                uniqueCategories={uniqueCategories}
+                uniqueKinds={uniqueKinds}
+                uniqueCurrencies={uniqueCurrencies}
+              />
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
