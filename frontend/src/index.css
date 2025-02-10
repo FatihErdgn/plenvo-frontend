@@ -15,7 +15,7 @@ body {
 
 /* Global font-size ayarı */
 html {
-  font-size: clamp(14px, 2vw, 18px);
+  font-size: clamp(12px, 0.9vw, 16px);
 }
 
 code {
