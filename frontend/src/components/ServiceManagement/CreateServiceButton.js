@@ -241,7 +241,7 @@ export default function AddService({
           {/* Dropdown listesi */}
           {dropdownOpen[key] && (
             <ul
-              className={`absolute left-0 right-0 bg-white border border-gray-300 rounded-lg max-h-[120px] overflow-auto z-10 ${
+              className={`absolute left-0 right-0 bg-white border border-gray-300 rounded-lg max-h-[7.5rem] overflow-auto z-10 ${
                 direction === "up" ? "bottom-full mb-1" : "top-full mt-1"
               }`}
             >
@@ -274,7 +274,7 @@ export default function AddService({
     <div className="flex justify-center items-center font-poppins">
       <button
         onClick={() => setPopUpOpen(true)}
-        className="font-poppins flex flex-row bg-[#399AA1] text-white px-4 py-3 min-w-[140px] rounded-[10px] hover:bg-[#007E85] shadow-md"
+        className="font-poppins flex flex-row bg-[#399AA1] text-white px-4 py-3 min-w-[8.75rem] rounded-[10px] hover:bg-[#007E85] shadow-md"
       >
         + Hizmet Ekle
       </button>

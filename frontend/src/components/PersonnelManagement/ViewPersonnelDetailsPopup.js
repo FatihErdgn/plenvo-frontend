@@ -184,7 +184,7 @@ export default function ViewPersonnelDetailsPopup({
         </div>
         {dropdownOpen[key] && (
           <ul
-            className={`absolute left-0 right-0 bg-white border border-gray-300 rounded-lg max-h-[120px] overflow-auto z-10 ${
+            className={`absolute left-0 right-0 bg-white border border-gray-300 rounded-lg max-h-[7.5rem] overflow-auto z-10 ${
               direction === "up" ? "bottom-full mb-1" : "top-full mt-1"
             }`}
           >
@@ -438,7 +438,7 @@ export default function ViewPersonnelDetailsPopup({
                 <>
                   <button
                     type="submit"
-                    className="px-12 py-2 bg-[#399AA1] text-white rounded-full hover:bg-[#007E85] cursor-pointer w-[150px]"
+                    className="px-12 py-2 bg-[#399AA1] text-white rounded-full hover:bg-[#007E85] cursor-pointer w-[9.375rem]"
                     onClick={handleEditSubmit}
                   >
                     Kaydet

@@ -291,7 +291,7 @@ export default function ExpensesInputForm({ onAddExpense, uniqueCategories, uniq
 
       <form
         onSubmit={handleSubmit}
-        className="flex flex-col w-full min-w-[400px] h-full justify-center p-8"
+        className="flex flex-col w-full min-w-[25rem] h-full justify-center p-8"
       >
         <h2 className="text-xl font-semibold mb-6">Maliyet Formu</h2>
 

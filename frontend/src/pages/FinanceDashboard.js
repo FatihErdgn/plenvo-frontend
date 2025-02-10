@@ -90,7 +90,7 @@ export default function FinanceDashboard() {
   const expensePieSeries = breakdown.expenseDescriptions.map(item => item.amount);
 
   return (
-    <div className="h-screen overflow-hidden bg-[#f4f7fe] p-6 w-screen rounded-l-[40px] relative z-20">
+    <div className="h-screen overflow-hidden bg-[#f4f7fe] p-6 w-screen rounded-l-[2.5rem] relative z-20">
       {/* Header */}
       <header className="flex justify-between items-center mb-4">
         <div>
@@ -126,7 +126,7 @@ export default function FinanceDashboard() {
       </header>
 
       {/* Ana İçerik: Sol (%65) ve Sağ (%35) Bölümleri */}
-      <div className="flex h-[calc(100%-120px)] overflow-hidden">
+      <div className="flex h-[calc(100%-7.5rem)] overflow-hidden">
         {/* Sol Bölüm (yaklaşık %65) */}
         <div className="w-2/3 overflow-y-auto">
           {/* Özet Kartlar: 2x2 grid */}

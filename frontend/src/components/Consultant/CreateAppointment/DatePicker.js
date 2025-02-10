@@ -103,7 +103,7 @@ const AppointmentDatePicker = ({
     <button
       onClick={onClick}
       ref={ref}
-      className="w-[300px] px-3 py-2 rounded-lg flex items-center justify-between focus:outline-none"
+      className="w-[18.75rem] px-3 py-2 rounded-lg flex items-center justify-between focus:outline-none"
       disabled={!selectedClinic || !selectedDoctor}
     >
       {selectedClinic && selectedDoctor ? (
@@ -143,7 +143,7 @@ const AppointmentDatePicker = ({
               : new Date(new Date().setHours(WORKING_HOURS_START, 0, 0, 0))
           }
           maxTime={new Date(new Date().setHours(WORKING_HOURS_END, 0, 0, 0))}
-          className="w-[300px] px-3 py-2 focus:outline-none"
+          className="w-[18.75rem] px-3 py-2 focus:outline-none"
         />
       </div>
 

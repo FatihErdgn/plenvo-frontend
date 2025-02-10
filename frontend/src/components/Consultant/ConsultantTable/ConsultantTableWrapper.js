@@ -28,9 +28,9 @@ export default function ConsultantTableWrapper({
       case "Açık":
         return "items-center justify-center bg-[#EBF9F1] border-[1px] border-[#41BC63] text-[#41BC63] py-2.5 px-4 max-w-36 min-w-16 rounded-full text-center";
       case "Ödeme Bekleniyor":
-        return "items-center justify-center bg-[#FBF9F4] border-[1px] border-[#BC9241] text-[#BC9241] py-2.5 px-4 max-w-36 min-w-16 rounded-full text-center text-[14px]";
+        return "items-center justify-center bg-[#FBF9F4] border-[1px] border-[#BC9241] text-[#BC9241] py-2.5 px-4 max-w-36 min-w-16 rounded-full text-center text-[0.875rem]";
       case "Tamamlandı":
-        return "items-center justify-center bg-gray-100 border-[1px] border-gray-500 text-gray-500 py-2.5 px-4 w-[150px] max-w-36 min-w-16 rounded-full text-center";
+        return "items-center justify-center bg-gray-100 border-[1px] border-gray-500 text-gray-500 py-2.5 px-4 w-[9.375rem] max-w-36 min-w-16 rounded-full text-center";
       case "İptal Edildi":
         return "items-center justify-center bg-[#FBF4F4] border-[1px] border-[#BC4141] text-[#BC4141] py-2.5 px-4 max-w-36 min-w-16 rounded-full text-center";
       default:
@@ -84,7 +84,7 @@ export default function ConsultantTableWrapper({
         ) {
           return (
             <span
-              className="block w-[120px] mx-auto text-center truncate"
+              className="block w-[7.5rem] mx-auto text-center truncate"
               title={row.clientFirstName}
             >
               Grup
@@ -94,7 +94,7 @@ export default function ConsultantTableWrapper({
         // Tek kişilik randevu için doğrudan row içindeki değeri dönelim
         return (
           <span
-            className="block w-[120px] mx-auto text-center truncate"
+            className="block w-[7.5rem] mx-auto text-center truncate"
             title={row.clientFirstName}
           >
             {row.clientFirstName}
@@ -113,7 +113,7 @@ export default function ConsultantTableWrapper({
         ) {
           return (
             <span
-              className="block w-[150px] mx-auto text-center truncate"
+              className="block w-[9.375rem] mx-auto text-center truncate"
               title={row.clientLastName}
             >
               Randevusu
@@ -122,7 +122,7 @@ export default function ConsultantTableWrapper({
         }
         return (
           <span
-            className="block w-[150px] mx-auto text-center truncate"
+            className="block w-[9.375rem] mx-auto text-center truncate"
             title={row.clientLastName}
           >
             {row.clientLastName}
@@ -141,7 +141,7 @@ export default function ConsultantTableWrapper({
         ) {
           return (
             <span
-              className="block w-[150px] mx-auto text-center truncate"
+              className="block w-[9.375rem] mx-auto text-center truncate"
               title={row.phoneNumber}
             >
               {row.participants[0].phoneNumber}
@@ -150,7 +150,7 @@ export default function ConsultantTableWrapper({
         }
         return (
           <span
-            className="block w-[150px] mx-auto text-center truncate"
+            className="block w-[9.375rem] mx-auto text-center truncate"
             title={row.phoneNumber}
           >
             {row.phoneNumber}
@@ -428,12 +428,12 @@ function ConsultantActions({
   // getButtonClasses gibi bir fonksiyon da ekleyebilirsiniz
   const getButtonClasses = (enabled) => {
     return enabled
-      ? "bg-[#399AA1] text-white px-4 py-[9px] rounded-[20px] hover:bg-[#007E85]"
-      : "bg-gray-300 text-gray-500 px-4 py-[9px] rounded-[20px] cursor-not-allowed";
+      ? "bg-[#399AA1] text-white px-4 py-[9px] rounded-[1.25rem] hover:bg-[#007E85]"
+      : "bg-gray-300 text-gray-500 px-4 py-[9px] rounded-[1.25rem] cursor-not-allowed";
   };
 
   return (
-    <div className="flex flex-row justify-center text-sm items-center px-4 py-[14px] space-x-2">
+    <div className="flex flex-row justify-center text-sm items-center px-4 py-[0.875rem] space-x-2">
       <button
         className={getButtonClasses(row.actions?.payNow)}
         disabled={!row.actions?.payNow}

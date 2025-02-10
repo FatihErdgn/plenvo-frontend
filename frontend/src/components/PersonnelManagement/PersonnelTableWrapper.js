@@ -21,13 +21,13 @@ export default function PersonnelTableWrapper({
   const getStatusClass = (role) => {
     switch (role) {
       case "manager":
-        return "inline-block bg-[#41BC63] border-[1px] border-[#41BC63] text-[#ffffff] py-[6px] px-[12px] rounded-md font-semibold text-sm";
+        return "inline-block bg-[#41BC63] border-[1px] border-[#41BC63] text-[#ffffff] py-[0.375rem] px-[0.75rem] rounded-md font-semibold text-sm";
       case "consultant":
-        return "inline-block bg-[#BC9241] border-[1px] border-[#BC9241] text-[#ffffff] py-[6px] px-[12px] rounded-md font-semibold text-sm";
+        return "inline-block bg-[#BC9241] border-[1px] border-[#BC9241] text-[#ffffff] py-[0.375rem] px-[0.75rem] rounded-md font-semibold text-sm";
       case "admin":
-        return "inline-block bg-[#BC4141] border-[1px] border-[#BC4141] text-[#ffffff] py-[6px] px-[12px] rounded-md font-semibold text-sm";
+        return "inline-block bg-[#BC4141] border-[1px] border-[#BC4141] text-[#ffffff] py-[0.375rem] px-[0.75rem] rounded-md font-semibold text-sm";
       case "doctor":
-        return "inline-block bg-[#025E86] border-[1px] border-[#025E86] text-[#ffffff] py-[6px] px-[12px] rounded-md font-semibold text-sm";
+        return "inline-block bg-[#025E86] border-[1px] border-[#025E86] text-[#ffffff] py-[0.375rem] px-[0.75rem] rounded-md font-semibold text-sm";
       default:
         return "";
     }
@@ -209,7 +209,7 @@ function PersonnelTableActions({ row, fetchUsers }) {
   };
 
   return (
-    <div className="flex flex-row justify-center text-sm items-center px-4 py-[14px] space-x-2">
+    <div className="flex flex-row justify-center text-sm items-center px-4 py-[0.875rem] space-x-2">
       <button
         className="flex items-center justify-center text-red-500 px-2 py-2 rounded-full hover:bg-red-600 hover:text-white"
         // disabled={!row.actions?.edit}

@@ -180,7 +180,7 @@ export default function PaymentPopup({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50">
-      <div className="relative bg-white p-6 rounded-md shadow-lg w-[90%] max-w-[800px] min-h-[60vh] max-h-[90vh] overflow-y-auto">
+      <div className="relative bg-white p-6 rounded-md shadow-lg w-[90%] max-w-[50rem] min-h-[60vh] max-h-[90vh] overflow-y-auto">
         {/* Kapat Butonu */}
         <button
           className="absolute top-4 right-4 text-red-500 hover:text-gray-600"

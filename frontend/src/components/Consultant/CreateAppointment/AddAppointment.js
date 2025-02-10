@@ -49,7 +49,7 @@ export default function AddAppointment({
   // Bu butonu sadece "Randevu Ekle" için kullanıyorsanız,
   // isterseniz metinini condition'a göre değiştirebilirsiniz (Örn. "Randevu Yenile"?)
   return (
-    <div className="flex justify-center items-center font-poppins min-w-[160px]">
+    <div className="flex justify-center items-center font-poppins min-w-[10rem]">
       {/* RANDEVU EKLE BUTONU */}
       <button
         onClick={handleOpenPopup}

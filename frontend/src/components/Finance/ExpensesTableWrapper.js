@@ -80,7 +80,7 @@ export default function ExpensesTableWrapper({
       label: "Açıklama",
       renderCell: (row) => (
         <span
-          className="block w-[250px] mx-auto text-center truncate"
+          className="block w-[15.625rem] mx-auto text-center truncate"
           title={row.expenseDescription}
         >
           {row.expenseDescription}
@@ -131,7 +131,7 @@ export default function ExpensesTableWrapper({
       label: "Açıklama",
       renderCell: (row) => (
         <span
-          className="block max-w-[250px] mx-auto text-center truncate"
+          className="block max-w-[15.625rem] mx-auto text-center truncate"
           title={row.expenseDescription}
         >
           {row.expenseDescription}

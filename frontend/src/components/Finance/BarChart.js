@@ -69,7 +69,7 @@ export default function BarChartComponent({ data }) {
   };
 
   return (
-    <div style={{ width: '50%', height: '300px' }}>
+    <div style={{ width: '50%', height: '18.75rem' }}>
       <Bar data={chartData} options={options} />
     </div>
   );

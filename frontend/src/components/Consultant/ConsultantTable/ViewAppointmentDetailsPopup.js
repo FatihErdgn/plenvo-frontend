@@ -258,7 +258,7 @@ export default function ViewAppointmentDetailsPopup({
         </div>
         {dropdownOpen[key] && (
           <ul
-            className={`absolute left-0 right-0 bg-white border border-gray-300 rounded-lg max-h-[120px] overflow-auto z-10 ${
+            className={`absolute left-0 right-0 bg-white border border-gray-300 rounded-lg max-h-[7.5rem] overflow-auto z-10 ${
               direction === "up" ? "bottom-full mb-1" : "top-full mt-1"
             }`}
           >
@@ -297,7 +297,7 @@ export default function ViewAppointmentDetailsPopup({
           </span>
         </div>
         {isOpen && (
-          <ul className="absolute left-0 right-0 bg-white border border-gray-300 rounded-lg max-h-[120px] overflow-auto z-10 top-full mt-1">
+          <ul className="absolute left-0 right-0 bg-white border border-gray-300 rounded-lg max-h-[7.5rem] overflow-auto z-10 top-full mt-1">
             {genderOptions.map((g, idx) => (
               <li
                 key={idx}

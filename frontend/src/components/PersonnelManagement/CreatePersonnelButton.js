@@ -324,7 +324,7 @@ export default function AddPersonnel({
 
             {dropdownOpen[key] && (
               <ul
-                className={`absolute left-0 right-0 bg-white border border-gray-300 rounded-lg max-h-[120px] overflow-auto z-10 ${
+                className={`absolute left-0 right-0 bg-white border border-gray-300 rounded-lg max-h-[7.5rem] overflow-auto z-10 ${
                   direction === "up" ? "bottom-full mb-1" : "top-full mt-1"
                 }`}
               >
@@ -358,7 +358,7 @@ export default function AddPersonnel({
     <div className="flex justify-center items-center font-poppins">
       <button
         onClick={() => setPopUpOpen(true)}
-        className="font-poppins flex flex-row bg-[#399AA1] text-white px-4 py-3 min-w-[150px] rounded-[10px] hover:bg-[#007E85] shadow-md"
+        className="font-poppins flex flex-row bg-[#399AA1] text-white px-4 py-3 min-w-[9.375rem] rounded-[10px] hover:bg-[#007E85] shadow-md"
       >
         + Personel Ekle
       </button>
@@ -367,7 +367,7 @@ export default function AddPersonnel({
         <div className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center">
           {/* Modal Container */}
           <div
-            className="bg-white relative p-6 rounded-[10px] shadow-lg w-[80%] max-w-[1000px] max-h-[90vh] overflow-auto"
+            className="bg-white relative p-6 rounded-[10px] shadow-lg w-[80%] max-w-[62.5rem] max-h-[90vh] overflow-auto"
             style={{
               animation: "popupSlideIn 0.3s forwards",
             }}

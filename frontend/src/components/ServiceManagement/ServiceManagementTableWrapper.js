@@ -21,9 +21,9 @@ export default function ServiceManagementTableWrapper({
   const getStatusClass = (status) => {
     switch (status) {
       case "Aktif":
-        return "inline-block bg-[#41BC63] border-[1px] border-[#41BC63] text-[#ffffff] py-[6px] px-[12px] rounded-md font-semibold text-sm";
+        return "inline-block bg-[#41BC63] border-[1px] border-[#41BC63] text-[#ffffff] py-[0.375rem] px-[0.75rem] rounded-md font-semibold text-sm";
       case "Pasif":
-        return "inline-block bg-[#BC9241] border-[1px] border-[#BC9241] text-[#ffffff] py-[6px] px-[12px] rounded-md font-semibold text-sm";
+        return "inline-block bg-[#BC9241] border-[1px] border-[#BC9241] text-[#ffffff] py-[0.375rem] px-[0.75rem] rounded-md font-semibold text-sm";
       default:
         return "";
     }
@@ -174,7 +174,7 @@ function ServiceManagementActions({ row, fetchServices }) {
   };
 
   return (
-    <div className="flex flex-row justify-center text-sm items-center px-4 py-[14px] space-x-2">
+    <div className="flex flex-row justify-center text-sm items-center px-4 py-[0.875rem] space-x-2">
       <button
         className="flex items-center justify-center text-red-500 px-2 py-2 rounded-full hover:bg-red-600 hover:text-white"
         // disabled={!row.actions?.edit}

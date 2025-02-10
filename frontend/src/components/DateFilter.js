@@ -2,7 +2,7 @@ import React from "react";
 
 export default function DateFilter({ onStartDateChange, onEndDateChange }) {
   return (
-      <div className="font-poppins flex flex-row items-center bg-[#ffffff] w-full max-w-[500px] h-[40px] rounded-full px-4 py-2 shadow-sm space-x-4">
+      <div className="font-poppins flex flex-row items-center bg-[#ffffff] w-full max-w-[31.25rem] h-[2.5rem] rounded-full px-4 py-2 shadow-sm space-x-4">
         <input
           type="date"
           onChange={onStartDateChange}
