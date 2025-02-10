@@ -87,30 +87,26 @@ export default function Login() {
   const handleChangePassword = async () => {
     setErrorMessage("");
     setSuccessMessage("");
-
-    const token = localStorage.getItem("token");
-    if (!token) {
-      setErrorMessage("You must be logged in to change your password.");
-      return;
-    }
-
+  
     try {
-      const data = await changePassword(token, currentPassword, newPassword);
+      // Token kontrolü kaldırıldı; token cookies aracılığıyla gönderilecek.
+      const data = await changePassword(currentPassword, newPassword);
       if (data.success) {
-        setSuccessMessage("Password changed successfully!");
+        setSuccessMessage("Şifre başarıyla değiştirildi!");
         setCurrentPassword("");
         setNewPassword("");
       } else {
-        setErrorMessage(data.message || "Password change failed.");
+        setErrorMessage(data.message || "Şifre değiştirme işlemi başarısız.");
       }
     } catch (error) {
       const msg =
         error?.response?.data?.message ||
         error.message ||
-        "An error occurred while changing password.";
+        "Şifre değiştirme sırasında bir hata oluştu.";
       setErrorMessage(msg);
     }
   };
+  
 
   // 3) ŞİFREMİ UNUTTUM BUTONU
   const handleForgotPassword = async () => {
