@@ -8,7 +8,7 @@ import { FiEye, FiEyeOff } from "react-icons/fi";
 import {
   loginUser,
   changePassword,
-  forgotPassword, // AuthService içinde olduğunu varsayıyoruz
+  forgotPassword,
 } from "../services/authService";
 
 export default function Login() {
@@ -57,7 +57,6 @@ export default function Login() {
       if (data.success) {
         setSuccessMessage("Login successful!");
         setIsLoginCompleted(true);
-        // Artık localStorage'a token yazmıyoruz!
       } else {
         setErrorMessage(data.message || "Login failed.");
       }
@@ -82,14 +81,13 @@ export default function Login() {
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [username, password]); // Username ve password değiştikçe güncellenir
+  }, [username, password]);
 
   // 2) ŞİFRE DEĞİŞTİR TIKLAMA
   const handleChangePassword = async () => {
     setErrorMessage("");
     setSuccessMessage("");
 
-    // localStorage'dan token al
     const token = localStorage.getItem("token");
     if (!token) {
       setErrorMessage("You must be logged in to change your password.");
@@ -100,7 +98,6 @@ export default function Login() {
       const data = await changePassword(token, currentPassword, newPassword);
       if (data.success) {
         setSuccessMessage("Password changed successfully!");
-        // Formu temizle
         setCurrentPassword("");
         setNewPassword("");
       } else {
@@ -115,7 +112,7 @@ export default function Login() {
     }
   };
 
-  // 3) ŞİFREMİ UNUTTUM BUTONU (Login Olmayan Kullanıcı)
+  // 3) ŞİFREMİ UNUTTUM BUTONU
   const handleForgotPassword = async () => {
     setErrorMessage("");
     setSuccessMessage("");
@@ -144,19 +141,16 @@ export default function Login() {
     }
   };
 
-  // Sisteme giriş yap (örneğin anasayfa veya dashboard'a)
   const handleGoToHome = () => {
-    navigate("/appointments"); // veya "/dashboard"
+    navigate("/appointments");
   };
 
-  // Şifremi Unuttum butonuna basınca formu aç
   const handleShowForgotPassword = () => {
     setShowForgotPassword(true);
     setErrorMessage("");
     setSuccessMessage("");
   };
 
-  // Eğer forgotPassword formundan geri dönmek istersek
   const handleBackToLogin = () => {
     setShowForgotPassword(false);
     setPhoneOrEmail("");
@@ -169,23 +163,16 @@ export default function Login() {
       <div className="w-full h-auto flex flex-col md:flex-row overflow-hidden">
         {/* Sol taraf (Beyaz) */}
         <div className="flex flex-col items-center justify-center w-full md:w-1/2 bg-white p-6 md:p-0">
-          <h1 className="font-poppins font-bold text-[40px] md:text-[46px] mb-2 text-center">
+          <h1 className="font-poppins font-bold text-[2.5rem] md:text-[2.875rem] mb-2 text-center">
             PLENVO'YA HOŞ GELDİNİZ!
           </h1>
           <p className="font-poppins text-base md:text-lg mb-6 md:mb-10 text-gray-600 text-center">
             Kullanıcı bilgilerinizi girerek sisteme giriş yapabilirsiniz.
           </p>
 
-          {/* Ekranı 3 duruma ayırabiliriz: 
-              1) Login form (isLoginCompleted = false, showForgotPassword = false)
-              2) Şifremi Unuttum form (showForgotPassword = true)
-              3) Login tamamlandıysa (isLoginCompleted = true)
-          */}
-          {/* 1) LOGIN FORM GÖRÜNTÜLENİYOR */}
           {!isLoginCompleted && !showForgotPassword && (
             <>
-              {/* Kullanıcı Adı */}
-              <div className="flex items-center w-full max-w-[400px] h-[57px] rounded-2xl bg-[#F0EDFF] px-4 mb-4 shadow-sm">
+              <div className="flex items-center w-full max-w-[25rem] h-[3.5625rem] rounded-2xl bg-[#F0EDFF] px-4 mb-4 shadow-sm">
                 <LuUser className="text-[#1C1C1C] mr-3" size={20} />
                 <input
                   type="text"
@@ -196,8 +183,7 @@ export default function Login() {
                 />
               </div>
 
-              {/* Şifre input + göz ikonu */}
-              <div className="flex items-center w-full max-w-[400px] h-[57px] rounded-2xl bg-[#F0EDFF] px-4 mb-4 shadow-sm">
+              <div className="flex items-center w-full max-w-[25rem] h-[3.5625rem] rounded-2xl bg-[#F0EDFF] px-4 mb-4 shadow-sm">
                 <TbLockPassword className="text-[#1C1C1C] mr-3" size={20} />
                 <input
                   type={showPassword ? "text" : "password"}
@@ -206,7 +192,6 @@ export default function Login() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                 />
-                {/* Göz ikonu */}
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
@@ -216,17 +201,13 @@ export default function Login() {
                 </button>
               </div>
 
-              {/* Login Butonu */}
               <button
                 onClick={handleLogin}
-                className="font-poppins text-white px-6 py-3 text-sm font-semibold rounded-2xl 
-                           bg-gradient-to-r from-[#46B4BA] to-[#007E85] mb-2
-                           hover:from-[#35a1a7] hover:to-[#006b71] transition-colors"
+                className="font-poppins text-white px-6 py-3 text-sm font-semibold rounded-2xl bg-gradient-to-r from-[#46B4BA] to-[#007E85] mb-2 hover:from-[#35a1a7] hover:to-[#006b71] transition-colors"
               >
                 Giriş Yap
               </button>
 
-              {/* Şifremi Unuttum Butonu (giriş yapmayan kullanıcıya) */}
               <button
                 onClick={handleShowForgotPassword}
                 className="font-poppins text-[#007E85] underline mt-3"
@@ -236,9 +217,8 @@ export default function Login() {
             </>
           )}
 
-          {/* 2) ŞİFREMİ UNUTTUM FORMU */}
           {!isLoginCompleted && showForgotPassword && (
-            <div className="w-full max-w-[400px] space-y-4">
+            <div className="w-full max-w-[25rem] space-y-4">
               <div className="flex flex-col items-center">
                 <p className="font-poppins text-lg font-semibold text-gray-700 text-center mb-2">
                   Şifremi Unuttum
@@ -250,8 +230,7 @@ export default function Login() {
                   (Telefon için +90 kısmını da girmelisiniz)
                 </p>
               </div>
-              {/* Tek input alanı (Telefon veya E-mail) */}
-              <div className="flex items-center w-full h-[50px] rounded-2xl bg-[#F0EDFF] px-4 shadow-sm">
+              <div className="flex items-center w-full h-[3.125rem] rounded-2xl bg-[#F0EDFF] px-4 shadow-sm">
                 <input
                   type="text"
                   placeholder="Telefon veya E-mail"
@@ -260,16 +239,12 @@ export default function Login() {
                   onChange={(e) => setPhoneOrEmail(e.target.value)}
                 />
               </div>
-              {/* Gönder Butonu */}
               <button
                 onClick={handleForgotPassword}
-                className="font-poppins text-white px-6 py-3 text-sm font-semibold rounded-2xl 
-                           bg-gradient-to-r from-[#46B4BA] to-[#007E85]
-                           hover:from-[#35a1a7] hover:to-[#006b71] transition-colors w-full"
+                className="font-poppins text-white px-6 py-3 text-sm font-semibold rounded-2xl bg-gradient-to-r from-[#46B4BA] to-[#007E85] hover:from-[#35a1a7] hover:to-[#006b71] transition-colors w-full"
               >
                 Gönder
               </button>
-              {/* Geri Dön (Login Ekranına) */}
               <button
                 onClick={handleBackToLogin}
                 className="font-poppins text-[#007E85] underline block mx-auto mt-2"
@@ -279,45 +254,37 @@ export default function Login() {
             </div>
           )}
 
-          {/* 3) LOGIN BAŞARILI (GİRİŞ YAPILDI) */}
           {isLoginCompleted && (
             <div className="flex flex-col items-center mb-4">
               <button
                 onClick={handleGoToHome}
-                className="font-poppins text-white px-6 py-3 text-sm font-semibold rounded-2xl 
-                           bg-gradient-to-r from-green-400 to-green-600 mb-3
-                           hover:from-green-500 hover:to-green-700 transition-colors"
+                className="font-poppins text-white px-6 py-3 text-sm font-semibold rounded-2xl bg-gradient-to-r from-green-400 to-green-600 mb-3 hover:from-green-500 hover:to-green-700 transition-colors"
               >
                 Sisteme Giriş Yap
               </button>
               <button
                 onClick={() => setShowChangePassword(!showChangePassword)}
-                className="font-poppins text-white px-6 py-3 text-sm font-semibold rounded-2xl 
-                           bg-gradient-to-r from-yellow-400 to-yellow-600
-                           hover:from-yellow-500 hover:to-yellow-700 transition-colors"
+                className="font-poppins text-white px-6 py-3 text-sm font-semibold rounded-2xl bg-gradient-to-r from-yellow-400 to-yellow-600 hover:from-yellow-500 hover:to-yellow-700 transition-colors"
               >
                 Şifre Değiştir
               </button>
             </div>
           )}
 
-          {/* Hata veya Başarı Mesajları */}
           {errorMessage && (
-            <div className="text-red-500 mt-2 text-center max-w-[400px]">
+            <div className="text-red-500 mt-2 text-center max-w-[25rem]">
               {errorMessage}
             </div>
           )}
           {successMessage && (
-            <div className="text-green-500 mt-2 text-center max-w-[400px]">
+            <div className="text-green-500 mt-2 text-center max-w-[25rem]">
               {successMessage}
             </div>
           )}
 
-          {/* Şifre Değiştirme Formu (Giriş yapmış kullanıcıya özel) */}
           {showChangePassword && (
-            <div className="mt-4 w-full max-w-[400px] space-y-4">
-              {/* Mevcut Şifre */}
-              <div className="flex items-center w-full h-[50px] rounded-2xl bg-[#F0EDFF] px-4 shadow-sm">
+            <div className="mt-4 w-full max-w-[25rem] space-y-4">
+              <div className="flex items-center w-full h-[3.125rem] rounded-2xl bg-[#F0EDFF] px-4 shadow-sm">
                 <input
                   type={showCurrentPassword ? "text" : "password"}
                   placeholder="Eski Şifre"
@@ -325,7 +292,6 @@ export default function Login() {
                   value={currentPassword}
                   onChange={(e) => setCurrentPassword(e.target.value)}
                 />
-                {/* Göz ikonu */}
                 <button
                   type="button"
                   onClick={() => setShowCurrentPassword((prev) => !prev)}
@@ -339,8 +305,7 @@ export default function Login() {
                 </button>
               </div>
 
-              {/* Yeni Şifre */}
-              <div className="flex items-center w-full h-[50px] rounded-2xl bg-[#F0EDFF] px-4 shadow-sm">
+              <div className="flex items-center w-full h-[3.125rem] rounded-2xl bg-[#F0EDFF] px-4 shadow-sm">
                 <input
                   type={showNewPassword ? "text" : "password"}
                   placeholder="Yeni Şifre"
@@ -348,7 +313,6 @@ export default function Login() {
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
                 />
-                {/* Göz ikonu */}
                 <button
                   type="button"
                   onClick={() => setShowNewPassword((prev) => !prev)}
@@ -362,12 +326,9 @@ export default function Login() {
                 </button>
               </div>
 
-              {/* Submit */}
               <button
                 onClick={handleChangePassword}
-                className="font-poppins text-white px-4 py-2 text-sm font-semibold rounded-2xl 
-                           bg-gradient-to-r from-[#46B4BA] to-[#007E85]
-                           hover:from-[#35a1a7] hover:to-[#006b71] transition-colors"
+                className="font-poppins text-white px-4 py-2 text-sm font-semibold rounded-2xl bg-gradient-to-r from-[#46B4BA] to-[#007E85] hover:from-[#35a1a7] hover:to-[#006b71] transition-colors"
               >
                 Submit
               </button>
@@ -375,16 +336,15 @@ export default function Login() {
           )}
         </div>
 
-        {/* Sağ taraf (Mavi Gradient) */}
         <div className="relative w-full md:w-1/2 bg-gradient-to-r from-[#46B4BA] to-[#007E85]">
           <img
             src={thunderImg}
             alt="Login Icon"
             className="absolute top-[60%] left-[16%] z-50 w-0 md:w-20 object-cover"
           />
-          <div className="h-[400px] md:h-screen bg-login-bg">
-            <div className="absolute top-1/2 left-1/2 w-[80%] md:w-[60%] h-[60%] md:h-[70%] bg-white bg-opacity-20 border border-white rounded-[46px] transform -translate-x-1/2 -translate-y-1/2 shadow-md">
-              <h2 className="absolute font-poppins text-white font-bold text-[36px] md:text-[40px] max-w-[200px] max-h-[165px] m-4 md:m-6">
+          <div className="h-[25rem] md:h-screen bg-login-bg">
+            <div className="absolute top-1/2 left-1/2 w-[80%] md:w-[60%] h-[60%] md:h-[70%] bg-white bg-opacity-20 border border-white rounded-[2.875rem] transform -translate-x-1/2 -translate-y-1/2 shadow-md">
+              <h2 className="absolute font-poppins text-white font-bold text-[2.25rem] md:text-[2.5rem] max-w-[12.5rem] max-h-[10.3125rem] m-4 md:m-6">
                 Tek bir platformla kliniğinizi yönetin!
               </h2>
               <img

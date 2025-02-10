@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from "react";
 import ConsultantSearchContainer from "../components/SearchContainer";
 import ConsultantTableWrapper from "../components/Consultant/ConsultantTable/ConsultantTableWrapper";
-// import AddAppointment from "../components/Consultant/CreateAppointmentButton";
 import AddAppointment from "../components/Consultant/CreateAppointment/AddAppointment";
-// import appointmentData from "../appointmentData.json";
 import DateFilter from "../components/DateFilter";
 import {
   getAppointments,
@@ -26,7 +24,6 @@ export default function ConsultantPage() {
       setLoading(true);
       const response = await getUsers();
       setUserData(response.data || []);
-      // console.log("Personel alındı:", response.data);
     } catch (error) {
       console.error("Personelleri alırken hata oluştu:", error);
     } finally {
@@ -98,34 +95,33 @@ export default function ConsultantPage() {
     setEndDate(event.target.value);
   };
 
-// Klinik seçenekleri (sadece klinik isimleri)
-const clinicOptions = [
-  ...new Set(
-    userData.map(
-      (item) => item?.clinicId?.clinicName || "Klinik Belirtilmedi"
-    )
-  ),
-];
+  // Klinik seçenekleri (sadece klinik isimleri)
+  const clinicOptions = [
+    ...new Set(
+      userData.map(
+        (item) => item?.clinicId?.clinicName || "Klinik Belirtilmedi"
+      )
+    ),
+  ];
 
-// Doktorlar için detaylı liste (filtreleme için kullanılacak)
-const doctorList = userData.filter(
-  (item) => item?.roleName === "doctor"
-);
-// İsteğe bağlı: tüm doktor isimlerini de içeren basit liste oluşturabilirsin.
-const doctorOptions = [
-  ...new Set(
-    doctorList.map(
-      (item) =>
-        (item?.firstName + " " + item?.lastName).trim() ||
-        "Doktor Bilgisi Yok"
-    )
-  ),
-];
+  // Doktorlar için detaylı liste (filtreleme için kullanılacak)
+  const doctorList = userData.filter(
+    (item) => item?.roleName === "doctor"
+  );
+  const doctorOptions = [
+    ...new Set(
+      doctorList.map(
+        (item) =>
+          (item?.firstName + " " + item?.lastName).trim() ||
+          "Doktor Bilgisi Yok"
+      )
+    ),
+  ];
 
   const genderOptions = ["Erkek", "Kadın"];
 
   return (
-    <div className="w-screen bg-[#f4f7fe] p-8 overflow-auto rounded-l-[40px] relative z-20">
+    <div className="w-screen bg-[#f4f7fe] p-8 overflow-auto rounded-l-[2.5rem] relative z-20">
       {/* Başlık */}
       <div className="flex flex-row justify-between items-center">
         <h1 className="text-3xl font-bold mb-6">Randevuları Yönet</h1>
@@ -143,7 +139,7 @@ const doctorOptions = [
               doctorList,
               genderOptions,
             }}
-            appointments={appointmentData} // Bu satırı ekleyin
+            appointments={appointmentData}
           />
         </div>
       </div>

@@ -54,7 +54,7 @@ export default function SideBar() {
             to="/appointments"
             className={
               isActive("/appointments")
-                ? "mb-10 flex items-center gap-2 text-[#007E85] font-semibold bg-white w-[280px] p-3 rounded cursor-pointer"
+                ? "mb-10 flex items-center gap-2 text-[#007E85] font-semibold bg-white w-[17.5rem] p-3 rounded cursor-pointer"
                 : "mb-10 flex items-center gap-2 text-white cursor-pointer"
             }
           >
@@ -64,7 +64,7 @@ export default function SideBar() {
             to="/finance"
             className={
               isActive("/finance")
-                ? "mb-10 flex items-center gap-2 text-[#007E85] font-semibold bg-white w-[280px] p-3 rounded cursor-pointer"
+                ? "mb-10 flex items-center gap-2 text-[#007E85] font-semibold bg-white w-[17.5rem] p-3 rounded cursor-pointer"
                 : "mb-10 flex items-center gap-2 text-white cursor-pointer"
             }
           >
@@ -77,7 +77,7 @@ export default function SideBar() {
                 to="/finance-dashboard"
                 className={
                   isActive("/finance-dashboard")
-                    ? "mb-10 flex items-center gap-2 text-[#007E85] font-semibold bg-white w-[280px] p-3 rounded cursor-pointer"
+                    ? "mb-10 flex items-center gap-2 text-[#007E85] font-semibold bg-white w-[17.5rem] p-3 rounded cursor-pointer"
                     : "mb-10 flex items-center gap-2 text-white cursor-pointer"
                 }
               >
@@ -87,7 +87,7 @@ export default function SideBar() {
                 to="/personnel-management"
                 className={
                   isActive("/personnel-management")
-                    ? "mb-10 flex items-center gap-2 text-[#007E85] font-semibold bg-white w-[280px] p-3 rounded cursor-pointer"
+                    ? "mb-10 flex items-center gap-2 text-[#007E85] font-semibold bg-white w-[17.5rem] p-3 rounded cursor-pointer"
                     : "mb-10 flex items-center gap-2 text-white cursor-pointer"
                 }
               >
@@ -111,7 +111,7 @@ export default function SideBar() {
         </div>
         <button
           onClick={handleLogout}
-          className="flex flex-row items-center justify-center bg-white w-full text-[#007E85] text-[17px] font-semibold px-4 py-2 rounded-md hover:bg-gray-200"
+          className="flex flex-row items-center justify-center bg-white w-full text-[#007E85] text-[1.0625rem] font-semibold px-4 py-2 rounded-md hover:bg-gray-200"
         >
           <CgLogOut className="mx-1 pt-0.5" size={25} />
           Çıkış Yap

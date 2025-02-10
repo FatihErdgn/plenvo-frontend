@@ -4,8 +4,6 @@ import SearchContainer from "../components/SearchContainer";
 import { useEffect, useState } from "react";
 import { getUsers, createUser } from "../services/userService";
 import { getServices, createService } from "../services/serviceService";
-// import personnelData from "../personnelData.json";
-// import servicesData from "../servicesData.json";
 import { FiArrowLeftCircle, FiArrowRightCircle } from "react-icons/fi";
 import PersonnelTableWrapper from "../components/PersonnelManagement/PersonnelTableWrapper";
 import ServiceManagementTableWrapper from "../components/ServiceManagement/ServiceManagementTableWrapper";
@@ -133,7 +131,7 @@ export default function PersonnelManagementPage() {
   ];
 
   return (
-    <div className="w-screen bg-[#f4f7fe] p-8 overflow-auto rounded-l-[40px] relative z-20">
+    <div className="w-screen bg-[#f4f7fe] p-8 overflow-auto rounded-l-[2.5rem] relative z-20">
       {/* Başlık */}
       <div className="flex flex-row justify-between items-center">
         {isServiceModalOpen ? (
@@ -168,10 +166,6 @@ export default function PersonnelManagementPage() {
       {/* İçerik */}
       {isServiceModalOpen ? (
         <>
-          {/* <ServiceManagementTable
-            searchQuery={searchQuery}
-            data={servicesData}
-          /> */}
           <ServiceManagementTableWrapper
             searchQuery={searchQuery}
             data={servicesData}
@@ -183,7 +177,7 @@ export default function PersonnelManagementPage() {
           <div className="flex flex-row justify-start gap-4 mt-4">
             <button
               onClick={handleServiceModalOpen}
-              className="font-poppins flex flex-row text-[#399AA1] font-semibold px-4 py-3 rounded-[10px] hover:text-[#007E85]"
+              className="font-poppins flex flex-row text-[#399AA1] font-semibold px-4 py-3 rounded-[0.625rem] hover:text-[#007E85]"
             >
               Personel Yönetimine Dön
               <FiArrowLeftCircle className="w-6 h-6 ml-2" />
@@ -192,7 +186,6 @@ export default function PersonnelManagementPage() {
         </>
       ) : (
         <>
-          {/* <PersonnelTable searchQuery={searchQuery} data={personnelData} /> */}
           <PersonnelTableWrapper
             data={userData}
             searchQuery={searchQuery}
@@ -204,7 +197,7 @@ export default function PersonnelManagementPage() {
           <div className="flex flex-row justify-end gap-4 mt-4">
             <button
               onClick={handleServiceModalOpen}
-              className="font-poppins flex flex-row bg-[#399AA1] text-white px-4 py-3 rounded-[10px] hover:bg-[#007E85] shadow-md"
+              className="font-poppins flex flex-row bg-[#399AA1] text-white px-4 py-3 rounded-[0.625rem] hover:bg-[#007E85] shadow-md"
             >
               Hizmetleri Yönet
               <FiArrowRightCircle className="w-6 h-6 ml-2" />

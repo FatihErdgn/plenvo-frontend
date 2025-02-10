@@ -53,11 +53,10 @@ export default function FinancePage() {
     ...new Set(expensesData.map((item) => item.expenseCategory)),
   ];
   const uniqueKinds = ["Sabit", "Genel"];
-  // const uniqueKinds = [...new Set(expensesData.map((item) => item.expenseKind))];
   const uniqueCurrencies = ["TRY", "USD", "EUR"];
 
   return (
-    <div className="w-screen bg-[#f4f7fe] p-8 overflow-auto rounded-l-[40px] relative z-20">
+    <div className="w-screen bg-[#f4f7fe] p-8 overflow-auto rounded-l-[2.5rem] relative z-20">
       <div className="flex flex-row justify-between items-center">
         <h1 className="text-3xl font-bold mb-6">Maliyet Yönetimi</h1>
         <div className="flex flex-row justify-end gap-4">
@@ -70,7 +69,6 @@ export default function FinancePage() {
       </div>
 
       <div className="flex flex-row gap-8">
-        {/* ✅ Unique değerleri buradan yolla */}
         <ExpensesInputForm
           onAddExpense={handleAddExpense}
           uniqueCategories={uniqueCategories}
@@ -83,7 +81,7 @@ export default function FinancePage() {
           startDate={startDate}
           endDate={endDate}
           loading={loading}
-          fetchExpenses={fetchExpenses} // Silme sonrası tabloyu güncelle
+          fetchExpenses={fetchExpenses}
         />
       </div>
     </div>
