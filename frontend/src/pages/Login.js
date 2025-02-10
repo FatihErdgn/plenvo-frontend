@@ -9,6 +9,7 @@ import {
   loginUser,
   changePassword,
   forgotPassword,
+  logoutUser,
 } from "../services/authService";
 
 export default function Login() {
@@ -87,7 +88,7 @@ export default function Login() {
   const handleChangePassword = async () => {
     setErrorMessage("");
     setSuccessMessage("");
-  
+
     try {
       // Token kontrolü kaldırıldı; token cookies aracılığıyla gönderilecek.
       const data = await changePassword(currentPassword, newPassword);
@@ -95,6 +96,10 @@ export default function Login() {
         setSuccessMessage("Şifre başarıyla değiştirildi!");
         setCurrentPassword("");
         setNewPassword("");
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        await logoutUser();
+        // console.log("Başarıyla çıkış yapıldı.");
+        window.location.href = "/";
       } else {
         setErrorMessage(data.message || "Şifre değiştirme işlemi başarısız.");
       }
@@ -106,7 +111,6 @@ export default function Login() {
       setErrorMessage(msg);
     }
   };
-  
 
   // 3) ŞİFREMİ UNUTTUM BUTONU
   const handleForgotPassword = async () => {
