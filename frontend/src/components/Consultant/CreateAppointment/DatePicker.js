@@ -77,6 +77,12 @@ const AppointmentDatePicker = ({
     // Mesai saatleri dışında seçim yapılamasın.
     if (hour < WORKING_HOURS_START || hour >= WORKING_HOURS_END) return false;
 
+    // Eğer bugünse, mevcut zamandan önceki saatleri devre dışı bırakıyoruz.
+    if (selectedDate && isSameDay(selectedDate, new Date())) {
+      const now = new Date();
+      if (time < now) return false;
+    }
+
     // Disable edilmesi gereken zaman olup olmadığını kontrol ediyoruz.
     const isDisabled = disabledTimesForSelectedDay.some(
       (t) => t.hour === hour && t.minute === minute
@@ -84,8 +90,13 @@ const AppointmentDatePicker = ({
     return !isDisabled;
   };
 
-  // Geçmiş tarihlerin seçilmesini engellemek için
-  const filterDate = (date) => date >= new Date();
+  // Güncellenmiş filterDate: Sadece yıl, ay, gün bazında karşılaştırma yapar.
+  const filterDate = (date) => {
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const checkDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    return checkDate >= today;
+  };
 
   // DatePicker için özel input bileşeni. Klinik ve doktor seçilmediyse tıklanamaz.
   const CustomInput = forwardRef(({ value, onClick }, ref) => (
@@ -118,15 +129,21 @@ const AppointmentDatePicker = ({
           selected={selectedDate}
           onChange={onDateChange}
           showTimeSelect
-          timeIntervals={15} // 15 dakikalık aralıklarla seçim yapılabilsin.
+          timeIntervals={15}
           dateFormat="dd-MM-yyyy HH:mm"
           timeFormat="HH:mm"
           filterTime={filterTime}
           filterDate={filterDate}
           customInput={<CustomInput />}
-          className="w-[300px] px-3 py-2 focus:outline-none"
           disabledKeyboardNavigation
           minDate={new Date()}
+          minTime={
+            selectedDate && isSameDay(selectedDate, new Date())
+              ? new Date()
+              : new Date(new Date().setHours(WORKING_HOURS_START, 0, 0, 0))
+          }
+          maxTime={new Date(new Date().setHours(WORKING_HOURS_END, 0, 0, 0))}
+          className="w-[300px] px-3 py-2 focus:outline-none"
         />
       </div>
 
