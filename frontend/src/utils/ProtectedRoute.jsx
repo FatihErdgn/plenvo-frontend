@@ -6,11 +6,11 @@ import axios from "axios";
 // httpOnly cookie ile çağırıyoruz -> 200 OK => oturum var, 401 => yok
 
 // Backend API URL'si (Geliştirme ve Prod ortamına göre ayarlanabilir)
-const API_BASE_URL = process.env.API_BASE_URL || "http://localhost:5000/api";
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || "http://localhost:5000/api";
 
 // Axios instance oluşturduk (Tüm isteklerde `credentials: true` olacak)
 const api = axios.create({
-  baseURL: API_BASE_URL,
+  baseURL: `${API_BASE_URL}/api`,
   withCredentials: true, // Cookie'yi istekle birlikte gönderir
   headers: {
     "Content-Type": "application/json",
