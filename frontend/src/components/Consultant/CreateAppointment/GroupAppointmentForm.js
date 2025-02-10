@@ -149,7 +149,7 @@ export default function GroupAppointmentForm({
         datetime: new Date(groupData.datetime).toISOString(),
       };
 
-      console.log("Group form Data:", finalData);
+      // console.log("Group form Data:", finalData);
       onAddAppointment(finalData);
       onClose();
     } catch (error) {

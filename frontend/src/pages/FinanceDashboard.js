@@ -28,7 +28,7 @@ export default function FinanceDashboard() {
       if (response.status === "success") {
         // Backend yanıtı: { status, updatedAt, data: { summary, trend, breakdown } }
         setDashboardData(response.data);
-        console.log("Dashboard verileri alındı:", response.data);
+        // console.log("Dashboard verileri alındı:", response.data);
       } else {
         console.error("Dashboard verileri alınırken bir hata oluştu:", response);
       }

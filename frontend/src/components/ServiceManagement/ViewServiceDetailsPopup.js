@@ -116,7 +116,7 @@ export default function ViewServiceDetailsPopup({
       return;
     }
     try {
-      console.log("formData", formData);
+      // console.log("formData", formData);
       onEditService(formData);
     } catch (error) {
       console.error(error);

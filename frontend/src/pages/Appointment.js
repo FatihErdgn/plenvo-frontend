@@ -40,7 +40,7 @@ export default function ConsultantPage() {
       setLoading(true);
       const response = await getAppointments();
       setAppointmentData(response.data || []);
-      console.log("Randevular alındı:", response.data);
+      // console.log("Randevular alındı:", response.data);
     } catch (error) {
       console.error("Randevuları alırken hata oluştu:", error);
     } finally {
@@ -57,7 +57,7 @@ export default function ConsultantPage() {
       setLoading(true);
       const response = await getServices();
       setServicesData(response.data || []);
-      console.log("Hizmetler alındı:", servicesData);
+      // console.log("Hizmetler alındı:", servicesData);
     } catch (error) {
       console.error("Hizmetleri alırken hata oluştu:", error);
     } finally {
@@ -71,7 +71,7 @@ export default function ConsultantPage() {
 
   const handleAddAppointment = async (appointmentData) => {
     try {
-      console.log("📤 API'ye Gönderilen Veri:", appointmentData);
+      // console.log("📤 API'ye Gönderilen Veri:", appointmentData);
       const newAppointment = await createAppointment(appointmentData);
       setAppointmentData((prevData) => [
         newAppointment.appointment,

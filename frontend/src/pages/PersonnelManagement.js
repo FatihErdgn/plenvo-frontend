@@ -23,7 +23,7 @@ export default function PersonnelManagementPage() {
       setLoading(true);
       const response = await getUsers();
       setUserData(response.data || []);
-      console.log("Personel alındı:", response.data);
+      // console.log("Personel alındı:", response.data);
     } catch (error) {
       console.error("Personelleri alırken hata oluştu:", error);
     } finally {
@@ -36,7 +36,7 @@ export default function PersonnelManagementPage() {
       setLoading(true);
       const response = await getServices();
       setServicesData(response.data || []);
-      console.log("Hizmetler alındı:", servicesData);
+      // console.log("Hizmetler alındı:", servicesData);
     } catch (error) {
       console.error("Hizmetleri alırken hata oluştu:", error);
     } finally {
@@ -54,7 +54,7 @@ export default function PersonnelManagementPage() {
 
   const handleAddUser = async (userData) => {
     try {
-      console.log("📤 API'ye Gönderilen Veri:", userData);
+      // console.log("📤 API'ye Gönderilen Veri:", userData);
       const newUser = await createUser(userData);
       setUserData((prevData) => [newUser.user, ...prevData]);
       await fetchUsers();
@@ -65,7 +65,7 @@ export default function PersonnelManagementPage() {
 
   const handleAddService = async (serviceData) => {
     try {
-      console.log("📤 API'ye Gönderilen Veri:", serviceData);
+      // console.log("📤 API'ye Gönderilen Veri:", serviceData);
       const newService = await createService(serviceData);
       setServicesData((prevData) => [newService, ...prevData]);
       await fetchServices();

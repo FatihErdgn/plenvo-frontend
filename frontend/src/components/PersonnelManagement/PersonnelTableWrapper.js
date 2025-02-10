@@ -253,10 +253,10 @@ function PersonnelPopupArea({ fetchUsers }) {
   const handleEditUser = async (updatedUserData) => {
     try {
       // 1) Kullanıcı güncelleme işlemi
-      console.log(
-        "handleEditUser çağrıldı. Güncellenecek veri:",
-        updatedUserData
-      );
+      // console.log(
+      //   "handleEditUser çağrıldı. Güncellenecek veri:",
+      //   updatedUserData
+      // );
       await updateUser(updatedUserData._id, updatedUserData);
       fetchUsers();
 

@@ -38,7 +38,7 @@ export default function ConsultantTableWrapper({
     }
   };
 
-  console.log("data", data);
+  // console.log("data", data);
 
   // Filtre fonksiyonu: searchQuery ile tabloyu filtreler
   const customFilterFn = useCallback((items, query) => {
@@ -497,7 +497,7 @@ function ConsultantPopupArea({
 
   const handleEditAppointment = async (formData) => {
     try {
-      console.log("Güncellenecek randevu verisi:", formData);
+      // console.log("Güncellenecek randevu verisi:", formData);
       await updateAppointment(formData._id, formData);
       fetchAppointments();
       setTimeout(() => {

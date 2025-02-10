@@ -26,7 +26,7 @@ const AppointmentDatePicker = ({
   // Seçili klinik ve doktora ait randevuları filtreleyip, tarihleri yerel saat olarak parse ediyoruz.
   const parsedAppointments = useMemo(() => {
     if (!selectedClinic || !selectedDoctor) {
-      console.log("Klinik veya doktor seçilmedi:", selectedClinic, selectedDoctor);
+      // console.log("Klinik veya doktor seçilmedi:", selectedClinic, selectedDoctor);
       return [];
     }
     const filtered = (appointments || []).filter((appt) => {
@@ -36,7 +36,7 @@ const AppointmentDatePicker = ({
       const doctorMatch =
         appt.doctorName?.trim().toLowerCase() === selectedDoctor.trim().toLowerCase();
       if (!clinicMatch || !doctorMatch) {
-        console.log("Eşleşmeyen randevu:", appt, "clinicMatch:", clinicMatch, "doctorMatch:", doctorMatch);
+        // console.log("Eşleşmeyen randevu:", appt, "clinicMatch:", clinicMatch, "doctorMatch:", doctorMatch);
       }
       return clinicMatch && doctorMatch;
     });
@@ -54,7 +54,7 @@ const AppointmentDatePicker = ({
         return null;
       }
     }).filter(Boolean);
-    console.log("Parsed appointments:", parsed);
+    // console.log("Parsed appointments:", parsed);
     return parsed;
   }, [appointments, selectedClinic, selectedDoctor]);
 

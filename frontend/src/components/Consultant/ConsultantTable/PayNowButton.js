@@ -150,7 +150,7 @@ export default function PaymentPopup({
           // paymentDate: new Date().toISOString(), // Opsiyonel
         };
         await updatePayment(existingPayment._id, updatedPayload);
-        console.log("Ödeme güncellendi:", payload);
+        // console.log("Ödeme güncellendi:", payload);
       } else {
         await createPayment(payload);
       }

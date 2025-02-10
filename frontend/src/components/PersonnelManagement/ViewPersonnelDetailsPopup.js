@@ -119,7 +119,7 @@ export default function ViewPersonnelDetailsPopup({
       !formData.roleName ||
       !formData.hireDate
     ) {
-      console.log("📤 API'ye Gönderilen Veri:", formData);
+      // console.log("📤 API'ye Gönderilen Veri:", formData);
       setAlertState({
         message: "Lütfen tüm alanları doldurun.",
         severity: "error",

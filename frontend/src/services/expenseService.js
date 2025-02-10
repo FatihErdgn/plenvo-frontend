@@ -17,7 +17,7 @@ const api = axios.create({
  */
 export const createExpense = async (expenseData) => {
   try {
-    console.log("📤 API'ye Gönderilen Veri:", JSON.stringify(expenseData, null, 2));
+    // console.log("📤 API'ye Gönderilen Veri:", JSON.stringify(expenseData, null, 2));
 
     const response = await api.post("/expenses", expenseData);
     return response.data;

@@ -135,7 +135,7 @@ export default function ViewAppointmentDetailsPopup({
     setFormData(canceledData);
 
     // Burada API isteği gönderebilirsiniz (PUT/PATCH).
-    console.log("Appointment canceled => ", canceledData);
+    // console.log("Appointment canceled => ", canceledData);
 
     // Alert mesajı
     setAlertState({
@@ -156,7 +156,7 @@ export default function ViewAppointmentDetailsPopup({
       !formData.clinicName ||
       !formData.doctorName
     ) {
-      console.log("formData", formData);
+      // console.log("formData", formData);
       setAlertState({
         message: "Lütfen (status, tarih, klinik, doktor) alanlarını doldurun.",
         severity: "error",
@@ -223,7 +223,7 @@ export default function ViewAppointmentDetailsPopup({
 
     // Burada API isteği gönderebilirsiniz (PUT/PATCH).
     try {
-      console.log("formData", finalData);
+      // console.log("formData", finalData);
       onEditAppointment(finalData);
     } catch (error) {
       console.error(error);

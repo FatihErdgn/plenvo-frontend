@@ -213,7 +213,7 @@ function ServicePopupArea({ fetchServices }) {
 
   const handleEditService = async (formData) => {
     try {
-      console.log("Güncellenecek servis verisi:", formData);
+      // console.log("Güncellenecek servis verisi:", formData);
       await updateService(formData._id, formData);
       fetchServices();
       setTimeout(() => {

@@ -18,7 +18,7 @@ export default function FinancePage() {
       setLoading(true);
       const response = await getExpenses();
       setExpensesData(response.expense || []);
-      console.log("Giderler alındı:", response.expense);
+      // console.log("Giderler alındı:", response.expense);
     } catch (error) {
       console.error("Giderleri alırken hata oluştu:", error);
     } finally {
@@ -34,7 +34,7 @@ export default function FinancePage() {
   // ✅ Yeni bir gider eklediğinde tabloyu güncelle
   const handleAddExpense = async (expenseData) => {
     try {
-      console.log("📤 API'ye Gönderilen Veri:", expenseData);
+      // console.log("📤 API'ye Gönderilen Veri:", expenseData);
       const newExpense = await createExpense(expenseData);
 
       setExpensesData((prevData) => [newExpense.expense, ...prevData]);

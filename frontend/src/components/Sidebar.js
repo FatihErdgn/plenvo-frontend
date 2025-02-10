@@ -19,7 +19,7 @@ export default function SideBar() {
   const handleLogout = async () => {
     try {
       await logoutUser();
-      console.log("Başarıyla çıkış yapıldı.");
+      // console.log("Başarıyla çıkış yapıldı.");
       window.location.href = "/";
     } catch (error) {
       console.error("Çıkış yaparken hata oluştu:", error);
