@@ -17,7 +17,9 @@ export default function FinanceDashboard() {
     d.setDate(d.getDate() - 7);
     return d.toISOString().split("T")[0];
   });
-  const [endDate, setEndDate] = useState(() => new Date().toISOString().split("T")[0]);
+  const [endDate, setEndDate] = useState(
+    () => new Date().toISOString().split("T")[0]
+  );
   const [dashboardData, setDashboardData] = useState(null);
   const [loading, setLoading] = useState(false);
 
@@ -30,7 +32,10 @@ export default function FinanceDashboard() {
         setDashboardData(response.data);
         // console.log("Dashboard verileri alındı:", response.data);
       } else {
-        console.error("Dashboard verileri alınırken bir hata oluştu:", response);
+        console.error(
+          "Dashboard verileri alınırken bir hata oluştu:",
+          response
+        );
       }
     } catch (error) {
       console.error("Dashboard verileri alınırken bir hata oluştu:", error);
@@ -43,10 +48,16 @@ export default function FinanceDashboard() {
   }, [startDate, endDate]);
 
   if (loading) {
-    return <div className="p-8 text-center text-xl">Dashboard yükleniyor...</div>;
+    return (
+      <div className="p-8 text-center text-xl">Dashboard yükleniyor...</div>
+    );
   }
   if (!dashboardData) {
-    return <div className="p-8 text-center text-xl">Dashboard verisi bulunamadı.</div>;
+    return (
+      <div className="p-8 text-center text-xl">
+        Dashboard verisi bulunamadı.
+      </div>
+    );
   }
 
   const { summary, trend, breakdown } = dashboardData;
@@ -73,33 +84,41 @@ export default function FinanceDashboard() {
 
   // --- Pie Chart: Gelir Breakdown ---
   const incomePieOptions = {
-    labels: breakdown.incomeMethods.map(item => item.method),
+    labels: breakdown.incomeMethods.map((item) => item.method),
     tooltip: { y: { formatter: (val) => `${val.toLocaleString()} TL` } },
     colors: palette, // Paletimizin tamamını kullanabilirsiniz
     legend: { position: "bottom", fontSize: "14px" },
   };
-  const incomePieSeries = breakdown.incomeMethods.map(item => item.amount);
+  const incomePieSeries = breakdown.incomeMethods.map((item) => item.amount);
 
   // --- Pie Chart: Gider Breakdown ---
   const expensePieOptions = {
-    labels: breakdown.expenseDescriptions.map(item => item.description),
+    labels: breakdown.expenseDescriptions.map((item) => item.description),
     tooltip: { y: { formatter: (val) => `${val.toLocaleString()} TL` } },
     colors: palette, // Aynı paleti kullanıyoruz
     legend: { position: "bottom", fontSize: "14px" },
   };
-  const expensePieSeries = breakdown.expenseDescriptions.map(item => item.amount);
+  const expensePieSeries = breakdown.expenseDescriptions.map(
+    (item) => item.amount
+  );
 
   return (
     <div className="h-screen overflow-hidden bg-[#f4f7fe] p-6 w-screen rounded-l-[2.5rem] relative z-20">
       {/* Header */}
       <header className="flex justify-between items-center mb-4">
         <div>
-          <h1 className="text-4xl font-bold text-gray-800">Finansal Dashboard</h1>
-          <p className="text-lg text-gray-600">Finansal özet ve günlük trendler</p>
+          <h1 className="text-4xl font-bold text-gray-800">
+            Finansal Dashboard
+          </h1>
+          <p className="text-lg text-gray-600">
+            Finansal özet ve günlük trendler
+          </p>
         </div>
         <div className="flex items-center gap-4">
           <div className="flex flex-col">
-            <label className="text-sm font-medium text-gray-700">Başlangıç Tarihi</label>
+            <label className="text-sm font-medium text-gray-700">
+              Başlangıç Tarihi
+            </label>
             <input
               type="date"
               value={startDate}
@@ -108,7 +127,9 @@ export default function FinanceDashboard() {
             />
           </div>
           <div className="flex flex-col">
-            <label className="text-sm font-medium text-gray-700">Bitiş Tarihi</label>
+            <label className="text-sm font-medium text-gray-700">
+              Bitiş Tarihi
+            </label>
             <input
               type="date"
               value={endDate}
@@ -158,28 +179,56 @@ export default function FinanceDashboard() {
           </div>
           {/* Trend Line Chart */}
           <div className="bg-white p-6 rounded-3xl shadow-lg">
-            <h2 className="text-2xl font-semibold text-gray-700 mb-4">Günlük Trend</h2>
-            <Chart options={lineChartOptions} series={lineChartSeries} type="line" height={255} />
+            <h2 className="text-2xl font-semibold text-gray-700 mb-4">
+              Günlük Trend
+            </h2>
+            <Chart
+              options={lineChartOptions}
+              series={lineChartSeries}
+              type="line"
+              height={255}
+            />
           </div>
         </div>
 
         {/* Sağ Bölüm (yaklaşık %35) */}
         <div className="w-1/3 pl-4 flex flex-col gap-4 overflow-y-auto h-full">
           <div className="bg-white p-6 rounded-3xl shadow-lg flex-1 h-[calc(50%-8px)]">
-            <h2 className="text-2xl font-semibold text-gray-700 mb-4">Gelir Dağılımı</h2>
-            {incomePieSeries.length > 0 ? (
-              <Chart options={incomePieOptions} series={incomePieSeries} type="pie" height={270} />
-            ) : (
-              <p className="text-center text-gray-500">Veri Yok</p>
-            )}
+            <h2 className="text-2xl font-semibold text-gray-700 mb-4">
+              Gelir Dağılımı
+            </h2>
+            <div className="w-full flex justify-center">
+              {incomePieSeries.length > 0 ? (
+                <Chart
+                  options={incomePieOptions}
+                  series={incomePieSeries}
+                  type="pie"
+                  height="100%"
+                  width="100%"
+                />
+              ) : (
+                <p className="text-center text-gray-500">Veri Yok</p>
+              )}
+            </div>
           </div>
+
           <div className="bg-white p-6 rounded-3xl shadow-lg flex-1 h-[calc(50%-8px)]">
-            <h2 className="text-2xl font-semibold text-gray-700 mb-4">Gider Dağılımı</h2>
-            {expensePieSeries.length > 0 ? (
-              <Chart options={expensePieOptions} series={expensePieSeries} type="pie" height={270} />
-            ) : (
-              <p className="text-center text-gray-500">Veri Yok</p>
-            )}
+            <h2 className="text-2xl font-semibold text-gray-700 mb-4">
+              Gelir Dağılımı
+            </h2>
+            <div className="w-full flex justify-center">
+              {expensePieSeries.length > 0 ? (
+                <Chart
+                  options={expensePieOptions}
+                  series={expensePieSeries}
+                  type="pie"
+                  height="100%"
+                  width="100%"
+                />
+              ) : (
+                <p className="text-center text-gray-500">Veri Yok</p>
+              )}
+            </div>
           </div>
         </div>
       </div>
