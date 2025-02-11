@@ -112,10 +112,6 @@ export default function ViewPersonnelDetailsPopup({
       !formData.lastName?.trim() ||
       !formData.phoneNumber ||
       !formData.userMail ||
-      !formData.clinicName ||
-      !formData.profession ||
-      !formData.speciality ||
-      !formData.salary ||
       !formData.roleName ||
       !formData.hireDate
     ) {
