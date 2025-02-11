@@ -205,6 +205,7 @@ export default function FinanceDashboard() {
                   type="pie"
                   height="100%"
                   width="100%"
+                  maintainAspectRatio={false}
                 />
               ) : (
                 <p className="text-center text-gray-500">Veri Yok</p>
@@ -224,6 +225,7 @@ export default function FinanceDashboard() {
                   type="pie"
                   height="100%"
                   width="100%"
+                  maintainAspectRatio={false}
                 />
               ) : (
                 <p className="text-center text-gray-500">Veri Yok</p>
