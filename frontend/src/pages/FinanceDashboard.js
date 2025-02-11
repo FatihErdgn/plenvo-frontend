@@ -203,7 +203,7 @@ export default function FinanceDashboard() {
                   options={incomePieOptions}
                   series={incomePieSeries}
                   type="pie"
-                  height="100%"
+                  height={"16.875rem"}
                   width="100%"
                   maintainAspectRatio={false}
                 />
@@ -223,9 +223,10 @@ export default function FinanceDashboard() {
                   options={expensePieOptions}
                   series={expensePieSeries}
                   type="pie"
-                  height="100%"
+                  height={"16.875rem"}
                   width="100%"
                   maintainAspectRatio={false}
+                  
                 />
               ) : (
                 <p className="text-center text-gray-500">Veri Yok</p>
