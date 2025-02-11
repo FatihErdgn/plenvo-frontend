@@ -168,7 +168,7 @@ export default function FinanceDashboard() {
           <div className="bg-white p-6 rounded-3xl shadow-lg flex-1 h-[calc(50%-8px)]">
             <h2 className="text-2xl font-semibold text-gray-700 mb-4">Gelir Dağılımı</h2>
             {incomePieSeries.length > 0 ? (
-              <Chart options={incomePieOptions} series={incomePieSeries} type="pie" height={250} />
+              <Chart options={incomePieOptions} series={incomePieSeries} type="pie" height={270} />
             ) : (
               <p className="text-center text-gray-500">Veri Yok</p>
             )}
@@ -176,7 +176,7 @@ export default function FinanceDashboard() {
           <div className="bg-white p-6 rounded-3xl shadow-lg flex-1 h-[calc(50%-8px)]">
             <h2 className="text-2xl font-semibold text-gray-700 mb-4">Gider Dağılımı</h2>
             {expensePieSeries.length > 0 ? (
-              <Chart options={expensePieOptions} series={expensePieSeries} type="pie" height={250} />
+              <Chart options={expensePieOptions} series={expensePieSeries} type="pie" height={270} />
             ) : (
               <p className="text-center text-gray-500">Veri Yok</p>
             )}
