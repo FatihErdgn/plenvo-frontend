@@ -26,7 +26,7 @@ export const loginUser = async (username, password) => {
       { username, password },
       { withCredentials: true }
     );
-    const userProfile = await getUserProfile();
+    await getUserProfile();
     // console.log("👤 Kullanıcı Bilgileri:", userProfile);
     return response.data; // { success: true, token: '...' }
   } catch (error) {
