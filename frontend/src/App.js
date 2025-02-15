@@ -13,6 +13,7 @@ import FinanceDashboard from "./pages/FinanceDashboard";
 import PersonnelManagementPage from "./pages/PersonnelManagement";
 import ProtectedRoute from "./utils/ProtectedRoute";
 import { UserProvider } from "./contexts/UserContext";
+import DoctorManagementPage from "./pages/DoctorManagement";
 
 function App() {
   return (
@@ -47,6 +48,14 @@ const MainLayout = () => {
               element={
                 <ProtectedRoute>
                   <FinancePage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/doctor-management"
+              element={
+                <ProtectedRoute>
+                  <DoctorManagementPage />
                 </ProtectedRoute>
               }
             />

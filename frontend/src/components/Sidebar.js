@@ -4,6 +4,7 @@ import { LuSquareMenu } from "react-icons/lu";
 import { IoPersonOutline } from "react-icons/io5";
 import { TbPresentationAnalytics } from "react-icons/tb";
 import { MdOutlineSpaceDashboard } from "react-icons/md";
+import { FaUserDoctor } from "react-icons/fa6";
 import { Link, useLocation } from "react-router-dom";
 import { logoutUser } from "../services/authService";
 import avatar from "../assets/images/avatar.png";
@@ -12,7 +13,7 @@ import { useUser } from "../contexts/UserContext"; // Context'ten userProfile'ı
 export default function SideBar() {
   const location = useLocation();
   const isActive = (path) => location.pathname === path;
-  
+
   // **Context'ten userProfile'ı al**
   const { userProfile, loading } = useUser();
 
@@ -70,6 +71,16 @@ export default function SideBar() {
           >
             <TbPresentationAnalytics className="w-5 h-5" /> Maliyet Yönetimi
           </Link>
+          <Link
+            to="/doctor-management"
+            className={
+              isActive("/doctor-management")
+                ? "mb-10 flex items-center gap-2 text-[#007E85] font-semibold bg-white w-[17.5rem] p-3 rounded cursor-pointer"
+                : "mb-10 flex items-center gap-2 text-white cursor-pointer"
+            }
+          >
+            <FaUserDoctor className="w-5 h-5" /> Doktor Paneli
+          </Link>
           {/* Eğer rol consultant değilse Finansal Dashboard ve Klinik Yönetimi göster */}
           {userProfile?.roleId?.roleName !== "consultant" && (
             <>
@@ -81,7 +92,8 @@ export default function SideBar() {
                     : "mb-10 flex items-center gap-2 text-white cursor-pointer"
                 }
               >
-                <MdOutlineSpaceDashboard className="w-5 h-5" /> Finansal Dashboard
+                <MdOutlineSpaceDashboard className="w-5 h-5" /> Finansal
+                Dashboard
               </Link>
               <Link
                 to="/personnel-management"
