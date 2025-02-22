@@ -71,7 +71,7 @@ export default function SideBar() {
           >
             <TbPresentationAnalytics className="w-5 h-5" /> Maliyet Yönetimi
           </Link>
-          {/* <Link
+          <Link
             to="/doctor-management"
             className={
               isActive("/doctor-management")
@@ -80,7 +80,7 @@ export default function SideBar() {
             }
           >
             <FaUserDoctor className="w-5 h-5" /> Doktor Paneli
-          </Link> */}
+          </Link>
           {/* Eğer rol consultant değilse Finansal Dashboard ve Klinik Yönetimi göster */}
           {userProfile?.roleId?.roleName !== "consultant" && (
             <>
