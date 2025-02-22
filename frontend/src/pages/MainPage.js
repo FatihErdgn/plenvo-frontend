@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import DoctorLoginImage from "../assets/images/doctor-login-3.png";
 import thunderImg from "../assets/images/login-thunder.png";
 import { IoPersonOutline } from "react-icons/io5";
+import PatientAppointmentForm from "../components/PatientAppointmentForm";
 
 export default function MainPage() {
   return (
@@ -16,6 +17,9 @@ export default function MainPage() {
             Aşağıdaki gerekli bilgileri girerek kliniğimizden randevu
             alabilirsiniz.
           </p>
+          <div className="w-full my-2 max-w-[35rem]">
+            <PatientAppointmentForm />
+          </div>
           <div className="flex items-center w-full my-6  max-w-[35rem]">
             {/* Soldaki çizgi */}
             <div className="flex-grow h-px bg-gray-300"></div>
