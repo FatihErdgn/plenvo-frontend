@@ -64,7 +64,7 @@ export default function ServiceManagementTableWrapper({
     { key: "provider", label: "Hizmet Sağlayıcı" },
     {
       key: "validityDate",
-      label: "İşe Giriş Tarihi",
+      label: "Hizmet Bedeli Başlangıç Tarihi",
       renderCell: (row) => {
         const dateObj = new Date(row.validityDate);
         const day = String(dateObj.getDate()).padStart(2, "0");
@@ -97,7 +97,7 @@ export default function ServiceManagementTableWrapper({
     { key: "provider", label: "Hizmet Sağlayıcı" },
     {
       key: "validityDate",
-      label: "İşe Giriş Tarihi",
+      label: "Hizmet Bedeli Başlangıç Tarihi",
       renderCell: (row) => {
         const dateObj = new Date(row.validityDate);
         const day = String(dateObj.getDate()).padStart(2, "0");

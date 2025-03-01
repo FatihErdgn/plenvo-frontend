@@ -209,7 +209,7 @@ export default function ViewServiceDetailsPopup({
           </div>
           <div className="mb-4">
             <label className="block text-gray-700">
-              Hizmet Geçerlilik Tarihi
+              Hizmet Bedeli Başlangıç Tarihi
             </label>
             <input
               type="date"

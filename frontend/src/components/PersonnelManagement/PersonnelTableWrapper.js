@@ -76,7 +76,7 @@ export default function PersonnelTableWrapper({
     { key: "userMail", label: "E-posta" },
     {
       key: "hireDate",
-      label: "İşe Giriş Tarihi",
+      label: "Maaş Ödeme Tarihi",
       renderCell: (row) => {
         const dateObj = new Date(row.hireDate);
         const day = String(dateObj.getDate()).padStart(2, "0");
@@ -114,7 +114,7 @@ export default function PersonnelTableWrapper({
     { key: "userMail", label: "E-posta" },
     {
       key: "hireDate",
-      label: "İşe Giriş Tarihi",
+      label: "Maaş Ödeme Tarihi",
       renderCell: (row) => {
         const dateObj = new Date(row.hireDate);
         const day = String(dateObj.getDate()).padStart(2, "0");

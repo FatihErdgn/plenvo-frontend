@@ -161,7 +161,7 @@ export default function AddPersonnel({
         : formData.speciality || "Belirtilmedi";
 
     // Validation
-    if (!formData.userMail.includes("@")) {
+    if ( formData.userMail && !formData.userMail.includes("@")) {
       setAlertState({
         message: "Geçersiz e-posta adresi.",
         severity: "error",
@@ -207,9 +207,9 @@ export default function AddPersonnel({
       !formData.username ||
       !formData.password ||
       !formData.phoneNumber ||
-      !formData.userMail ||
-      !formData.roleName ||
-      !formData.hireDate
+      // !formData.userMail ||
+      // !formData.hireDate ||
+      !formData.roleName
     ) {
       setAlertState({
         message: "Lütfen tüm zorunlu alanları doldurun.",
@@ -539,7 +539,7 @@ export default function AddPersonnel({
                     htmlFor="hireDate"
                     className="text-gray-700 mb-2 block"
                   >
-                    İşe Giriş Tarihi
+                    Maaş Ödeme Tarihi
                   </label>
                   <input
                     type="date"

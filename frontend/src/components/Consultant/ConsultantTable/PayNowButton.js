@@ -64,6 +64,7 @@ export default function PaymentPopup({
     async function fetchPayments() {
       try {
         const res = await getPaymentsByAppointment(row._id);
+        console.log("Önceki ödemeler alındı:", res);
         if (res.payments && res.payments.length > 0) {
           const payments = res.payments;
           const totalPaid = payments.reduce(
@@ -140,12 +141,21 @@ export default function PaymentPopup({
     try {
       // Eğer daha önce ödeme yapılmışsa, updatePayment çalışsın; yoksa createPayment
       if (existingPayment) {
+        let updatedPaymentStatus;
+        if (paymentAmountValue === remainingAmount) {
+          // Eğer kalan tutar kadar ödeme yapılıyorsa, ödeme tamamlanmış sayılır.
+          updatedPaymentStatus = "Tamamlandı";
+        } else {
+          updatedPaymentStatus = "Ödeme Bekleniyor";
+        }
+
         const updatedPayload = {
           currencyName: "TRY", // Varsayılan para birimi (gerekirse güncellenebilir)
           serviceIds, // Seçilen hizmetlerin ID'leri
           paymentMethod: paymentType,
-          paymentAmount: paymentAmountValue + remainingAmount,
+          paymentAmount: paymentAmountValue + (totalCost - remainingAmount),
           paymentDescription: paymentNote,
+          paymentStatus: updatedPaymentStatus,
           appointmentId: row._id, // Randevu ID'si
           // paymentDate: new Date().toISOString(), // Opsiyonel
         };

@@ -14,7 +14,7 @@ import PersonnelManagementPage from "./pages/PersonnelManagement";
 import ProtectedRoute from "./utils/ProtectedRoute";
 import { UserProvider } from "./contexts/UserContext";
 import DoctorManagementPage from "./pages/DoctorManagement";
-import MainPage from "./pages/MainPage";
+// import MainPage from "./pages/MainPage";
 
 function App() {
   return (
@@ -28,15 +28,17 @@ function App() {
 
 const MainLayout = () => {
   const location = useLocation();
-  const isLoginPage = location.pathname === "/login";
-  const isMainPage = location.pathname === "/";
+  // const isLoginPage = location.pathname === "/login";
+  // const isMainPage = location.pathname === "/";
+  const isLoginPage = location.pathname === "/";
 
   return (
     <>
-      {isLoginPage || isMainPage ? (
+      {isLoginPage ? ( // isLoginPage || isMainPage
         <Routes>
-          <Route path="/" element={<MainPage />} />
-          <Route path="/login" element={<Login />} />
+          {/* <Route path="/" element={<MainPage />} /> */}
+          {/* <Route path="/login" element={<Login />} /> */}
+          <Route path="/" element={<Login />} />
         </Routes>
       ) : (
         <div className="flex h-screen bg-[#007E85] font-montserrat">
@@ -58,14 +60,14 @@ const MainLayout = () => {
                 </ProtectedRoute>
               }
             />
-            <Route
+            {/* <Route
               path="/doctor-management"
               element={
                 <ProtectedRoute>
                   <DoctorManagementPage />
                 </ProtectedRoute>
               }
-            />
+            /> */}
             <Route
               path="/personnel-management"
               element={

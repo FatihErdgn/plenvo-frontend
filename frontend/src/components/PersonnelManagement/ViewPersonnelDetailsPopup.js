@@ -255,6 +255,21 @@ export default function ViewPersonnelDetailsPopup({
             />
           </div>
           <div className="mb-4">
+            <label className="block text-gray-700">Kullanıcı Adı</label>
+            <input
+              type="text"
+              name="username"
+              value={formData.username || ""}
+              onChange={handleInputChange}
+              disabled={!isEditable}
+              className={`w-full px-4 py-2 border rounded-lg ${
+                isEditable
+                  ? "border-gray-300"
+                  : "border-transparent bg-gray-100"
+              }`}
+            />
+          </div>
+          <div className="mb-4">
             <label className="block text-gray-700">Telefon</label>
             <input
               type="text"
@@ -285,7 +300,7 @@ export default function ViewPersonnelDetailsPopup({
             />
           </div>
           <div className="mb-4">
-            <label className="block text-gray-700">İşe Giriş Tarihi</label>
+            <label className="block text-gray-700">Maaş Ödeme Tarihi</label>
             {isEditable ? (
               <input
                 type="date"

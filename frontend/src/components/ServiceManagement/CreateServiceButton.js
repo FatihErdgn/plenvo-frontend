@@ -353,7 +353,7 @@ export default function AddService({
                   htmlFor="validityDate"
                   className="text-gray-700 mb-2 block"
                 >
-                  Hizmet Geçerlilik Tarihi
+                  Hizmet Bedeli Başlangıç Tarihi
                 </label>
                 <input
                   type="date"
