@@ -49,10 +49,12 @@ export default function ConsultantTableWrapper({
       }`.toLowerCase();
       const phoneNumber = (item?.phoneNumber ?? "").toLowerCase();
       const status = (item?.status ?? "").toLowerCase();
+      const doctorName = (item?.doctorName ?? "").toLowerCase();
       return (
         fullName.includes(_query) ||
         phoneNumber.includes(_query) ||
-        status.includes(_query)
+        status.includes(_query) ||
+        doctorName.includes(_query)
       );
     });
   }, []);
@@ -154,6 +156,20 @@ export default function ConsultantTableWrapper({
             title={row.phoneNumber}
           >
             {row.phoneNumber}
+          </span>
+        );
+      },
+    },
+    {
+      key: "doctorName",
+      label: "Danışman",
+      renderCell: (row) => {
+        return (
+          <span
+            className="block w-[9.375rem] mx-auto text-center truncate"
+            title={row.doctorName}
+          >
+            {row.doctorName}
           </span>
         );
       },
@@ -292,7 +308,7 @@ export default function ConsultantTableWrapper({
       ),
     },
     { key: "clinicName", label: "Klinik" },
-    { key: "doctorName", label: "Doktor" }, // Eğer doktor bilgisi farklı bir key'de tutuluyorsa ona göre düzenleyin.
+    { key: "doctorName", label: "Danışman" }, // Eğer doktor bilgisi farklı bir key'de tutuluyorsa ona göre düzenleyin.
     { key: "type", label: "Randevu Tipi" },
   ];
 
@@ -304,7 +320,7 @@ export default function ConsultantTableWrapper({
       searchQuery={searchQuery}
       startDate={startDate}
       endDate={endDate}
-      rowsPerPage={8}
+      rowsPerPage={7}
       customFilterFn={customFilterFn}
       customDateFilterFn={customDateFilterFn}
     >

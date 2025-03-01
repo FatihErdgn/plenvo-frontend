@@ -9,6 +9,7 @@ import {
 } from "../services/appointmentService";
 import { getUsers } from "../services/userService";
 import { getServices } from "../services/serviceService";
+import { FiArrowRightCircle } from "react-icons/fi";
 
 export default function ConsultantPage() {
   const [appointmentData, setAppointmentData] = useState([]);
@@ -18,6 +19,7 @@ export default function ConsultantPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+  const [isCalendarModalOpen, setIsCalendarModalOpen] = useState(false);
 
   const fetchUsers = async () => {
     try {
@@ -95,6 +97,10 @@ export default function ConsultantPage() {
     setEndDate(event.target.value);
   };
 
+  const handleCalendarModalOpen = () => {
+    setIsCalendarModalOpen((prev) => !prev);
+  };
+
   // Klinik seçenekleri (sadece klinik isimleri)
   const clinicOptions = [
     ...new Set(
@@ -105,9 +111,7 @@ export default function ConsultantPage() {
   ];
 
   // Doktorlar için detaylı liste (filtreleme için kullanılacak)
-  const doctorList = userData.filter(
-    (item) => item?.roleName === "doctor"
-  );
+  const doctorList = userData.filter((item) => item?.roleName === "doctor");
   const doctorOptions = [
     ...new Set(
       doctorList.map(
@@ -158,6 +162,15 @@ export default function ConsultantPage() {
           fetchAppointments={fetchAppointments}
           servicesData={servicesData}
         />
+      </div>
+      <div className="flex flex-row justify-end gap-4 mt-4">
+        <button
+          onClick={handleCalendarModalOpen}
+          className="font-poppins flex flex-row bg-[#399AA1] text-white px-4 py-3 rounded-[0.625rem] hover:bg-[#007E85] shadow-md"
+        >
+          Randevu Takvimleri
+          <FiArrowRightCircle className="w-6 h-6 ml-2" />
+        </button>
       </div>
     </div>
   );

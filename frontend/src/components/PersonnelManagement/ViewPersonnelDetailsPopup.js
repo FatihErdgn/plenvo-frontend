@@ -300,7 +300,7 @@ export default function ViewPersonnelDetailsPopup({
             />
           </div>
           <div className="mb-4">
-            <label className="block text-gray-700">Maaş Ödeme Tarihi</label>
+            <label className="block text-gray-700">İşe Giriş Tarihi</label>
             {isEditable ? (
               <input
                 type="date"

@@ -539,7 +539,7 @@ export default function AddPersonnel({
                     htmlFor="hireDate"
                     className="text-gray-700 mb-2 block"
                   >
-                    Maaş Ödeme Tarihi
+                    İşe Giriş Tarihi
                   </label>
                   <input
                     type="date"
