@@ -8,7 +8,15 @@ import {
 import { getUsers, getProfile } from "../../../services/userService";
 
 // Haftanın günleri
-const DAYS = ["Pazartesi", "Salı", "Çarşamba", "Perşembe", "Cuma", "Cumartesi", "Pazar"];
+const DAYS = [
+  "Pazartesi",
+  "Salı",
+  "Çarşamba",
+  "Perşembe",
+  "Cuma",
+  "Cumartesi",
+  "Pazar",
+];
 // Saat dilimleri
 const TIME_SLOTS = [
   "09:00-09:50",
@@ -55,6 +63,8 @@ export default function CalendarSchedulePage() {
   const [selectedAppointment, setSelectedAppointment] = useState(null);
   const [participantCount, setParticipantCount] = useState(1);
   const [participantNames, setParticipantNames] = useState([""]);
+  // Yeni: Açıklama için state ekleyelim
+  const [description, setDescription] = useState("");
 
   // Kullanıcı profilini al
   useEffect(() => {
@@ -68,11 +78,16 @@ export default function CalendarSchedulePage() {
 
   // Danışman listesini getir (admin/manager/superadmin ise)
   useEffect(() => {
-    if (loggedInUser && ["admin", "manager", "superadmin"].includes(loggedInUser.roleId?.roleName)) {
+    if (
+      loggedInUser &&
+      ["admin", "manager", "superadmin"].includes(loggedInUser.roleId?.roleName)
+    ) {
       (async () => {
         const userRes = await getUsers();
         if (userRes.success) {
-          const docs = userRes.data.filter((u) => u.roleId?.roleName === "doctor");
+          const docs = userRes.data.filter(
+            (u) => u.roleId?.roleName === "doctor"
+          );
           setDoctorList(docs);
         }
       })();
@@ -86,7 +101,9 @@ export default function CalendarSchedulePage() {
     let doctorIdToFetch = "";
     if (loggedInUser.roleId?.roleName === "doctor") {
       doctorIdToFetch = loggedInUser._id;
-    } else if (["admin", "manager", "superadmin"].includes(loggedInUser.roleId?.roleName)) {
+    } else if (
+      ["admin", "manager", "superadmin"].includes(loggedInUser.roleId?.roleName)
+    ) {
       if (!selectedDoctor) return;
       doctorIdToFetch = selectedDoctor;
     }
@@ -108,6 +125,7 @@ export default function CalendarSchedulePage() {
     setSelectedAppointment({ dayIndex, timeIndex, participants: [] });
     setParticipantCount(1);
     setParticipantNames([""]);
+    setDescription(""); // Yeni randevu için açıklamayı sıfırla
     setShowModal(true);
   };
 
@@ -118,6 +136,7 @@ export default function CalendarSchedulePage() {
     setSelectedAppointment(appt);
     setParticipantCount(appt.participants?.length || 1);
     setParticipantNames(appt.participants?.map((p) => p.name) || [""]);
+    setDescription(appt.description || ""); // Varolan açıklamayı al
     setShowModal(true);
   };
 
@@ -135,17 +154,23 @@ export default function CalendarSchedulePage() {
   const handleSubmit = async () => {
     if (!selectedAppointment) return;
     const doctorId =
-      loggedInUser?.roleId?.roleName === "doctor" ? loggedInUser._id : selectedDoctor;
+      loggedInUser?.roleId?.roleName === "doctor"
+        ? loggedInUser._id
+        : selectedDoctor;
 
     const payload = {
       dayIndex: selectedAppointment.dayIndex,
       timeIndex: selectedAppointment.timeIndex,
       doctorId,
       participants: participantNames.map((name) => ({ name })),
+      description, // Açıklama alanını payload'a ekledik
     };
 
     if (editMode) {
-      const res = await updateCalendarAppointment(selectedAppointment._id, payload);
+      const res = await updateCalendarAppointment(
+        selectedAppointment._id,
+        payload
+      );
       if (res.success) {
         refreshAppointments(doctorId);
       }
@@ -162,7 +187,9 @@ export default function CalendarSchedulePage() {
   const handleDelete = async () => {
     if (!selectedAppointment) return;
     const doctorId =
-      loggedInUser?.roleId?.roleName === "doctor" ? loggedInUser._id : selectedDoctor;
+      loggedInUser?.roleId?.roleName === "doctor"
+        ? loggedInUser._id
+        : selectedDoctor;
 
     const res = await deleteCalendarAppointment(selectedAppointment._id);
     if (res.success) {
@@ -191,7 +218,9 @@ export default function CalendarSchedulePage() {
     if (!loggedInUser) return "Yükleniyor...";
     if (loggedInUser.roleId?.roleName === "doctor") {
       return `${loggedInUser.firstName} ${loggedInUser.lastName}`;
-    } else if (["admin", "manager", "superadmin"].includes(loggedInUser.roleId?.roleName)) {
+    } else if (
+      ["admin", "manager", "superadmin"].includes(loggedInUser.roleId?.roleName)
+    ) {
       const doc = doctorList.find((d) => d._id === selectedDoctor);
       return doc ? `${doc.firstName} ${doc.lastName}` : "Danışman Seçiniz";
     }
@@ -266,6 +295,11 @@ export default function CalendarSchedulePage() {
                       className={`border border-gray-300 p-2 cursor-pointer align-top ${
                         appt ? getPastelColor(appt) : "bg-white"
                       }`}
+                      title={
+                        appt && appt.description
+                          ? `Randevu Açıklaması: ${appt.description}`
+                          : ""
+                      }
                     >
                       {appt ? (
                         <div className="text-sm font-medium">
@@ -302,12 +336,26 @@ export default function CalendarSchedulePage() {
               />
             </div>
 
+            {/* Açıklama Alanı */}
+            <div className="mb-2">
+              <label className="block font-medium">Açıklama</label>
+              <textarea
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                className="border p-1 w-full cursor-pointer rounded-md resize-none"
+                rows="3"
+                placeholder="Randevu ile ilgili açıklama giriniz..."
+              />
+            </div>
+
             {/* Kişi Sayısı */}
             <div className="mb-2">
               <label className="block font-medium">Kişi Sayısı</label>
               <select
                 value={participantCount}
-                onChange={(e) => handleParticipantCountChange(parseInt(e.target.value))}
+                onChange={(e) =>
+                  handleParticipantCountChange(parseInt(e.target.value))
+                }
                 className="border p-1 w-full cursor-pointer rounded-md"
               >
                 {[1, 2, 3, 4, 5, 6].map((cnt) => (
@@ -321,7 +369,9 @@ export default function CalendarSchedulePage() {
             {/* Kişi İsimleri */}
             {Array.from({ length: participantCount }, (_, i) => (
               <div key={i} className="mb-2">
-                <label className="block text-sm font-medium">Kişi {i + 1} Adı</label>
+                <label className="block text-sm font-medium">
+                  Kişi {i + 1} Adı
+                </label>
                 <input
                   type="text"
                   value={participantNames[i] || ""}
