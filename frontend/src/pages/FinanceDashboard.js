@@ -13,14 +13,17 @@ export default function FinanceDashboard() {
   // Tarih seçimleri
   const [startDate, setStartDate] = useState(() => {
     const d = new Date();
-    d.setDate(d.getDate() - 7);
+    d.setDate(1); // Ayın 1'i olarak ayarla
     return d.toISOString().split("T")[0];
   });
+
   const [endDate, setEndDate] = useState(() => {
     const d = new Date();
-    d.setDate(d.getDate() + 1);
+    d.setMonth(d.getMonth() + 1); // Bir sonraki ay
+    d.setDate(1); // Ayın 1'i olarak ayarla
     return d.toISOString().split("T")[0];
   });
+
   const [dashboardData, setDashboardData] = useState(null);
   const [loading, setLoading] = useState(false);
 
@@ -37,7 +40,9 @@ export default function FinanceDashboard() {
       // Eğer kullanıcı admin, superadmin ya da manager ise ve doktor seçildiyse query parametresine ekle
       if (
         loggedInUser &&
-        ["admin", "superadmin", "manager"].includes(loggedInUser.roleId?.roleName)
+        ["admin", "superadmin", "manager"].includes(
+          loggedInUser.roleId?.roleName
+        )
       ) {
         if (selectedDoctor) {
           params.doctorId = selectedDoctor;
@@ -104,10 +109,16 @@ export default function FinanceDashboard() {
   }, [startDate, endDate, selectedDoctor, loggedInUser]);
 
   if (loading) {
-    return <div className="p-8 text-center text-xl">Dashboard yükleniyor...</div>;
+    return (
+      <div className="p-8 text-center text-xl">Dashboard yükleniyor...</div>
+    );
   }
   if (!dashboardData) {
-    return <div className="p-8 text-center text-xl">Dashboard verisi bulunamadı.</div>;
+    return (
+      <div className="p-8 text-center text-xl">
+        Dashboard verisi bulunamadı.
+      </div>
+    );
   }
 
   const { summary, trend, breakdown } = dashboardData;
@@ -148,19 +159,27 @@ export default function FinanceDashboard() {
     colors: palette,
     legend: { position: "bottom", fontSize: "14px" },
   };
-  const expensePieSeries = breakdown.expenseDescriptions.map((item) => item.amount);
+  const expensePieSeries = breakdown.expenseDescriptions.map(
+    (item) => item.amount
+  );
 
   return (
     <div className="h-screen overflow-hidden bg-[#f4f7fe] p-6 w-screen rounded-l-[2.5rem] relative z-20">
       {/* Header */}
       <header className="flex flex-col md:flex-row md:justify-between items-center mb-4 gap-4">
         <div>
-          <h1 className="text-4xl font-bold text-gray-800">Finansal Dashboard</h1>
-          <p className="text-lg text-gray-600">Finansal özet ve günlük trendler</p>
+          <h1 className="text-4xl font-bold text-gray-800">
+            Finansal Dashboard
+          </h1>
+          <p className="text-lg text-gray-600">
+            Finansal özet ve günlük trendler
+          </p>
         </div>
         <div className="flex flex-col sm:flex-row gap-4 items-center">
           <div className="flex flex-col">
-            <label className="text-sm font-medium text-gray-700">Başlangıç Tarihi</label>
+            <label className="text-sm font-medium text-gray-700">
+              Başlangıç Tarihi
+            </label>
             <input
               type="date"
               value={startDate}
@@ -169,7 +188,9 @@ export default function FinanceDashboard() {
             />
           </div>
           <div className="flex flex-col">
-            <label className="text-sm font-medium text-gray-700">Bitiş Tarihi</label>
+            <label className="text-sm font-medium text-gray-700">
+              Bitiş Tarihi
+            </label>
             <input
               type="date"
               value={endDate}
@@ -227,7 +248,11 @@ export default function FinanceDashboard() {
               trendData={trend.expense}
             />
             <Card
-              title={doctorList && selectedDoctor ? "Danışmana Ödenecek Tutar" : "Toplam Kâr"}
+              title={
+                doctorList && selectedDoctor
+                  ? "Danışmana Ödenecek Tutar"
+                  : "Toplam Kâr"
+              }
               value={`${summary.profit.toLocaleString()} TL`}
               change={summary.profitChange}
               trendData={trend.profit}
