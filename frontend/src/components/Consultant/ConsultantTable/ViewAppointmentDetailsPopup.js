@@ -124,25 +124,39 @@ export default function ViewAppointmentDetailsPopup({
   };
 
   // Randevuyu iptal etme butonu
-  const handleCancelAppointment = () => {
-    // Ek bir onay diyaloğu koymak isterseniz:
+  const handleCancelAppointment = async () => {
     if (!window.confirm("Randevuyu iptal etmek istediğinize emin misiniz?")) {
       return;
     }
 
-    // Durumu 'İptal Edildi' yap
-    const canceledData = { ...formData, status: "İptal Edildi" };
-    setFormData(canceledData);
+    // Formdaki datetime değeri "dd.MM.yyyy HH:mm" formatında olabileceğinden ISO formatına çeviriyoruz
+    const parsedDate = parse(formData.datetime, "dd.MM.yyyy HH:mm", new Date());
+    const isoDate = new Date(parsedDate).toISOString();
 
-    // Burada API isteği gönderebilirsiniz (PUT/PATCH).
-    // console.log("Appointment canceled => ", canceledData);
+    // Randevunun durumunu 'İptal Edildi' olarak güncelliyoruz
+    const canceledData = {
+      ...formData,
+      status: "İptal Edildi",
+      datetime: isoDate,
+    };
 
-    // Alert mesajı
-    setAlertState({
-      message: "Randevu iptal edildi.",
-      severity: "info",
-      open: true,
-    });
+    try {
+      // API isteği gönderiliyor (PUT/PATCH işlemi)
+      await onEditAppointment(canceledData);
+      setFormData(canceledData);
+      setAlertState({
+        message: "Randevu iptal edildi.",
+        severity: "info",
+        open: true,
+      });
+    } catch (error) {
+      console.error("Randevu iptal edilirken hata oluştu:", error);
+      setAlertState({
+        message: "Randevu iptal edilirken bir hata oluştu.",
+        severity: "error",
+        open: true,
+      });
+    }
   };
 
   // Form Submit (Kaydet)
@@ -211,7 +225,7 @@ export default function ViewAppointmentDetailsPopup({
       }
     }
 
-    const parsedDate = parse(formData.datetime, 'dd.MM.yyyy HH:mm', new Date());
+    const parsedDate = parse(formData.datetime, "dd.MM.yyyy HH:mm", new Date());
 
     const isoDate = new Date(parsedDate).toISOString();
 
