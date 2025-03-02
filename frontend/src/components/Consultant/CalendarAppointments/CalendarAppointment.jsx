@@ -80,7 +80,7 @@ export default function CalendarSchedulePage() {
   useEffect(() => {
     if (
       loggedInUser &&
-      ["admin", "manager", "superadmin"].includes(loggedInUser.roleId?.roleName)
+      ["admin", "manager", "superadmin","consultant"].includes(loggedInUser.roleId?.roleName)
     ) {
       (async () => {
         const userRes = await getUsers();

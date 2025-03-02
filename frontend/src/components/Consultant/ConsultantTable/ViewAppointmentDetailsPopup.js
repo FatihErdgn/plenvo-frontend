@@ -171,8 +171,8 @@ export default function ViewAppointmentDetailsPopup({
         !formData.clientFirstName?.trim() ||
         !formData.clientLastName?.trim() ||
         !formData.phoneNumber ||
-        !formData.gender ||
-        !formData.age
+        !formData.gender
+        // !formData.age
       ) {
         setAlertState({
           message: "Lütfen tüm zorunlu alanları doldurun (isim, telefon vs.).",
@@ -198,8 +198,8 @@ export default function ViewAppointmentDetailsPopup({
           !p.clientFirstName?.trim() ||
           !p.clientLastName?.trim() ||
           !p.phoneNumber ||
-          !p.gender ||
-          !p.age
+          !p.gender
+          // !p.age
         ) {
           setAlertState({
             message: `Katılımcı #${i + 1} bilgilerini eksiksiz doldurun.`,

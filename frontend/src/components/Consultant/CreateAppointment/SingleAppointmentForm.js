@@ -60,7 +60,7 @@ export default function SingleAppointmentForm({
     if (
       !formData.clientFirstName ||
       !formData.clientLastName ||
-      !formData.age ||
+      // !formData.age ||
       !formData.gender ||
       !formData.phoneNumber ||
       !formData.clinic ||
@@ -227,7 +227,6 @@ export default function SingleAppointmentForm({
               onChange={handleInputChange}
               placeholder=""
               className="w-full px-3 py-2 border rounded"
-              required
             />
           </div>
         </div>

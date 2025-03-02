@@ -374,7 +374,6 @@ export default function GroupAppointmentForm({
                 value={p.age}
                 onChange={(e) => handleParticipantChange(index, e)}
                 className="w-full px-3 py-2 border rounded"
-                required
               />
             </div>
           </div>

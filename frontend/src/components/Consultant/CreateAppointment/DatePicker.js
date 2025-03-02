@@ -7,8 +7,8 @@ import tr from "date-fns/locale/tr";
 
 registerLocale("tr", tr);
 
-const WORKING_HOURS_START = 9;
-const WORKING_HOURS_END = 17;
+const WORKING_HOURS_START = 8;
+const WORKING_HOURS_END = 21;
 
 // 15 dakikaya yuvarlama fonksiyonu: Tarihi 15 dakikalık aralığa aşağı yuvarlar.
 function roundTo15(date) {
