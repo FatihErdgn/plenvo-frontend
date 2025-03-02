@@ -109,7 +109,7 @@ export default function ConsultantPage() {
   ];
 
   // Doktorlar için detaylı liste (filtreleme için kullanılacak)
-  const doctorList = userData.filter((item) => item?.roleName === "doctor");
+  const doctorList = userData.filter((item) => item?.roleName === "doctor" || item?.roleName === "admin");
   const doctorOptions = [
     ...new Set(
       doctorList.map(
