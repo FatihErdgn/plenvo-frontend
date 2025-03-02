@@ -56,7 +56,7 @@ export default function Login() {
       const data = await loginUser(username, password);
 
       if (data.success) {
-        setSuccessMessage("Login successful!");
+        setSuccessMessage("Giriş Başarılı!");
         setIsLoginCompleted(true);
       } else {
         setErrorMessage(data.message || "Login failed.");
@@ -256,14 +256,16 @@ export default function Login() {
 
           {isLoginCompleted && (
             <div className="flex flex-col items-center mb-4">
-              <p className="font-poppins text-lg font-semibold text-gray-700 text-center mb-2">
-                Giriş başarılı!
-              </p>
+              {successMessage && (
+                <div className="text-green-600 font-semibold mb-4 text-center max-w-[25rem]">
+                  {successMessage}
+                </div>
+              )}
               <button
                 onClick={handleGoToHome}
                 className="font-poppins text-white px-6 py-3 text-sm font-semibold rounded-2xl bg-gradient-to-r from-green-400 to-green-600 mb-3 hover:from-green-500 hover:to-green-700 transition-colors"
               >
-                Sisteme Giriş Yap
+                Yönetim Paneline Git
               </button>
               <button
                 onClick={() => setShowChangePassword(!showChangePassword)}
@@ -277,11 +279,6 @@ export default function Login() {
           {errorMessage && (
             <div className="text-red-500 mt-2 text-center max-w-[25rem]">
               {errorMessage}
-            </div>
-          )}
-          {successMessage && (
-            <div className="text-green-500 mt-2 text-center max-w-[25rem]">
-              {successMessage}
             </div>
           )}
 

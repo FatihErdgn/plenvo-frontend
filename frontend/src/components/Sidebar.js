@@ -61,16 +61,19 @@ export default function SideBar() {
           >
             <LuSquareMenu className="w-5 h-5" /> Randevuları Yönet
           </Link>
-          <Link
-            to="/finance"
-            className={
-              isActive("/finance")
-                ? "mb-10 flex items-center gap-2 text-[#007E85] font-semibold bg-white w-[17.5rem] p-3 rounded cursor-pointer"
-                : "mb-10 flex items-center gap-2 text-white cursor-pointer"
-            }
-          >
-            <TbPresentationAnalytics className="w-5 h-5" /> Maliyet Yönetimi
-          </Link>
+          {userProfile?.roleId?.roleName !== "doctor" && (
+            <Link
+              to="/finance"
+              className={
+                isActive("/finance")
+                  ? "mb-10 flex items-center gap-2 text-[#007E85] font-semibold bg-white w-[17.5rem] p-3 rounded cursor-pointer"
+                  : "mb-10 flex items-center gap-2 text-white cursor-pointer"
+              }
+            >
+              <TbPresentationAnalytics className="w-5 h-5" /> Maliyet Yönetimi
+            </Link>
+          )}
+
           {/* <Link
             to="/doctor-management"
             className={
@@ -95,16 +98,18 @@ export default function SideBar() {
                 <MdOutlineSpaceDashboard className="w-5 h-5" /> Finansal
                 Dashboard
               </Link>
-              <Link
-                to="/personnel-management"
-                className={
-                  isActive("/personnel-management")
-                    ? "mb-10 flex items-center gap-2 text-[#007E85] font-semibold bg-white w-[17.5rem] p-3 rounded cursor-pointer"
-                    : "mb-10 flex items-center gap-2 text-white cursor-pointer"
-                }
-              >
-                <IoPersonOutline className="w-5 h-5" /> Klinik Yönetimi
-              </Link>
+              {userProfile?.roleId?.roleName !== "doctor" && (
+                <Link
+                  to="/personnel-management"
+                  className={
+                    isActive("/personnel-management")
+                      ? "mb-10 flex items-center gap-2 text-[#007E85] font-semibold bg-white w-[17.5rem] p-3 rounded cursor-pointer"
+                      : "mb-10 flex items-center gap-2 text-white cursor-pointer"
+                  }
+                >
+                  <IoPersonOutline className="w-5 h-5" /> Klinik Yönetimi
+                </Link>
+              )}
             </>
           )}
         </nav>
