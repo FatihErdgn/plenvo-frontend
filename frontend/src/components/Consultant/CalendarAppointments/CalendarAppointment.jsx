@@ -86,7 +86,7 @@ export default function CalendarSchedulePage() {
         const userRes = await getUsers();
         if (userRes.success) {
           const docs = userRes.data.filter(
-            (u) => (u.roleId?.roleName === "doctor" || u.roleId?.roleName === "admin") && u.speciality === "Pilates"
+            (u) => (u.roleId?.roleName === "doctor" || u.roleId?.roleName === "admin") && u.speciality.includes("Pilates")
           );
           setDoctorList(docs);
         }
