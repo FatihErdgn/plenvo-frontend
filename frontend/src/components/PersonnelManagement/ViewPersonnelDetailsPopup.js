@@ -111,9 +111,9 @@ export default function ViewPersonnelDetailsPopup({
       !formData.firstName?.trim() ||
       !formData.lastName?.trim() ||
       !formData.phoneNumber ||
-      !formData.userMail ||
-      !formData.roleName ||
-      !formData.hireDate
+      // !formData.userMail ||
+      !formData.roleName
+      // !formData.hireDate
     ) {
       // console.log("📤 API'ye Gönderilen Veri:", formData);
       setAlertState({
