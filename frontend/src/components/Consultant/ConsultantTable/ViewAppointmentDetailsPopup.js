@@ -373,7 +373,7 @@ export default function ViewAppointmentDetailsPopup({
               type="text"
               name="datetime"
               value={formData.datetime || ""}
-              disabled={false} // Artık enabled!
+              disabled={!isEditable} // Artık enabled!
               onChange={handleInputChange} // Değişiklikleri state'e aktarır
               className="w-full px-4 py-2 border rounded-lg"
             />
