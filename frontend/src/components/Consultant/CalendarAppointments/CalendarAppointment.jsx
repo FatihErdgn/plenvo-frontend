@@ -72,7 +72,6 @@ const getPastelColor = (appointment) => {
 
 // PaymentStatusCell: Randevuya ait ödeme durumunu kontrol eder.
 function PaymentStatusCell({ appointment, onClickPayNow, refreshTrigger }) {
-  // usePaymentStatus hook'u, appointment ID'sine göre ödeme bilgisini getirir.
   const { completed, totalPaid } = usePaymentStatus(
     appointment._id,
     refreshTrigger
@@ -97,7 +96,8 @@ function PaymentStatusCell({ appointment, onClickPayNow, refreshTrigger }) {
           <FaMoneyBills className="w-[1.25rem] h-[1.25rem]" />
         </button>
       )}
-      <div className="text-sm font-medium">
+      {/* Metin kapsayıcısına sağdan padding ekleyerek butonun kaplamasını önlüyoruz */}
+      <div className="text-sm font-medium pr-8">
         {appointment.participants.map((p) => p.name).join(" - ")}
       </div>
     </div>
