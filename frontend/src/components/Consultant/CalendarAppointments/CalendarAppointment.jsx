@@ -39,12 +39,24 @@ const TIME_SLOTS = [
 
 // Yardımcı fonksiyon: Randevu id'sine göre pastel renk seçimi yapar.
 const getPastelColor = (appointment) => {
-  if (!appointment || !appointment._id) return "";
-  const idStr = appointment._id.toString();
+  if (!appointment || !appointment.doctorId) return "";
+  // Doctor ID'sini ve katılımcı isimlerini alfabetik sırayla birleştiriyoruz.
+  const doctorId = appointment.doctorId.toString();
+  const participantNames = appointment.participants
+    ? appointment.participants
+        .map((p) => p.name.trim().toLowerCase())
+        .sort()
+        .join("")
+    : "";
+
+  const hashString = doctorId + participantNames;
+
+  // Basit hash hesaplaması: Tüm karakterlerin charCode'larının toplamını alıyoruz.
   let sum = 0;
-  for (let i = 0; i < idStr.length; i++) {
-    sum += idStr.charCodeAt(i);
+  for (let i = 0; i < hashString.length; i++) {
+    sum += hashString.charCodeAt(i);
   }
+
   const pastelColors = [
     "bg-blue-100",
     "bg-pink-100",
@@ -54,13 +66,17 @@ const getPastelColor = (appointment) => {
     "bg-indigo-100",
     "bg-orange-100",
   ];
+
   return pastelColors[sum % pastelColors.length];
 };
 
 // PaymentStatusCell: Randevuya ait ödeme durumunu kontrol eder.
 function PaymentStatusCell({ appointment, onClickPayNow, refreshTrigger }) {
   // usePaymentStatus hook'u, appointment ID'sine göre ödeme bilgisini getirir.
-  const { completed, totalPaid } = usePaymentStatus(appointment._id, refreshTrigger);
+  const { completed, totalPaid } = usePaymentStatus(
+    appointment._id,
+    refreshTrigger
+  );
   return (
     <div className="relative">
       {completed ? (
@@ -125,7 +141,8 @@ export default function CalendarSchedulePage({ servicesData }) {
         if (userRes.success) {
           const docs = userRes.data.filter(
             (u) =>
-              (u.roleId?.roleName === "doctor" || u.roleId?.roleName === "admin") &&
+              (u.roleId?.roleName === "doctor" ||
+                u.roleId?.roleName === "admin") &&
               u.speciality.includes("Pilates")
           );
           setDoctorList(docs);
