@@ -102,7 +102,7 @@ export default function CalendarSchedulePage() {
     if (loggedInUser.roleId?.roleName === "doctor") {
       doctorIdToFetch = loggedInUser._id;
     } else if (
-      ["admin", "manager", "superadmin"].includes(loggedInUser.roleId?.roleName)
+      ["admin", "manager", "superadmin","consultant"].includes(loggedInUser.roleId?.roleName)
     ) {
       if (!selectedDoctor) return;
       doctorIdToFetch = selectedDoctor;
