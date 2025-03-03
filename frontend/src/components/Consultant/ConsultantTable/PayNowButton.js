@@ -21,12 +21,36 @@ export default function PaymentPopup({
   row,
   servicesData,
   onPaymentSuccess,
+  isCalendar,
 }) {
   // Doktora ait hizmeti bul (doktor adı ve "Aktif" durumu kontrolü)
-  const matchedService = servicesData.find(
-    (s) => s.provider === row.doctorName && s.status === "Aktif"
-  );
+  let matchedService;
+  if (isCalendar) {
+    // Doktor bilgilerini kontrol eden koşul
+    matchedService = servicesData.find(
+      (s) => s.provider === row?.doctorName && s.status === "Aktif"
+    );
+  } else {
+    matchedService = servicesData.find(
+      (s) => s.provider === row.doctorName && s.status === "Aktif"
+    );
+  }
+
   const doctorFee = matchedService ? matchedService.serviceFee : 0;
+
+  let clientFirstName = "";
+  let clientLastName = "";
+  let doctorName = "";
+  let allNames = "";
+  if (isCalendar) {
+    allNames = row?.participants?.map((p) => p.name).join(" - ") || "";
+
+    doctorName = row?.doctorName;
+  } else {
+    clientFirstName = row.clientFirstName;
+    clientLastName = row.clientLastName;
+    doctorName = row.doctorName;
+  }
 
   // Ek hizmetler: "Genel Hizmet" sağlayıcısı ve aktif olanlar
   const extraServices = servicesData.filter(
@@ -36,7 +60,7 @@ export default function PaymentPopup({
   // Bileşen state'leri
   const [selectedExtras, setSelectedExtras] = useState([]);
   const [paymentMode, setPaymentMode] = useState(null); // "full" veya "partial"
-  const [paymentType, setPaymentType] = useState(null); // "nakit", "kredi", "sigorta"
+  const [paymentType, setPaymentType] = useState(null); // "nakit", "kredi", "sigorta", "IBAN"	
   const [partialAmount, setPartialAmount] = useState("");
   const [paymentNote, setPaymentNote] = useState("");
   const [sumPaid, setSumPaid] = useState(0);
@@ -214,11 +238,10 @@ export default function PaymentPopup({
             <div className="space-y-2">
               <p className="text-lg text-gray-600">
                 <strong className="text-gray-700">Hasta:</strong>{" "}
-                {row.clientFirstName} {row.clientLastName}
+                {isCalendar ? allNames : `${clientFirstName} ${clientLastName}`}
               </p>
               <p className="text-lg text-gray-600">
-                <strong className="text-gray-700">Doktor:</strong>{" "}
-                {row.doctorName}
+                <strong className="text-gray-700">Doktor:</strong> {doctorName}
               </p>
               <p className="text-lg text-gray-600">
                 <strong className="text-gray-700">Muayene Ücreti:</strong>{" "}
@@ -334,6 +357,16 @@ export default function PaymentPopup({
                       onChange={(e) => setPaymentType(e.target.value)}
                     />
                     Sigorta
+                  </label>
+                  <label className="flex items-center gap-1 text-gray-600">
+                    <input
+                      type="radio"
+                      name="paymentType"
+                      value="IBAN"
+                      checked={paymentType === "IBAN"}
+                      onChange={(e) => setPaymentType(e.target.value)}
+                    />
+                    IBAN
                   </label>
                 </div>
                 <div>

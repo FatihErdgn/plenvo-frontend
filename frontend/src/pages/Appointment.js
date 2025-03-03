@@ -9,13 +9,14 @@ import {
 } from "../services/appointmentService";
 import { getUsers } from "../services/userService";
 import { getServices } from "../services/serviceService";
-import { FiArrowRightCircle,FiArrowLeftCircle } from "react-icons/fi";
+import { FiArrowRightCircle, FiArrowLeftCircle } from "react-icons/fi";
 import CalendarSchedulePage from "../components/Consultant/CalendarAppointments/CalendarAppointment";
 
 export default function ConsultantPage() {
   const [appointmentData, setAppointmentData] = useState([]);
   const [userData, setUserData] = useState([]);
   const [servicesData, setServicesData] = useState([]);
+  const [calendarServicesData, setCalendarServicesData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [startDate, setStartDate] = useState("");
@@ -58,7 +59,13 @@ export default function ConsultantPage() {
     try {
       setLoading(true);
       const response = await getServices();
-      setServicesData(response.data || []);
+      const data = response.data || [];
+      setServicesData(data);
+      // calendarServicesData: serviceName içinde "Grup" geçenleri filtrele
+      const calendarData = data.filter((svc) =>
+        svc.serviceName.toLowerCase().includes("grup") && svc.provider.toLowerCase() === "genel hizmet"
+      );
+      setCalendarServicesData(calendarData);
     } catch (error) {
       console.error("Hizmetleri alırken hata oluştu:", error);
     } finally {
@@ -109,7 +116,9 @@ export default function ConsultantPage() {
   ];
 
   // Doktorlar için detaylı liste (filtreleme için kullanılacak)
-  const doctorList = userData.filter((item) => item?.roleName === "doctor" || item?.roleName === "admin");
+  const doctorList = userData.filter(
+    (item) => item?.roleName === "doctor" || item?.roleName === "admin"
+  );
   const doctorOptions = [
     ...new Set(
       doctorList.map(
@@ -185,7 +194,7 @@ export default function ConsultantPage() {
         </div>
       ) : (
         <div>
-          <CalendarSchedulePage />
+          <CalendarSchedulePage servicesData={calendarServicesData} />
           <div className="flex flex-row justify-start gap-4 mt-4">
             <button
               onClick={handleCalendarModalOpen}

@@ -463,6 +463,7 @@ function ConsultantActions({
         row={row} // hasta/doktor verisi
         servicesData={servicesData} // JSON liste
         onPaymentSuccess={fetchAppointments} // Ödeme başarılı olduğunda çalışacak fonksiyon
+        isCalendar={false} // Takvimde mi, tabloda mı ödeme yapılacak?
       />
       {/* <div>
         <button

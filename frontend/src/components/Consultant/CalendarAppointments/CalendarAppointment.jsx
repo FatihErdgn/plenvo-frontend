@@ -6,6 +6,10 @@ import {
   deleteCalendarAppointment,
 } from "../../../services/calendarAppointmentService";
 import { getUsers, getProfile } from "../../../services/userService";
+import PaymentPopup from "../ConsultantTable/PayNowButton"; // Ödeme popup'ı component'i
+import { FaMoneyBills } from "react-icons/fa6";
+import { FaCheckCircle } from "react-icons/fa";
+import usePaymentStatus from "../../../hooks/usePaymentStatus"; // Custom hook
 
 // Haftanın günleri
 const DAYS = [
@@ -53,7 +57,38 @@ const getPastelColor = (appointment) => {
   return pastelColors[sum % pastelColors.length];
 };
 
-export default function CalendarSchedulePage() {
+// PaymentStatusCell: Randevuya ait ödeme durumunu kontrol eder.
+function PaymentStatusCell({ appointment, onClickPayNow, refreshTrigger }) {
+  // usePaymentStatus hook'u, appointment ID'sine göre ödeme bilgisini getirir.
+  const { completed, totalPaid } = usePaymentStatus(appointment._id, refreshTrigger);
+  return (
+    <div className="relative">
+      {completed ? (
+        <div
+          title={`Toplam Ödenen Miktar: ${totalPaid} TL`}
+          className="absolute top-1 right-1"
+        >
+          <FaCheckCircle className="text-green-600 w-4 h-4" />
+        </div>
+      ) : (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onClickPayNow();
+          }}
+          className="absolute top-1 right-1 bg-[#399AA1] hover:bg-[#007E85] text-white text-xs px-1 py-0.5 rounded"
+        >
+          <FaMoneyBills className="w-[1.25rem] h-[1.25rem]" />
+        </button>
+      )}
+      <div className="text-sm font-medium">
+        {appointment.participants.map((p) => p.name).join(" - ")}
+      </div>
+    </div>
+  );
+}
+
+export default function CalendarSchedulePage({ servicesData }) {
   const [loggedInUser, setLoggedInUser] = useState(null);
   const [doctorList, setDoctorList] = useState([]);
   const [selectedDoctor, setSelectedDoctor] = useState("");
@@ -63,8 +98,9 @@ export default function CalendarSchedulePage() {
   const [selectedAppointment, setSelectedAppointment] = useState(null);
   const [participantCount, setParticipantCount] = useState(1);
   const [participantNames, setParticipantNames] = useState([""]);
-  // Yeni: Açıklama için state ekleyelim
   const [description, setDescription] = useState("");
+  const [paymentOpen, setPaymentOpen] = useState(false); // Ödeme popup kontrolü
+  const [paymentRefreshTrigger, setPaymentRefreshTrigger] = useState(0); // Ödeme durumunu yenilemek için
 
   // Kullanıcı profilini al
   useEffect(() => {
@@ -76,17 +112,21 @@ export default function CalendarSchedulePage() {
     })();
   }, []);
 
-  // Danışman listesini getir (admin/manager/superadmin ise)
+  // Danışman listesini getir (admin/manager/superadmin/consultant ise)
   useEffect(() => {
     if (
       loggedInUser &&
-      ["admin", "manager", "superadmin","consultant"].includes(loggedInUser.roleId?.roleName)
+      ["admin", "manager", "superadmin", "consultant"].includes(
+        loggedInUser.roleId?.roleName
+      )
     ) {
       (async () => {
         const userRes = await getUsers();
         if (userRes.success) {
           const docs = userRes.data.filter(
-            (u) => (u.roleId?.roleName === "doctor" || u.roleId?.roleName === "admin") && u.speciality.includes("Pilates")
+            (u) =>
+              (u.roleId?.roleName === "doctor" || u.roleId?.roleName === "admin") &&
+              u.speciality.includes("Pilates")
           );
           setDoctorList(docs);
         }
@@ -97,22 +137,24 @@ export default function CalendarSchedulePage() {
   // Seçilen (veya kendi) doktora ait randevuları çek
   useEffect(() => {
     if (!loggedInUser) return;
-
     let doctorIdToFetch = "";
     if (loggedInUser.roleId?.roleName === "doctor") {
       doctorIdToFetch = loggedInUser._id;
     } else if (
-      ["admin", "manager", "superadmin","consultant"].includes(loggedInUser.roleId?.roleName)
+      ["admin", "manager", "superadmin", "consultant"].includes(
+        loggedInUser.roleId?.roleName
+      )
     ) {
       if (!selectedDoctor) return;
       doctorIdToFetch = selectedDoctor;
     }
-
     if (doctorIdToFetch) {
       (async () => {
         const res = await getCalendarAppointments(doctorIdToFetch);
         if (res.success) {
           setAppointments(res.data);
+          // Güncelleme tetikleyicisini artır
+          setPaymentRefreshTrigger((prev) => prev + 1);
         }
       })();
     }
@@ -120,12 +162,12 @@ export default function CalendarSchedulePage() {
 
   // Hücre tıklama - yeni randevu oluşturmak için
   const handleCellClick = (dayIndex, timeIndex) => {
-    if (loggedInUser?.roleId?.roleName === "doctor") return; // Doktor ekleyemesin
+    if (loggedInUser?.roleId?.roleName === "doctor") return; // Doktor ekleyemez
     setEditMode(false);
     setSelectedAppointment({ dayIndex, timeIndex, participants: [] });
     setParticipantCount(1);
     setParticipantNames([""]);
-    setDescription(""); // Yeni randevu için açıklamayı sıfırla
+    setDescription(""); // Açıklamayı sıfırla
     setShowModal(true);
   };
 
@@ -136,7 +178,7 @@ export default function CalendarSchedulePage() {
     setSelectedAppointment(appt);
     setParticipantCount(appt.participants?.length || 1);
     setParticipantNames(appt.participants?.map((p) => p.name) || [""]);
-    setDescription(appt.description || ""); // Varolan açıklamayı al
+    setDescription(appt.description || "");
     setShowModal(true);
   };
 
@@ -157,15 +199,13 @@ export default function CalendarSchedulePage() {
       loggedInUser?.roleId?.roleName === "doctor"
         ? loggedInUser._id
         : selectedDoctor;
-
     const payload = {
       dayIndex: selectedAppointment.dayIndex,
       timeIndex: selectedAppointment.timeIndex,
       doctorId,
       participants: participantNames.map((name) => ({ name })),
-      description, // Açıklama alanını payload'a ekledik
+      description,
     };
-
     if (editMode) {
       const res = await updateCalendarAppointment(
         selectedAppointment._id,
@@ -190,7 +230,6 @@ export default function CalendarSchedulePage() {
       loggedInUser?.roleId?.roleName === "doctor"
         ? loggedInUser._id
         : selectedDoctor;
-
     const res = await deleteCalendarAppointment(selectedAppointment._id);
     if (res.success) {
       refreshAppointments(doctorId);
@@ -203,6 +242,7 @@ export default function CalendarSchedulePage() {
     const res = await getCalendarAppointments(doctorId);
     if (res.success) {
       setAppointments(res.data);
+      setPaymentRefreshTrigger((prev) => prev + 1);
     }
   };
 
@@ -292,7 +332,7 @@ export default function CalendarSchedulePage() {
                           ? handleAppointmentClick(appt)
                           : handleCellClick(dayIndex, timeIndex)
                       }
-                      className={`border border-gray-300 p-2 cursor-pointer align-top ${
+                      className={`relative border border-gray-300 p-2 cursor-pointer align-top ${
                         appt ? getPastelColor(appt) : "bg-white"
                       }`}
                       title={
@@ -302,9 +342,14 @@ export default function CalendarSchedulePage() {
                       }
                     >
                       {appt ? (
-                        <div className="text-sm font-medium">
-                          {appt.participants.map((p) => p.name).join(", ")}
-                        </div>
+                        <PaymentStatusCell
+                          appointment={appt}
+                          onClickPayNow={() => {
+                            setSelectedAppointment(appt);
+                            setPaymentOpen(true);
+                          }}
+                          refreshTrigger={paymentRefreshTrigger}
+                        />
                       ) : (
                         <div className="text-gray-400 italic">Boş</div>
                       )}
@@ -413,6 +458,56 @@ export default function CalendarSchedulePage() {
           </div>
         </div>
       )}
+
+      {/* Ödeme Popup'ı */}
+      {paymentOpen && (
+        <div className="flex flex-row justify-center text-sm items-center px-4 py-[0.875rem] space-x-2">
+          <PaymentPopup
+            isOpen={paymentOpen}
+            onClose={() => setPaymentOpen(false)}
+            servicesData={servicesData}
+            row={selectedAppointment}
+            onPaymentSuccess={() => {
+              const doctorId =
+                loggedInUser?.roleId?.roleName === "doctor"
+                  ? loggedInUser._id
+                  : selectedDoctor;
+              refreshAppointments(doctorId);
+            }}
+            isCalendar={true}
+          />
+        </div>
+      )}
     </div>
   );
 }
+
+// // PaymentStatusCell bileşeni: Randevuya ait ödeme durumunu kontrol eder.
+// function PaymentStatusCell({ appointment, onClickPayNow, refreshTrigger }) {
+//   const { completed, totalPaid } = usePaymentStatus(appointment._id, refreshTrigger);
+//   return (
+//     <div className="relative">
+//       {completed ? (
+//         <div
+//           title={`Toplam Ödenen Miktar: ${totalPaid} TL`}
+//           className="absolute top-1 right-1"
+//         >
+//           <FaCheckCircle className="text-green-600 w-4 h-4" />
+//         </div>
+//       ) : (
+//         <button
+//           onClick={(e) => {
+//             e.stopPropagation();
+//             onClickPayNow();
+//           }}
+//           className="absolute top-1 right-1 bg-[#399AA1] hover:bg-[#007E85] text-white text-xs px-1 py-0.5 rounded"
+//         >
+//           <FaMoneyBills className="w-[1.25rem] h-[1.25rem]" />
+//         </button>
+//       )}
+//       <div className="text-sm font-medium">
+//         {appointment.participants.map((p) => p.name).join(" - ")}
+//       </div>
+//     </div>
+//   );
+// }

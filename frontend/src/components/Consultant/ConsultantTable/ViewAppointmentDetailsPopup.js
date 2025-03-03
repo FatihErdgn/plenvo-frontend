@@ -373,8 +373,9 @@ export default function ViewAppointmentDetailsPopup({
               type="text"
               name="datetime"
               value={formData.datetime || ""}
-              disabled
-              className="w-full px-4 py-2 border rounded-lg bg-gray-100"
+              disabled={false} // Artık enabled!
+              onChange={handleInputChange} // Değişiklikleri state'e aktarır
+              className="w-full px-4 py-2 border rounded-lg"
             />
           </div>
 
