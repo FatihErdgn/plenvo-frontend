@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { IoIosCloseCircleOutline } from "react-icons/io";
 import { Alert, Collapse } from "@mui/material";
-import { parse } from "date-fns";
+import { format } from "date-fns";
 import AppointmentDatePicker from "../CreateAppointment/DatePicker";
 import { getAppointments } from "../../../services/appointmentService";
 
@@ -363,13 +363,32 @@ export default function ViewAppointmentDetailsPopup({
             className="max-h-[80vh] overflow-auto pr-2"
           >
             <div className="mb-4">
-              <AppointmentDatePicker
-                selectedDate={formData.datetime}
-                onDateChange={handleDateChange}
-                appointments={appointmentData}
-                selectedClinic={formData.clinicName}
-                selectedDoctor={formData.doctorName}
-              />
+              {isEditable ? (
+                <AppointmentDatePicker
+                  selectedDate={formData.datetime}
+                  onDateChange={handleDateChange}
+                  appointments={appointmentData}
+                  selectedClinic={formData.clinicName}
+                  selectedDoctor={formData.doctorName}
+                />
+              ) : (
+                <div>
+                  <label className="block text-gray-700">
+                    Randevu Tarihi ve Saati
+                  </label>
+                  <input
+                    type="text"
+                    name="datetime"
+                    value={
+                      formData.datetime
+                        ? format(formData.datetime, "dd.MM.yyyy HH:mm")
+                        : ""
+                    }
+                    disabled
+                    className="w-full px-4 py-2 border rounded-lg bg-gray-100"
+                  />
+                </div>
+              )}
             </div>
 
             <div className="mb-4">
