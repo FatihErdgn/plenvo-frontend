@@ -1,11 +1,32 @@
-// components/ReadOnlyPaymentPopup.js
 import React, { useEffect, useState } from "react";
 import { IoIosCloseCircleOutline } from "react-icons/io";
-import { getPaymentsByAppointment } from "../../../services/paymentService";
+import { getPaymentsByAppointment, softDeletePayment } from "../../../services/paymentService";
+import { updateAppointment } from "../../../services/appointmentService";
 
-export default function ReadOnlyPaymentPopup({ isOpen, onClose, row }) {
+export default function ReadOnlyPaymentPopup({ isOpen, onClose, row, onRefreshAppointments }) {
   const [payments, setPayments] = useState([]);
   const [loading, setLoading] = useState(false);
+
+  // Ödeme iptali için handler
+  const handleCancelPayment = async (paymentId) => {
+    if (!window.confirm("Ödemeyi iptal etmek istediğinize emin misiniz?")) return;
+    try {
+      // İlgili ödemeyi soft-delete yapıyoruz.
+      await softDeletePayment(paymentId);
+      // Randevunun status'unu "Ödeme Bekleniyor" olarak güncelliyoruz.
+      await updateAppointment(row._id, { status: "Ödeme Bekleniyor" });
+      // Parent'dan gönderilen callback varsa, randevu kayıtlarını yeniden fetch etmesini tetikliyoruz.
+      if (typeof onRefreshAppointments === "function") {
+        onRefreshAppointments();
+      }
+      // İptal edilen ödemeyi listeden kaldırıyoruz.
+      setPayments(payments.filter((p) => p._id !== paymentId));
+      alert("Ödeme iptal edildi.");
+    } catch (error) {
+      console.error("Ödeme iptal edilirken hata oluştu:", error);
+      alert("Ödeme iptal edilirken bir hata oluştu.");
+    }
+  };
 
   useEffect(() => {
     async function fetchPayments() {
@@ -57,8 +78,7 @@ export default function ReadOnlyPaymentPopup({ isOpen, onClose, row }) {
                   <strong>Doktor Adı:</strong> {row?.doctorName}
                 </p>
                 <p className="text-lg text-gray-700">
-                  <strong>Hasta Adı:</strong> {row?.clientFirstName}{" "}
-                  {row?.clientLastName}
+                  <strong>Hasta Adı:</strong> {row?.clientFirstName} {row?.clientLastName}
                 </p>
                 <p className="text-lg text-gray-700">
                   <strong>Alınan Hizmet:</strong> {payment.serviceDescription}
@@ -76,10 +96,16 @@ export default function ReadOnlyPaymentPopup({ isOpen, onClose, row }) {
                 )}
                 {payment.paymentDate && (
                   <p className="text-lg text-gray-700">
-                    <strong>Tarih:</strong>{" "}
-                    {new Date(payment.paymentDate).toLocaleString()}
+                    <strong>Tarih:</strong> {new Date(payment.paymentDate).toLocaleString()}
                   </p>
                 )}
+                {/* Ödemeyi İptal Et Butonu */}
+                <button
+                  onClick={() => handleCancelPayment(payment._id)}
+                  className="mt-2 bg-red-500 hover:bg-red-600 text-white px-4 py-1 rounded"
+                >
+                  Ödemeyi İptal Et
+                </button>
               </div>
             ))}
           </div>

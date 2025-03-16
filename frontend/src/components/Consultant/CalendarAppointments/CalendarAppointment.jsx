@@ -11,6 +11,7 @@ import { FaMoneyBills } from "react-icons/fa6";
 import { FaCheckCircle } from "react-icons/fa";
 import { IoCheckmarkDoneCircleSharp } from "react-icons/io5";
 import usePaymentStatus from "../../../hooks/usePaymentStatus"; // Custom hook
+import { IoIosCloseCircleOutline } from "react-icons/io";
 
 // Haftanın günleri
 const DAYS = [
@@ -126,7 +127,10 @@ export default function CalendarSchedulePage({ servicesData }) {
   // Yeni: Hücre tıklama sonrası seçim modunu yönetmek için
   const [showChoiceModal, setShowChoiceModal] = useState(false);
   const [showRebookModal, setShowRebookModal] = useState(false);
-  const [selectedCell, setSelectedCell] = useState({ dayIndex: null, timeIndex: null });
+  const [selectedCell, setSelectedCell] = useState({
+    dayIndex: null,
+    timeIndex: null,
+  });
   // Seçilen randevudan bookingId alınacaksa bu state'e kaydedilir
   const [rebookBookingId, setRebookBookingId] = useState(null);
 
@@ -196,7 +200,9 @@ export default function CalendarSchedulePage({ servicesData }) {
       setEditMode(true);
       setSelectedAppointment(appt);
       setParticipantCount(appt.participants ? appt.participants.length : 1);
-      setParticipantNames(appt.participants ? appt.participants.map((p) => p.name) : [""]);
+      setParticipantNames(
+        appt.participants ? appt.participants.map((p) => p.name) : [""]
+      );
       setDescription(appt.description || "");
       setShowModal(true);
     } else {
@@ -240,7 +246,9 @@ export default function CalendarSchedulePage({ servicesData }) {
       timeIndex: selectedCell.timeIndex,
     });
     setParticipantCount(appt.participants ? appt.participants.length : 1);
-    setParticipantNames(appt.participants ? appt.participants.map((p) => p.name) : [""]);
+    setParticipantNames(
+      appt.participants ? appt.participants.map((p) => p.name) : [""]
+    );
     setDescription(appt.description || "");
     setShowRebookModal(false);
     setShowModal(true);
@@ -423,7 +431,9 @@ export default function CalendarSchedulePage({ servicesData }) {
       {showChoiceModal && (
         <div className="fixed inset-0 bg-black bg-opacity-30 flex justify-center items-center z-50">
           <div className="bg-white p-4 rounded shadow-md w-80">
-            <h2 className="text-lg font-bold mb-4 text-center">Randevu Oluşturun/Yineleyin</h2>
+            <h2 className="text-lg font-bold mb-4 text-center">
+              Randevu Oluşturun/Yineleyin
+            </h2>
             <div className="flex justify-around">
               <button
                 onClick={handleNewAppointment}
@@ -450,15 +460,29 @@ export default function CalendarSchedulePage({ servicesData }) {
 
       {/* Randevu Yinele Modalı: Varolan randevuların listesini gösterir */}
       {showRebookModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-30 flex justify-center items-center z-50">
-          <div className="bg-white p-4 rounded shadow-md w-96 max-h-[80vh] overflow-auto">
+        <div
+          className="fixed inset-0 bg-black bg-opacity-30 flex justify-center items-center z-50"
+          onClick={() => setShowRebookModal(false)} // Modal dışına tıklanınca kapanır
+        >
+          <div
+            className="relative bg-white p-4 rounded shadow-md w-96 max-h-[80vh] overflow-auto"
+            onClick={(e) => e.stopPropagation()} // Modal içindeki tıklamalar kapanmayı tetiklemesin
+          >
+            <button
+              onClick={() => setShowRebookModal(false)}
+              className="absolute top-2 right-2 text-gray-500 hover:text-gray-700 text-xl"
+            >
+              <IoIosCloseCircleOutline className="text-red-500 hover:text-gray-500" />
+            </button>
             <h2 className="text-xl font-bold mb-4 text-center">
               Randevu Yinele - Seçiniz
             </h2>
             {appointments.length > 0 ? (
               appointments
                 .slice()
-                .sort((a, b) => a.dayIndex - b.dayIndex || a.timeIndex - b.timeIndex)
+                .sort(
+                  (a, b) => a.dayIndex - b.dayIndex || a.timeIndex - b.timeIndex
+                )
                 .map((appt) => (
                   <div
                     key={appt._id}
@@ -467,7 +491,8 @@ export default function CalendarSchedulePage({ servicesData }) {
                   >
                     <div>
                       <span className="font-semibold">
-                        Gün: {DAYS[appt.dayIndex]}, Saat: {TIME_SLOTS[appt.timeIndex]}
+                        Gün: {DAYS[appt.dayIndex]}, Saat:{" "}
+                        {TIME_SLOTS[appt.timeIndex]}
                       </span>
                     </div>
                     <div className="text-sm">

@@ -464,6 +464,7 @@ function ConsultantActions({
             isOpen={paymentOpen}
             onClose={() => setPaymentOpen(false)}
             row={row}
+            onRefreshAppointments={fetchAppointments}
           />
         </>
       ) : (
