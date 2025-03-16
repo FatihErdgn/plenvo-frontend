@@ -93,7 +93,10 @@ export default function ViewAppointmentDetailsPopup({
   const fetchAppointments = async () => {
     try {
       const response = await getAppointments();
-      setAppointmentData(response.data || []);
+      const filteredAppointments = (response.data || []).filter(
+        (appt) => appt.status !== "İptal Edildi"
+      );
+      setAppointmentData(filteredAppointments);
     } catch (error) {
       console.error("Randevuları alırken hata oluştu:", error);
     }

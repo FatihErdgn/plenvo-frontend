@@ -14,6 +14,7 @@ import CalendarSchedulePage from "../components/Consultant/CalendarAppointments/
 
 export default function ConsultantPage() {
   const [appointmentData, setAppointmentData] = useState([]);
+  const [appointmentDateData, setAppointmentDateData] = useState([]);
   const [userData, setUserData] = useState([]);
   const [servicesData, setServicesData] = useState([]);
   const [calendarServicesData, setCalendarServicesData] = useState([]);
@@ -44,6 +45,10 @@ export default function ConsultantPage() {
       setLoading(true);
       const response = await getAppointments();
       setAppointmentData(response.data || []);
+      const filteredAppointments = (response.data || []).filter(
+        (appt) => appt.status !== "İptal Edildi"
+      );
+      setAppointmentDateData(filteredAppointments);
     } catch (error) {
       console.error("Randevuları alırken hata oluştu:", error);
     } finally {
@@ -158,7 +163,7 @@ export default function ConsultantPage() {
                   doctorList,
                   genderOptions,
                 }}
-                appointments={appointmentData}
+                appointments={appointmentDateData}
               />
             </>
           )}
