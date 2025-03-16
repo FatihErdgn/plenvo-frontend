@@ -8,6 +8,7 @@ import { IoEyeOutline } from "react-icons/io5";
 import ViewAppointmentDetailsPopup from "./ViewAppointmentDetailsPopup";
 import RebookAppointment from "./RebookAppointment";
 import PaymentPopup from "./PayNowButton";
+import ReadOnlyPaymentPopup from "./ReadOnlyPayNowButton";
 // import servicesData from "../../../servicesData.json"; // <-- Hizmetlerinizi içeren JSON dosyası
 import { useUser } from "../../../contexts/UserContext";
 import { updateAppointment } from "../../../services/appointmentService";
@@ -320,7 +321,7 @@ export default function ConsultantTableWrapper({
       searchQuery={searchQuery}
       startDate={startDate}
       endDate={endDate}
-      rowsPerPage={7}
+      // rowsPerPage={7}
       customFilterFn={customFilterFn}
       customDateFilterFn={customDateFilterFn}
     >
@@ -450,21 +451,40 @@ function ConsultantActions({
 
   return (
     <div className="flex flex-row justify-center text-sm items-center px-4 py-[0.875rem] space-x-2">
-      <button
-        className={getButtonClasses(row.actions?.payNow)}
-        disabled={!row.actions?.payNow}
-        onClick={handlePayNow}
-      >
-        Ödeme Yap
-      </button>
-      <PaymentPopup
-        isOpen={paymentOpen}
-        onClose={() => setPaymentOpen(false)}
-        row={row} // hasta/doktor verisi
-        servicesData={servicesData} // JSON liste
-        onPaymentSuccess={fetchAppointments} // Ödeme başarılı olduğunda çalışacak fonksiyon
-        isCalendar={false} // Takvimde mi, tabloda mı ödeme yapılacak?
-      />
+      {row.status === "Tamamlandı" ? (
+        <>
+          <button
+            className="bg-[#399AA1] text-white px-4 py-[9px] rounded-[1.25rem] hover:bg-[#007E85]"
+            // disabled={!row.actions?.payNow}
+            onClick={handlePayNow}
+          >
+            Ödemeyi Görüntüle
+          </button>
+          <ReadOnlyPaymentPopup
+            isOpen={paymentOpen}
+            onClose={() => setPaymentOpen(false)}
+            row={row}
+          />
+        </>
+      ) : (
+        <>
+          <button
+            className={getButtonClasses(row.actions?.payNow)}
+            disabled={!row.actions?.payNow}
+            onClick={handlePayNow}
+          >
+            Ödeme Yap
+          </button>
+          <PaymentPopup
+            isOpen={paymentOpen}
+            onClose={() => setPaymentOpen(false)}
+            row={row} // hasta/doktor verisi
+            servicesData={servicesData} // JSON liste
+            onPaymentSuccess={fetchAppointments} // Ödeme başarılı olduğunda çalışacak fonksiyon
+            isCalendar={false} // Takvimde mi, tabloda mı ödeme yapılacak?
+          />
+        </>
+      )}
       {/* <div>
         <button
           className={getButtonClasses(row.actions?.reBook)}

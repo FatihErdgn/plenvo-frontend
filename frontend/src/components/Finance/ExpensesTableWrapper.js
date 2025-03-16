@@ -169,7 +169,7 @@ export default function ExpensesTableWrapper({
       searchQuery={searchQuery}
       startDate={startDate}
       endDate={endDate}
-      rowsPerPage={10}
+      // rowsPerPage={10}
       customFilterFn={customFilterFn}
       customDateFilterFn={customDateFilterFn}
     >

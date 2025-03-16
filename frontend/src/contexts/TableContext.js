@@ -1,4 +1,3 @@
-// contexts/TableContext.js
 import { createContext, useContext, useState, useEffect, useMemo } from "react";
 
 const TableContext = createContext();
@@ -15,11 +14,14 @@ export function TableProvider({
   searchQuery = "",
   startDate = "",
   endDate = "",
-  rowsPerPage = 10,
+  rowsPerPage: initialRowsPerPage = 10,
   customFilterFn, // Filtreleme için özel bir fonksiyon tanımlamak isterseniz
   customDateFilterFn, // Tarih aralığı filtresi için özel bir fonksiyon tanımlamak isterseniz
 }) {
   const [currentPage, setCurrentPage] = useState(1);
+
+  // Yeni: Sayfa başına gösterilecek satır sayısını state ile yönetiyoruz
+  const [rowsPerPage, setRowsPerPage] = useState(initialRowsPerPage);
 
   // Pop-up, seçilen satır vb. alanları context içerisinde yönetebilirsiniz
   const [selectedData, setSelectedData] = useState(null);
@@ -83,6 +85,11 @@ export function TableProvider({
     };
   }, [isPopupOpen]);
 
+  // Eğer rowsPerPage değişirse, mevcut sayfa 1'e sıfırlansın.
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [rowsPerPage]);
+
   // Değerleri context üzerinden paylaş
   const value = {
     data,
@@ -96,6 +103,8 @@ export function TableProvider({
     totalPages,
     goToNextPage,
     goToPrevPage,
+    rowsPerPage,
+    setRowsPerPage,
     isPopupOpen,
     setIsPopupOpen,
     selectedData,
@@ -106,6 +115,8 @@ export function TableProvider({
   };
 
   return (
-    <TableContext.Provider value={value}>{children}</TableContext.Provider>
+    <TableContext.Provider value={value}>
+      {children}
+    </TableContext.Provider>
   );
 }

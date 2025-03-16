@@ -32,28 +32,32 @@ const AppointmentDatePicker = ({
     const filtered = (appointments || []).filter((appt) => {
       // Klinik ve doktor isimlerini karşılaştırırken, verileri normalize ediyoruz.
       const clinicMatch =
-        appt.clinicName?.trim().toLowerCase() === selectedClinic.trim().toLowerCase();
+        appt.clinicName?.trim().toLowerCase() ===
+        selectedClinic.trim().toLowerCase();
       const doctorMatch =
-        appt.doctorName?.trim().toLowerCase() === selectedDoctor.trim().toLowerCase();
+        appt.doctorName?.trim().toLowerCase() ===
+        selectedDoctor.trim().toLowerCase();
       if (!clinicMatch || !doctorMatch) {
         // console.log("Eşleşmeyen randevu:", appt, "clinicMatch:", clinicMatch, "doctorMatch:", doctorMatch);
       }
       return clinicMatch && doctorMatch;
     });
-    const parsed = filtered.map((appt) => {
-      try {
-        // new Date() fonksiyonu UTC'yi otomatik olarak yerel saate çevirir.
-        let parsedDate = new Date(appt.datetime);
-        if (isNaN(parsedDate)) throw new Error("Invalid date");
-        // Saniye ve milisaniyeleri sıfırlayarak, yuvarlama öncesi temizlik yapıyoruz.
-        parsedDate.setSeconds(0, 0);
-        parsedDate = roundTo15(parsedDate);
-        return { ...appt, parsedDate };
-      } catch (error) {
-        console.error("Geçersiz tarih:", appt.datetime, error);
-        return null;
-      }
-    }).filter(Boolean);
+    const parsed = filtered
+      .map((appt) => {
+        try {
+          // new Date() fonksiyonu UTC'yi otomatik olarak yerel saate çevirir.
+          let parsedDate = new Date(appt.datetime);
+          if (isNaN(parsedDate)) throw new Error("Invalid date");
+          // Saniye ve milisaniyeleri sıfırlayarak, yuvarlama öncesi temizlik yapıyoruz.
+          parsedDate.setSeconds(0, 0);
+          parsedDate = roundTo15(parsedDate);
+          return { ...appt, parsedDate };
+        } catch (error) {
+          console.error("Geçersiz tarih:", appt.datetime, error);
+          return null;
+        }
+      })
+      .filter(Boolean);
     // console.log("Parsed appointments:", parsed);
     return parsed;
   }, [appointments, selectedClinic, selectedDoctor]);
@@ -94,7 +98,11 @@ const AppointmentDatePicker = ({
   const filterDate = (date) => {
     const now = new Date();
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const checkDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    const checkDate = new Date(
+      date.getFullYear(),
+      date.getMonth(),
+      date.getDate()
+    );
     return checkDate >= today;
   };
 
@@ -109,7 +117,7 @@ const AppointmentDatePicker = ({
       {selectedClinic && selectedDoctor ? (
         value || (
           <span className="text-gray-500 flex items-center">
-            Tarih ve Saat Seçiniz <FaRegCalendarAlt className="ml-2" />
+            Tarih ve Saat Seçiniz
           </span>
         )
       ) : (
@@ -123,7 +131,8 @@ const AppointmentDatePicker = ({
       <label className="block text-gray-700 mb-1 font-medium">
         Randevu Tarihi ve Saati
       </label>
-      <div className="mb-4 border border-gray-300 rounded-lg focus:outline-none focus:ring focus:ring-[#007E85]">
+      <div className="flex items-center mb-4 border border-gray-300 rounded-lg focus:outline-none focus:ring focus:ring-[#007E85]">
+        <FaRegCalendarAlt className="text-gray-500 ml-2" />
         <DatePicker
           locale="tr"
           selected={selectedDate}

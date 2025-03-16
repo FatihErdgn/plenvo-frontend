@@ -79,7 +79,7 @@ export default function FinanceDashboard() {
       if (response.success && Array.isArray(response.data)) {
         // Doktor rolü için roleId.populate edilmiş roleName üzerinden filtreleme
         const doctors = response.data.filter(
-          (user) => user.roleId?.roleName === "doctor"
+          (user) => user.roleId?.roleName === "doctor" || user.roleId?.roleName === "admin"
         );
         setDoctorList(doctors);
       }

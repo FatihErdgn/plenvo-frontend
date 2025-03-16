@@ -141,7 +141,7 @@ export default function PersonnelTableWrapper({
       searchQuery={searchQuery}
       startDate={startDate}
       endDate={endDate}
-      rowsPerPage={7}
+      // rowsPerPage={7}
       customFilterFn={customFilterFn}
       customDateFilterFn={customDateFilterFn}
     >
@@ -283,7 +283,7 @@ function PersonnelPopupArea({ fetchUsers }) {
 
   const clinicOptions =
     data && Array.isArray(data)
-      ? [...new Set(data.map((item) => item.clinic ?? "Bilinmiyor"))]
+      ? [...new Set(data.map((item) => item.clinicName ?? "Bilinmiyor"))]
       : [];
 
   const roleOptions = ["Consultant", "Doctor", "Manager", "Admin"];

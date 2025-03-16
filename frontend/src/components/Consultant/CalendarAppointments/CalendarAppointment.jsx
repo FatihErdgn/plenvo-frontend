@@ -9,6 +9,7 @@ import { getUsers, getProfile } from "../../../services/userService";
 import PaymentPopup from "../ConsultantTable/PayNowButton"; // Ödeme popup'ı component'i
 import { FaMoneyBills } from "react-icons/fa6";
 import { FaCheckCircle } from "react-icons/fa";
+import { IoCheckmarkDoneCircleSharp } from "react-icons/io5";
 import usePaymentStatus from "../../../hooks/usePaymentStatus"; // Custom hook
 
 // Haftanın günleri
@@ -40,7 +41,6 @@ const TIME_SLOTS = [
 // Yardımcı fonksiyon: Randevu id'sine göre pastel renk seçimi yapar.
 const getPastelColor = (appointment) => {
   if (!appointment || !appointment.doctorId) return "";
-  // Doctor ID'sini ve katılımcı isimlerini alfabetik sırayla birleştiriyoruz.
   const doctorId = appointment.doctorId.toString();
   const participantNames = appointment.participants
     ? appointment.participants
@@ -48,15 +48,11 @@ const getPastelColor = (appointment) => {
         .sort()
         .join("")
     : "";
-
   const hashString = doctorId + participantNames;
-
-  // Basit hash hesaplaması: Tüm karakterlerin charCode'larının toplamını alıyoruz.
   let sum = 0;
   for (let i = 0; i < hashString.length; i++) {
     sum += hashString.charCodeAt(i);
   }
-
   const pastelColors = [
     "bg-blue-100",
     "bg-pink-100",
@@ -66,13 +62,12 @@ const getPastelColor = (appointment) => {
     "bg-indigo-100",
     "bg-orange-100",
   ];
-
   return pastelColors[sum % pastelColors.length];
 };
 
 // PaymentStatusCell: Randevuya ait ödeme durumunu kontrol eder.
 function PaymentStatusCell({ appointment, onClickPayNow, refreshTrigger }) {
-  const { completed, totalPaid } = usePaymentStatus(
+  const { completed, halfPaid, totalPaid } = usePaymentStatus(
     appointment._id,
     refreshTrigger
   );
@@ -81,10 +76,21 @@ function PaymentStatusCell({ appointment, onClickPayNow, refreshTrigger }) {
       {completed ? (
         <div
           title={`Toplam Ödenen Miktar: ${totalPaid} TL`}
-          className="absolute top-1 right-1"
+          className="absolute top-0.5 right-0.5"
         >
-          <FaCheckCircle className="text-green-600 w-4 h-4" />
+          <IoCheckmarkDoneCircleSharp className="text-green-600 w-6 h-6" />
         </div>
+      ) : halfPaid ? (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onClickPayNow();
+          }}
+          title={`Yarım Ödeme - Toplam Ödenen: ${totalPaid} TL`}
+          className="absolute top-0.5 right-0.5 text-red-500 hover:text-red-700"
+        >
+          <FaCheckCircle className="w-5 h-5" />
+        </button>
       ) : (
         <button
           onClick={(e) => {
@@ -96,7 +102,6 @@ function PaymentStatusCell({ appointment, onClickPayNow, refreshTrigger }) {
           <FaMoneyBills className="w-[1.25rem] h-[1.25rem]" />
         </button>
       )}
-      {/* Metin kapsayıcısına sağdan padding ekleyerek butonun kaplamasını önlüyoruz */}
       <div className="text-sm font-medium pr-8">
         {appointment.participants.map((p) => p.name).join(" - ")}
       </div>
@@ -117,6 +122,13 @@ export default function CalendarSchedulePage({ servicesData }) {
   const [description, setDescription] = useState("");
   const [paymentOpen, setPaymentOpen] = useState(false); // Ödeme popup kontrolü
   const [paymentRefreshTrigger, setPaymentRefreshTrigger] = useState(0); // Ödeme durumunu yenilemek için
+
+  // Yeni: Hücre tıklama sonrası seçim modunu yönetmek için
+  const [showChoiceModal, setShowChoiceModal] = useState(false);
+  const [showRebookModal, setShowRebookModal] = useState(false);
+  const [selectedCell, setSelectedCell] = useState({ dayIndex: null, timeIndex: null });
+  // Seçilen randevudan bookingId alınacaksa bu state'e kaydedilir
+  const [rebookBookingId, setRebookBookingId] = useState(null);
 
   // Kullanıcı profilini al
   useEffect(() => {
@@ -141,9 +153,7 @@ export default function CalendarSchedulePage({ servicesData }) {
         if (userRes.success) {
           const docs = userRes.data.filter(
             (u) =>
-              (u.roleId?.roleName === "doctor" ||
-                u.roleId?.roleName === "admin") &&
-              u.speciality.includes("Pilates")
+              u.roleId?.roleName === "doctor" || u.roleId?.roleName === "admin"
           );
           setDoctorList(docs);
         }
@@ -170,32 +180,69 @@ export default function CalendarSchedulePage({ servicesData }) {
         const res = await getCalendarAppointments(doctorIdToFetch);
         if (res.success) {
           setAppointments(res.data);
-          // Güncelleme tetikleyicisini artır
           setPaymentRefreshTrigger((prev) => prev + 1);
         }
       })();
     }
   }, [loggedInUser, selectedDoctor]);
 
-  // Hücre tıklama - yeni randevu oluşturmak için
-  const handleCellClick = (dayIndex, timeIndex) => {
-    if (loggedInUser?.roleId?.roleName === "doctor") return; // Doktor ekleyemez
+  // Ortak hücre tıklama fonksiyonu:
+  // Eğer hücrede randevu varsa direkt düzenleme moduna, yoksa seçim modalına yönlendir.
+  const handleCellClick = (dayIndex, timeIndex, appt) => {
+    if (loggedInUser?.roleId?.roleName === "doctor") return;
+    setSelectedCell({ dayIndex, timeIndex });
+    if (appt) {
+      // Varolan randevu varsa; düzenleme moduna geç
+      setEditMode(true);
+      setSelectedAppointment(appt);
+      setParticipantCount(appt.participants ? appt.participants.length : 1);
+      setParticipantNames(appt.participants ? appt.participants.map((p) => p.name) : [""]);
+      setDescription(appt.description || "");
+      setShowModal(true);
+    } else {
+      // Eğer randevu yoksa, seçenek modalını aç
+      setSelectedAppointment(null);
+      setShowChoiceModal(true);
+    }
+  };
+
+  // "Yeni Randevu Oluştur" butonuna basınca: Form modalını varsayılan şekilde açar.
+  const handleNewAppointment = () => {
     setEditMode(false);
-    setSelectedAppointment({ dayIndex, timeIndex, participants: [] });
+    // Eğer selectedAppointment null ise, seçilen hücreden yeni bir randevu oluşturuyoruz.
+    if (!selectedAppointment) {
+      setSelectedAppointment({
+        dayIndex: selectedCell.dayIndex,
+        timeIndex: selectedCell.timeIndex,
+        participants: [],
+      });
+    }
     setParticipantCount(1);
     setParticipantNames([""]);
-    setDescription(""); // Açıklamayı sıfırla
+    setDescription("");
+    setRebookBookingId(null);
+    setShowChoiceModal(false);
     setShowModal(true);
   };
 
-  // Var olan randevuyu düzenlemek/silmek için
-  const handleAppointmentClick = (appt) => {
-    if (loggedInUser?.roleId?.roleName === "doctor") return;
-    setEditMode(true);
-    setSelectedAppointment(appt);
-    setParticipantCount(appt.participants?.length || 1);
-    setParticipantNames(appt.participants?.map((p) => p.name) || [""]);
+  // "Randevu Yinele" butonuna basınca: Varolan randevuların listesini gösteren modalı açar.
+  const handleRebookAppointment = () => {
+    setShowChoiceModal(false);
+    setShowRebookModal(true);
+  };
+
+  // Randevu Yinele listesinden bir randevu seçildiğinde:
+  const selectRebookAppointment = (appt) => {
+    setRebookBookingId(appt.bookingId);
+    setSelectedAppointment({
+      ...appt,
+      dayIndex: selectedCell.dayIndex,
+      timeIndex: selectedCell.timeIndex,
+    });
+    setParticipantCount(appt.participants ? appt.participants.length : 1);
+    setParticipantNames(appt.participants ? appt.participants.map((p) => p.name) : [""]);
     setDescription(appt.description || "");
+    setShowRebookModal(false);
     setShowModal(true);
   };
 
@@ -209,7 +256,7 @@ export default function CalendarSchedulePage({ servicesData }) {
     setParticipantNames(currentNames);
   };
 
-  // Kaydet
+  // Kaydet fonksiyonu: Eğer rebookBookingId set edilmişse payload içerisine eklenir.
   const handleSubmit = async () => {
     if (!selectedAppointment) return;
     const doctorId =
@@ -222,6 +269,7 @@ export default function CalendarSchedulePage({ servicesData }) {
       doctorId,
       participants: participantNames.map((name) => ({ name })),
       description,
+      ...(rebookBookingId && { bookingId: rebookBookingId }),
     };
     if (editMode) {
       const res = await updateCalendarAppointment(
@@ -305,11 +353,10 @@ export default function CalendarSchedulePage({ servicesData }) {
         </div>
       )}
 
-      {/* Tabloyu saran container: max-h, overflow-auto */}
+      {/* Takvim tablosu */}
       <div className="max-h-[43.75rem] overflow-auto border rounded-lg">
         <table className="table-fixed w-full border-collapse border border-gray-300">
           <thead>
-            {/* Danışman Adı */}
             <tr>
               <th
                 colSpan={DAYS.length + 1}
@@ -318,7 +365,6 @@ export default function CalendarSchedulePage({ servicesData }) {
                 {getSelectedDoctorName()}
               </th>
             </tr>
-            {/* Gün Başlıkları */}
             <tr>
               <th className="border border-gray-300 p-2 bg-gray-50 w-[15%]"></th>
               {DAYS.map((day, index) => (
@@ -334,21 +380,15 @@ export default function CalendarSchedulePage({ servicesData }) {
           <tbody>
             {TIME_SLOTS.map((slot, timeIndex) => (
               <tr key={timeIndex}>
-                {/* Saat Dilimi */}
                 <td className="border border-gray-300 p-2 bg-[#F7F6FE] text-center font-medium">
                   {slot}
                 </td>
-                {/* Gün-Saat Hücreleri */}
                 {DAYS.map((day, dayIndex) => {
                   const appt = findAppointmentForCell(dayIndex, timeIndex);
                   return (
                     <td
                       key={dayIndex}
-                      onClick={() =>
-                        appt
-                          ? handleAppointmentClick(appt)
-                          : handleCellClick(dayIndex, timeIndex)
-                      }
+                      onClick={() => handleCellClick(dayIndex, timeIndex, appt)}
                       className={`relative border border-gray-300 p-2 cursor-pointer align-top ${
                         appt ? getPastelColor(appt) : "bg-white"
                       }`}
@@ -379,14 +419,93 @@ export default function CalendarSchedulePage({ servicesData }) {
         </table>
       </div>
 
-      {/* Randevu Modalı */}
+      {/* Seçim Modalı: Hücrede randevu yoksa iki seçenek sunar */}
+      {showChoiceModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-30 flex justify-center items-center z-50">
+          <div className="bg-white p-4 rounded shadow-md w-80">
+            <h2 className="text-lg font-bold mb-4 text-center">Randevu Oluşturun/Yineleyin</h2>
+            <div className="flex justify-around">
+              <button
+                onClick={handleNewAppointment}
+                className="bg-[#399AA1] hover:bg-[#007E85] text-white text-sm px-4 py-2 rounded-lg mr-2"
+              >
+                Yeni Randevu Oluştur
+              </button>
+              <button
+                onClick={handleRebookAppointment}
+                className="bg-orange-500 hover:bg-orange-700 text-white text-sm px-4 py-2 rounded-lg"
+              >
+                Randevu Yinele
+              </button>
+            </div>
+            <button
+              onClick={() => setShowChoiceModal(false)}
+              className="mt-4 w-full bg-gray-300 hover:bg-gray-400 hover:text-white px-4 py-2 rounded"
+            >
+              Vazgeç
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Randevu Yinele Modalı: Varolan randevuların listesini gösterir */}
+      {showRebookModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-30 flex justify-center items-center z-50">
+          <div className="bg-white p-4 rounded shadow-md w-96 max-h-[80vh] overflow-auto">
+            <h2 className="text-xl font-bold mb-4 text-center">
+              Randevu Yinele - Seçiniz
+            </h2>
+            {appointments.length > 0 ? (
+              appointments
+                .slice()
+                .sort((a, b) => a.dayIndex - b.dayIndex || a.timeIndex - b.timeIndex)
+                .map((appt) => (
+                  <div
+                    key={appt._id}
+                    className="p-2 border-b cursor-pointer hover:bg-gray-100"
+                    onClick={() => selectRebookAppointment(appt)}
+                  >
+                    <div>
+                      <span className="font-semibold">
+                        Gün: {DAYS[appt.dayIndex]}, Saat: {TIME_SLOTS[appt.timeIndex]}
+                      </span>
+                    </div>
+                    <div className="text-sm">
+                      {appt.participants.map((p) => p.name).join(" - ")}
+                    </div>
+                    {appt.description && (
+                      <div className="text-xs text-gray-600">
+                        {appt.description}
+                      </div>
+                    )}
+                  </div>
+                ))
+            ) : (
+              <div className="text-center text-gray-500">
+                Randevu bulunamadı.
+              </div>
+            )}
+            <button
+              onClick={() => setShowRebookModal(false)}
+              className="mt-4 w-full bg-gray-300 hover:bg-gray-400 hover:text-white px-4 py-2 rounded"
+            >
+              Vazgeç
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Randevu Modalı: Yeni randevu oluşturma veya düzenleme formu */}
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-30 flex justify-center items-center z-50">
           <div className="bg-white p-4 rounded shadow-md w-96">
             <h2 className="text-xl font-bold mb-2">
-              {editMode ? "Randevu Düzenle" : "Yeni Randevu Oluştur"}
+              {editMode
+                ? "Randevu Düzenle"
+                : rebookBookingId
+                ? "Randevu Yinele"
+                : "Yeni Randevu Oluştur"}
             </h2>
-
             {/* Danışman Adı */}
             <div className="mb-2">
               <label className="block font-medium">Danışman</label>
@@ -397,7 +516,6 @@ export default function CalendarSchedulePage({ servicesData }) {
                 className="border p-1 w-full cursor-pointer rounded-md"
               />
             </div>
-
             {/* Açıklama Alanı */}
             <div className="mb-2">
               <label className="block font-medium">Açıklama</label>
@@ -409,7 +527,6 @@ export default function CalendarSchedulePage({ servicesData }) {
                 placeholder="Randevu ile ilgili açıklama giriniz..."
               />
             </div>
-
             {/* Kişi Sayısı */}
             <div className="mb-2">
               <label className="block font-medium">Kişi Sayısı</label>
@@ -427,7 +544,6 @@ export default function CalendarSchedulePage({ servicesData }) {
                 ))}
               </select>
             </div>
-
             {/* Kişi İsimleri */}
             {Array.from({ length: participantCount }, (_, i) => (
               <div key={i} className="mb-2">
@@ -446,7 +562,6 @@ export default function CalendarSchedulePage({ servicesData }) {
                 />
               </div>
             ))}
-
             {/* Butonlar */}
             <div className="flex justify-end gap-2 mt-4">
               {editMode && (
@@ -498,33 +613,3 @@ export default function CalendarSchedulePage({ servicesData }) {
     </div>
   );
 }
-
-// // PaymentStatusCell bileşeni: Randevuya ait ödeme durumunu kontrol eder.
-// function PaymentStatusCell({ appointment, onClickPayNow, refreshTrigger }) {
-//   const { completed, totalPaid } = usePaymentStatus(appointment._id, refreshTrigger);
-//   return (
-//     <div className="relative">
-//       {completed ? (
-//         <div
-//           title={`Toplam Ödenen Miktar: ${totalPaid} TL`}
-//           className="absolute top-1 right-1"
-//         >
-//           <FaCheckCircle className="text-green-600 w-4 h-4" />
-//         </div>
-//       ) : (
-//         <button
-//           onClick={(e) => {
-//             e.stopPropagation();
-//             onClickPayNow();
-//           }}
-//           className="absolute top-1 right-1 bg-[#399AA1] hover:bg-[#007E85] text-white text-xs px-1 py-0.5 rounded"
-//         >
-//           <FaMoneyBills className="w-[1.25rem] h-[1.25rem]" />
-//         </button>
-//       )}
-//       <div className="text-sm font-medium">
-//         {appointment.participants.map((p) => p.name).join(" - ")}
-//       </div>
-//     </div>
-//   );
-// }

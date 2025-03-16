@@ -60,7 +60,7 @@ export default function PaymentPopup({
   // Bileşen state'leri
   const [selectedExtras, setSelectedExtras] = useState([]);
   const [paymentMode, setPaymentMode] = useState(null); // "full" veya "partial"
-  const [paymentType, setPaymentType] = useState(null); // "nakit", "kredi", "sigorta", "IBAN"	
+  const [paymentType, setPaymentType] = useState(null); // "nakit", "kredi", "sigorta", "IBAN"
   const [partialAmount, setPartialAmount] = useState("");
   const [paymentNote, setPaymentNote] = useState("");
   const [sumPaid, setSumPaid] = useState(0);
@@ -413,6 +413,16 @@ export default function PaymentPopup({
                       onChange={(e) => setPaymentType(e.target.value)}
                     />
                     Kredi Kartı
+                  </label>
+                  <label className="flex items-center gap-1 text-gray-600">
+                    <input
+                      type="radio"
+                      name="paymentType"
+                      value="IBAN"
+                      checked={paymentType === "IBAN"}
+                      onChange={(e) => setPaymentType(e.target.value)}
+                    />
+                    IBAN
                   </label>
                   {/* Sigorta seçeneği kısmi ödemede yok */}
                 </div>

@@ -4,6 +4,7 @@ import { getPaymentsByAppointment } from "../services/paymentService";
 
 export default function usePaymentStatus(appointmentId, refreshTrigger = 0) {
   const [completed, setCompleted] = useState(false);
+  const [halfPaid, setHalfPaid] = useState(false);
   const [totalPaid, setTotalPaid] = useState(0);
 
   useEffect(() => {
@@ -15,7 +16,11 @@ export default function usePaymentStatus(appointmentId, refreshTrigger = 0) {
           const isCompleted = res.payments.some(
             (payment) => payment.paymentStatus === "Tamamlandı"
           );
+          const isHalfPaid = res.payments.some(
+            (payment) => payment.paymentAmount < payment.serviceFee
+          );
           setCompleted(isCompleted);
+          setHalfPaid(isHalfPaid);
           const total = res.payments.reduce(
             (acc, payment) => acc + Number(payment.paymentAmount),
             0
@@ -23,6 +28,7 @@ export default function usePaymentStatus(appointmentId, refreshTrigger = 0) {
           setTotalPaid(total);
         } else {
           setCompleted(false);
+          setHalfPaid(false);
           setTotalPaid(0);
         }
       } catch (error) {
@@ -32,5 +38,5 @@ export default function usePaymentStatus(appointmentId, refreshTrigger = 0) {
     fetchStatus();
   }, [appointmentId, refreshTrigger]);
 
-  return { completed, totalPaid };
+  return { completed, halfPaid, totalPaid };
 }
