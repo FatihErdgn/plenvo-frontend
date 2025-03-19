@@ -667,9 +667,9 @@ export default function ViewAppointmentDetailsPopup({
                 <button
                   type="button"
                   onClick={handleCancelAppointment}
-                  disabled={formData.status === "İptal Edildi"}
+                  disabled={data.status === "İptal Edildi"}
                   className={`px-8 py-2 rounded-full text-white cursor-pointer ${
-                    formData.status === "İptal Edildi"
+                    data.status === "İptal Edildi"
                       ? "bg-red-300 cursor-not-allowed"
                       : "bg-red-500 hover:bg-red-600"
                   }`}
