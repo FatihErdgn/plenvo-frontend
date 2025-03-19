@@ -147,6 +147,15 @@ export default function ViewAppointmentDetailsPopup({
 
   // Popup üzerindeki "İptal Et" butonuna basıldığında işlemi gerçekleştir
   const handleConfirmCancelAppointment = async () => {
+    if (!cancelReason.trim()) {
+      setAlertState({
+        message: "Lütfen iptal nedeni giriniz.",
+        severity: "error",
+        open: true,
+      });
+      return;
+    }
+
     const isoDate =
       formData.datetime instanceof Date
         ? formData.datetime.toISOString()
