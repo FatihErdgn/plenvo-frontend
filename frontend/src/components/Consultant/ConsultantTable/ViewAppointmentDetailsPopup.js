@@ -268,7 +268,7 @@ export default function ViewAppointmentDetailsPopup({
     });
   };
 
-  const statusOptions = ["Açık", "Ödeme Bekleniyor", "Tamamlandı"];
+  const statusOptions = ["Açık", "Ödeme Bekleniyor"];
 
   const renderDropdown = (label, key, options, direction = "down") => (
     <>
@@ -667,7 +667,12 @@ export default function ViewAppointmentDetailsPopup({
                 <button
                   type="button"
                   onClick={handleCancelAppointment}
-                  className="px-8 py-2 bg-red-500 text-white rounded-full hover:bg-red-600 cursor-pointer"
+                  disabled={formData.status === "İptal Edildi"}
+                  className={`px-8 py-2 rounded-full text-white cursor-pointer ${
+                    formData.status === "İptal Edildi"
+                      ? "bg-red-300 cursor-not-allowed"
+                      : "bg-red-500 hover:bg-red-600"
+                  }`}
                 >
                   Randevuyu İptal Et
                 </button>
