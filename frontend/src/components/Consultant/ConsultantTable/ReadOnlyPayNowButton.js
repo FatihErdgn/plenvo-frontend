@@ -1,20 +1,40 @@
 import React, { useEffect, useState } from "react";
 import { IoIosCloseCircleOutline } from "react-icons/io";
-import { getPaymentsByAppointment, softDeletePayment } from "../../../services/paymentService";
+import {
+  getPaymentsByAppointment,
+  softDeletePayment,
+} from "../../../services/paymentService";
 import { updateAppointment } from "../../../services/appointmentService";
 
-export default function ReadOnlyPaymentPopup({ isOpen, onClose, row, onRefreshAppointments }) {
+export default function ReadOnlyPaymentPopup({
+  isOpen,
+  onClose,
+  row,
+  onRefreshAppointments,
+}) {
   const [payments, setPayments] = useState([]);
   const [loading, setLoading] = useState(false);
 
+  // ESC tuşuna basıldığında popup'ı kapat
+  useEffect(() => {
+    const handleEsc = (e) => {
+      if (e.key === "Escape") onClose();
+    };
+    if (isOpen) window.addEventListener("keydown", handleEsc);
+    return () => window.removeEventListener("keydown", handleEsc);
+  }, [isOpen, onClose]);
+
   // Ödeme iptali için handler
   const handleCancelPayment = async (paymentId) => {
-    if (!window.confirm("Ödemeyi iptal etmek istediğinize emin misiniz?")) return;
+    if (!window.confirm("Ödemeyi iptal etmek istediğinize emin misiniz?"))
+      return;
     try {
       // İlgili ödemeyi soft-delete yapıyoruz.
       await softDeletePayment(paymentId);
       // Randevunun status'unu "Ödeme Bekleniyor" olarak güncelliyoruz.
-      await updateAppointment(row._id, { status: "Ödeme Bekleniyor" });
+      if (row.status) {
+        await updateAppointment(row._id, { status: "Ödeme Bekleniyor" });
+      }
       // Parent'dan gönderilen callback varsa, randevu kayıtlarını yeniden fetch etmesini tetikliyoruz.
       if (typeof onRefreshAppointments === "function") {
         onRefreshAppointments();
@@ -49,6 +69,24 @@ export default function ReadOnlyPaymentPopup({ isOpen, onClose, row, onRefreshAp
     }
   }, [isOpen, row]);
 
+  // Hasta adını oluşturan helper fonksiyon
+  const getPatientName = () => {
+    // ConsultantTable'dan gelen grup randevusu
+    if (row.type === "group" && row.participants && row.participants.length > 0) {
+      return row.participants
+        .map(p => `${p.clientFirstName || ""} ${p.clientLastName || ""}`.trim())
+        .join(" - ");
+    }
+    // Takvimden gelen randevu (participants içinde name değerleri var)
+    else if (row.participants && row.participants.length > 0 && row.participants[0].name) {
+      return row.participants.map(p => p.name).join(" - ");
+    }
+    // Tek kişilik normal randevu
+    else {
+      return `${row.clientFirstName || ""} ${row.clientLastName || ""}`.trim();
+    }
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -78,7 +116,7 @@ export default function ReadOnlyPaymentPopup({ isOpen, onClose, row, onRefreshAp
                   <strong>Doktor Adı:</strong> {row?.doctorName}
                 </p>
                 <p className="text-lg text-gray-700">
-                  <strong>Hasta Adı:</strong> {row?.clientFirstName} {row?.clientLastName}
+                  <strong>Hasta Adı:</strong> {getPatientName()}
                 </p>
                 <p className="text-lg text-gray-700">
                   <strong>Alınan Hizmet:</strong> {payment.serviceDescription}
@@ -96,7 +134,8 @@ export default function ReadOnlyPaymentPopup({ isOpen, onClose, row, onRefreshAp
                 )}
                 {payment.paymentDate && (
                   <p className="text-lg text-gray-700">
-                    <strong>Tarih:</strong> {new Date(payment.paymentDate).toLocaleString()}
+                    <strong>Tarih:</strong>{" "}
+                    {new Date(payment.paymentDate).toLocaleString()}
                   </p>
                 )}
                 {/* Ödemeyi İptal Et Butonu */}

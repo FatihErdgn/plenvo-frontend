@@ -12,6 +12,7 @@ import { FaCheckCircle } from "react-icons/fa";
 import { IoCheckmarkDoneCircleSharp } from "react-icons/io5";
 import usePaymentStatus from "../../../hooks/usePaymentStatus"; // Custom hook
 import { IoIosCloseCircleOutline } from "react-icons/io";
+import ReadOnlyPaymentPopup from "../ConsultantTable/ReadOnlyPayNowButton";
 
 // Haftanın günleri
 const DAYS = [
@@ -67,20 +68,47 @@ const getPastelColor = (appointment) => {
 };
 
 // PaymentStatusCell: Randevuya ait ödeme durumunu kontrol eder.
-function PaymentStatusCell({ appointment, onClickPayNow, refreshTrigger }) {
+function PaymentStatusCell({
+  appointment,
+  onClickPayNow,
+  refreshTrigger,
+  fetchAppointments,
+}) {
   const { completed, halfPaid, totalPaid } = usePaymentStatus(
     appointment._id,
     refreshTrigger
   );
+  const [viewPaymentOpen, setViewPaymentOpen] = useState(false);
+
   return (
     <div className="relative">
       {completed ? (
-        <div
-          title={`Toplam Ödenen Miktar: ${totalPaid} TL`}
-          className="absolute top-0.5 right-0.5"
-        >
-          <IoCheckmarkDoneCircleSharp className="text-green-600 w-6 h-6" />
-        </div>
+        <>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              setViewPaymentOpen(true);
+            }}
+            title={`Toplam Ödenen Miktar: ${totalPaid} TL`}
+            className="absolute top-0.5 right-0.5"
+          >
+            <IoCheckmarkDoneCircleSharp className="text-green-600 w-6 h-6 hover:text-green-700" />
+          </button>
+          {viewPaymentOpen && (
+            <div
+              className="fixed text-center inset-0 bg-black bg-opacity-50 z-50"
+              onClick={(e) => e.stopPropagation()}
+              style={{ pointerEvents: "all" }}
+            >
+              <ReadOnlyPaymentPopup
+                isOpen={viewPaymentOpen}
+                onClose={() => setViewPaymentOpen(false)}
+                row={appointment}
+                onRefreshAppointments={fetchAppointments}
+              />
+            </div>
+          )}
+        </>
       ) : halfPaid ? (
         <button
           onClick={(e) => {
@@ -243,13 +271,13 @@ export default function CalendarSchedulePage({ servicesData }) {
     // Hata ayıklama için bookingId değerlerini görelim
     // console.log('Seçilen randevunun bookingId değeri:', appt.bookingId);
     // console.log('Seçilen randevunun _id değeri:', appt._id);
-    
+
     // Eğer appt.bookingId varsa o değeri al, yoksa appt._id'yi kullan
     setRebookBookingId(appt.bookingId || appt._id);
-    
+
     // Bu değer ne oldu görelim
     // console.log('Ayarlanan rebookBookingId:', appt.bookingId || appt._id);
-    
+
     setSelectedAppointment({
       ...appt,
       dayIndex: selectedCell.dayIndex,
@@ -288,18 +316,18 @@ export default function CalendarSchedulePage({ servicesData }) {
       participants: participantNames.map((name) => ({ name })),
       description,
     };
-    
+
     // Hata ayıklama için bookingId değerini görelim
     // console.log('Kaydetme öncesi rebookBookingId:', rebookBookingId);
-    
+
     // Yineleme için geçerli bir bookingId değeri varsa ekle
     if (rebookBookingId) {
       payload.bookingId = rebookBookingId;
       // console.log('Payload\'a eklenen bookingId:', rebookBookingId);
     }
-    
+
     // console.log('Gönderilecek payload:', payload);
-    
+
     if (editMode) {
       const res = await updateCalendarAppointment(
         selectedAppointment._id,
@@ -337,12 +365,11 @@ export default function CalendarSchedulePage({ servicesData }) {
   const refreshAppointments = async (doctorId) => {
     const res = await getCalendarAppointments(doctorId);
     if (res.success) {
-      // console.log('Randevular yenilendi, toplam:', res.data.length);
       setAppointments(res.data);
+      // Ödeme durumunu yeniden kontrol etmek için trigger'ı artır
       setPaymentRefreshTrigger((prev) => prev + 1);
-      
+
       // Her takvim yenilemesinde seçili randevu ve bookingId state'ini temizle
-      // Bu sayede eski referansların kalmasını önlemiş oluruz
       setSelectedAppointment(null);
       setRebookBookingId(null);
     }
@@ -443,6 +470,7 @@ export default function CalendarSchedulePage({ servicesData }) {
                             setPaymentOpen(true);
                           }}
                           refreshTrigger={paymentRefreshTrigger}
+                          fetchAppointments={refreshAppointments}
                         />
                       ) : (
                         <div className="text-gray-400 italic">Boş</div>
