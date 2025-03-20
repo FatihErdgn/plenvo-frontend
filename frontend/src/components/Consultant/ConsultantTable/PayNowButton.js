@@ -88,7 +88,7 @@ export default function PaymentPopup({
     async function fetchPayments() {
       try {
         const res = await getPaymentsByAppointment(row._id);
-        console.log("Önceki ödemeler alındı:", res);
+        // console.log("Önceki ödemeler alındı:", res);
         if (res.payments && res.payments.length > 0) {
           const payments = res.payments;
           const totalPaid = payments.reduce(
