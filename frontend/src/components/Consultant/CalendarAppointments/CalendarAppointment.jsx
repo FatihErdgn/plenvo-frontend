@@ -470,7 +470,13 @@ export default function CalendarSchedulePage({ servicesData }) {
                             setPaymentOpen(true);
                           }}
                           refreshTrigger={paymentRefreshTrigger}
-                          fetchAppointments={refreshAppointments}
+                          fetchAppointments={() => {
+                            const doctorId =
+                              loggedInUser?.roleId?.roleName === "doctor"
+                                ? loggedInUser._id
+                                : selectedDoctor;
+                            refreshAppointments(doctorId);
+                          }}
                         />
                       ) : (
                         <div className="text-gray-400 italic">Boş</div>
