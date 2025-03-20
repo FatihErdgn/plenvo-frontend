@@ -235,11 +235,21 @@ export default function CalendarSchedulePage({ servicesData }) {
   const handleRebookAppointment = () => {
     setShowChoiceModal(false);
     setShowRebookModal(true);
+    setEditMode(false);
   };
 
   // Randevu Yinele listesinden bir randevu seçildiğinde:
   const selectRebookAppointment = (appt) => {
-    setRebookBookingId(appt.bookingId);
+    // Hata ayıklama için bookingId değerlerini görelim
+    // console.log('Seçilen randevunun bookingId değeri:', appt.bookingId);
+    // console.log('Seçilen randevunun _id değeri:', appt._id);
+    
+    // Eğer appt.bookingId varsa o değeri al, yoksa appt._id'yi kullan
+    setRebookBookingId(appt.bookingId || appt._id);
+    
+    // Bu değer ne oldu görelim
+    // console.log('Ayarlanan rebookBookingId:', appt.bookingId || appt._id);
+    
     setSelectedAppointment({
       ...appt,
       dayIndex: selectedCell.dayIndex,
@@ -277,8 +287,19 @@ export default function CalendarSchedulePage({ servicesData }) {
       doctorId,
       participants: participantNames.map((name) => ({ name })),
       description,
-      ...(rebookBookingId && { bookingId: rebookBookingId }),
     };
+    
+    // Hata ayıklama için bookingId değerini görelim
+    // console.log('Kaydetme öncesi rebookBookingId:', rebookBookingId);
+    
+    // Yineleme için geçerli bir bookingId değeri varsa ekle
+    if (rebookBookingId) {
+      payload.bookingId = rebookBookingId;
+      // console.log('Payload\'a eklenen bookingId:', rebookBookingId);
+    }
+    
+    // console.log('Gönderilecek payload:', payload);
+    
     if (editMode) {
       const res = await updateCalendarAppointment(
         selectedAppointment._id,
@@ -305,6 +326,8 @@ export default function CalendarSchedulePage({ servicesData }) {
         : selectedDoctor;
     const res = await deleteCalendarAppointment(selectedAppointment._id);
     if (res.success) {
+      // Silme başarılı olduğunda bookingId'yi sıfırla
+      setRebookBookingId(null);
       refreshAppointments(doctorId);
     }
     setShowModal(false);
@@ -314,8 +337,14 @@ export default function CalendarSchedulePage({ servicesData }) {
   const refreshAppointments = async (doctorId) => {
     const res = await getCalendarAppointments(doctorId);
     if (res.success) {
+      // console.log('Randevular yenilendi, toplam:', res.data.length);
       setAppointments(res.data);
       setPaymentRefreshTrigger((prev) => prev + 1);
+      
+      // Her takvim yenilemesinde seçili randevu ve bookingId state'ini temizle
+      // Bu sayede eski referansların kalmasını önlemiş oluruz
+      setSelectedAppointment(null);
+      setRebookBookingId(null);
     }
   };
 

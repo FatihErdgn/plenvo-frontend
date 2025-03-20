@@ -75,6 +75,10 @@ export const getPaymentsByAppointment = async (appointmentId) => {
     const response = await api.get(`/payments/appointment/${appointmentId}`);
     return response.data;
   } catch (error) {
+    if (error.response?.status === 404) {
+      return { success: false, payments: [] };
+    }
+    
     console.error(
       "Get Payments By Appointment Hatası:",
       error.response?.data || error.message
