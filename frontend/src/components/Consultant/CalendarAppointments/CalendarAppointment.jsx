@@ -13,6 +13,9 @@ import { IoCheckmarkDoneCircleSharp } from "react-icons/io5";
 import usePaymentStatus from "../../../hooks/usePaymentStatus"; // Custom hook
 import { IoIosCloseCircleOutline } from "react-icons/io";
 import ReadOnlyPaymentPopup from "../ConsultantTable/ReadOnlyPayNowButton";
+import { format, addDays, startOfWeek, subWeeks, addWeeks, getDay, parse, isValid, parseISO, addMonths, startOfMonth, setWeek, endOfMonth, eachWeekOfInterval, getWeeksInMonth } from 'date-fns';
+import { tr } from 'date-fns/locale';
+import { FaChevronLeft, FaChevronRight, FaRegCalendarAlt } from "react-icons/fa";
 
 // Haftanın günleri
 const DAYS = [
@@ -65,6 +68,18 @@ const getPastelColor = (appointment) => {
     "bg-orange-100",
   ];
   return pastelColors[sum % pastelColors.length];
+};
+
+// Yardımcı fonksiyon: Tarih formatlamak için
+const formatDate = (date, formatStr) => {
+  return format(date, formatStr, { locale: tr });
+};
+
+// Pazartesi başlangıçlı hafta başı hesaplama
+const getWeekStart = (date) => {
+  const day = getDay(date);
+  const diff = (day === 0 ? -6 : 1 - day); // 0 = Pazar, 1 = Pazartesi
+  return addDays(date, diff);
 };
 
 // PaymentStatusCell: Randevuya ait ödeme durumunu kontrol eder.
@@ -162,6 +177,13 @@ export default function CalendarSchedulePage({ servicesData }) {
   // Seçilen randevudan bookingId alınacaksa bu state'e kaydedilir
   const [rebookBookingId, setRebookBookingId] = useState(null);
 
+  const [currentWeekStart, setCurrentWeekStart] = useState(getWeekStart(new Date()));
+  const [showDatePicker, setShowDatePicker] = useState(false);
+
+  // Ay seçimi için yeni state
+  const [showMonthPicker, setShowMonthPicker] = useState(false);
+  const [currentMonth, setCurrentMonth] = useState(new Date());
+
   // Kullanıcı profilini al
   useEffect(() => {
     (async () => {
@@ -193,7 +215,7 @@ export default function CalendarSchedulePage({ servicesData }) {
     }
   }, [loggedInUser]);
 
-  // Seçilen (veya kendi) doktora ait randevuları çek
+  // Seçilen (veya kendi) doktora ait randevuları çek - tarih filtresiyle
   useEffect(() => {
     if (!loggedInUser) return;
     let doctorIdToFetch = "";
@@ -209,20 +231,63 @@ export default function CalendarSchedulePage({ servicesData }) {
     }
     if (doctorIdToFetch) {
       (async () => {
-        const res = await getCalendarAppointments(doctorIdToFetch);
+        // Tarih filtresini ekle
+        const res = await getCalendarAppointments(
+          doctorIdToFetch, 
+          currentWeekStart.toISOString()
+        );
         if (res.success) {
           setAppointments(res.data);
           setPaymentRefreshTrigger((prev) => prev + 1);
         }
       })();
     }
-  }, [loggedInUser, selectedDoctor]);
+  }, [loggedInUser, selectedDoctor, currentWeekStart]);
+
+  // Tarih değiştirme fonksiyonları
+  const goToPreviousWeek = () => {
+    setCurrentWeekStart(prevDate => subWeeks(prevDate, 1));
+  };
+
+  const goToNextWeek = () => {
+    setCurrentWeekStart(prevDate => addWeeks(prevDate, 1));
+  };
+
+  const goToSpecificWeek = (date) => {
+    setCurrentWeekStart(getWeekStart(date));
+    setShowDatePicker(false);
+  };
+
+  // Ay değiştirme fonksiyonu
+  const goToMonth = (date) => {
+    setCurrentMonth(date);
+    // Ayın ilk haftasına git
+    const firstWeekStart = startOfWeek(startOfMonth(date), { weekStartsOn: 1 }); // Pazartesi başlangıç
+    setCurrentWeekStart(firstWeekStart);
+    setShowMonthPicker(false);
+    setShowDatePicker(true); // Hafta seçiciyi görünür yap
+  };
+  
+  // Mevcut ayı göstermek için formatla
+  const formatMonthName = (date) => {
+    return formatDate(date, "MMMM yyyy");
+  };
+
+  // Haftadaki tarihleri hesapla
+  const weekDates = Array.from({ length: 7 }, (_, i) => addDays(currentWeekStart, i));
 
   // Ortak hücre tıklama fonksiyonu:
   // Eğer hücrede randevu varsa direkt düzenleme moduna, yoksa seçim modalına yönlendir.
   const handleCellClick = (dayIndex, timeIndex, appt) => {
     if (loggedInUser?.roleId?.roleName === "doctor") return;
-    setSelectedCell({ dayIndex, timeIndex });
+    
+    // Tarih ve saat hesaplayalım
+    const appointmentDate = new Date(weekDates[dayIndex]);
+    appointmentDate.setHours(9 + Math.floor(timeIndex));
+    appointmentDate.setMinutes(0);
+    
+    setSelectedCell({ dayIndex, timeIndex, appointmentDate });
+    
     if (appt) {
       // Varolan randevu varsa; düzenleme moduna geç
       setEditMode(true);
@@ -243,11 +308,11 @@ export default function CalendarSchedulePage({ servicesData }) {
   // "Yeni Randevu Oluştur" butonuna basınca: Form modalını varsayılan şekilde açar.
   const handleNewAppointment = () => {
     setEditMode(false);
-    // Eğer selectedAppointment null ise, seçilen hücreden yeni bir randevu oluşturuyoruz.
     if (!selectedAppointment) {
       setSelectedAppointment({
         dayIndex: selectedCell.dayIndex,
         timeIndex: selectedCell.timeIndex,
+        appointmentDate: selectedCell.appointmentDate,
         participants: [],
       });
     }
@@ -309,24 +374,19 @@ export default function CalendarSchedulePage({ servicesData }) {
       loggedInUser?.roleId?.roleName === "doctor"
         ? loggedInUser._id
         : selectedDoctor;
+        
     const payload = {
       dayIndex: selectedAppointment.dayIndex,
       timeIndex: selectedAppointment.timeIndex,
       doctorId,
       participants: participantNames.map((name) => ({ name })),
       description,
+      appointmentDate: selectedAppointment.appointmentDate || selectedCell.appointmentDate,
     };
 
-    // Hata ayıklama için bookingId değerini görelim
-    // console.log('Kaydetme öncesi rebookBookingId:', rebookBookingId);
-
-    // Yineleme için geçerli bir bookingId değeri varsa ekle
     if (rebookBookingId) {
       payload.bookingId = rebookBookingId;
-      // console.log('Payload\'a eklenen bookingId:', rebookBookingId);
     }
-
-    // console.log('Gönderilecek payload:', payload);
 
     if (editMode) {
       const res = await updateCalendarAppointment(
@@ -361,15 +421,12 @@ export default function CalendarSchedulePage({ servicesData }) {
     setShowModal(false);
   };
 
-  // Takvimi yenile
+  // Takvimi yenile - tarih filtresini ekle
   const refreshAppointments = async (doctorId) => {
-    const res = await getCalendarAppointments(doctorId);
+    const res = await getCalendarAppointments(doctorId, currentWeekStart.toISOString());
     if (res.success) {
       setAppointments(res.data);
-      // Ödeme durumunu yeniden kontrol etmek için trigger'ı artır
       setPaymentRefreshTrigger((prev) => prev + 1);
-
-      // Her takvim yenilemesinde seçili randevu ve bookingId state'ini temizle
       setSelectedAppointment(null);
       setRebookBookingId(null);
     }
@@ -396,29 +453,227 @@ export default function CalendarSchedulePage({ servicesData }) {
     return "Kullanıcı Rolü Tanımsız";
   };
 
+  // Danışman seçili mi kontrolü için yardımcı fonksiyon
+  const isDoctorSelected = () => {
+    return selectedDoctor !== "";
+  };
+
   return (
     <div className="bg-[#f4f7fe] font-montserrat p-6 rounded-lg shadow-md w-full h-full bg-white">
-      {/* Danışman seçimi (admin vb.) */}
-      {loggedInUser?.roleId?.roleName !== "doctor" && (
-        <div className="mb-4">
-          <label className="mr-2 font-medium">Danışman Seç:</label>
-          <select
-            value={selectedDoctor}
-            onChange={(e) => setSelectedDoctor(e.target.value)}
-            className="border p-1 cursor-pointer rounded-md"
+      {/* Üst kısım: Danışman seçimi ve tarih kontrolü */}
+      <div className="flex justify-between items-center mb-4">
+        {/* Danışman seçimi */}
+        {loggedInUser?.roleId?.roleName !== "doctor" && (
+          <div className="mb-0">
+            <label className="mr-2 font-medium">Danışman Seç:</label>
+            <select
+              value={selectedDoctor}
+              onChange={(e) => setSelectedDoctor(e.target.value)}
+              className="border p-1 cursor-pointer rounded-md"
+            >
+              <option value="">Danışman Seçiniz</option>
+              {doctorList.map((doc) => (
+                <option key={doc._id} value={doc._id}>
+                  {doc.firstName} {doc.lastName}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+        
+        {/* Tarih Kontrolü - Danışman seçili değilse devre dışı */}
+        <div className="flex items-center space-x-2 relative">
+          <button 
+            onClick={isDoctorSelected() ? goToPreviousWeek : undefined}
+            className={`p-2 rounded-full ${
+              isDoctorSelected() 
+                ? "hover:bg-gray-200 cursor-pointer" 
+                : "opacity-50 cursor-not-allowed"
+            }`}
+            disabled={!isDoctorSelected()}
           >
-            <option value="">Danışman Seçiniz</option>
-            {doctorList.map((doc) => (
-              <option key={doc._id} value={doc._id}>
-                {doc.firstName} {doc.lastName}
-              </option>
-            ))}
-          </select>
+            <FaChevronLeft />
+          </button>
+          
+          <button 
+            onClick={isDoctorSelected() ? () => setShowDatePicker(!showDatePicker) : undefined}
+            className={`flex items-center space-x-1 bg-white p-2 px-3 rounded-md border ${
+              isDoctorSelected() 
+                ? "hover:bg-gray-100 cursor-pointer" 
+                : "opacity-50 cursor-not-allowed"
+            }`}
+            disabled={!isDoctorSelected()}
+          >
+            <FaRegCalendarAlt />
+            <span>
+              {formatDate(currentWeekStart, "d MMM")} - {formatDate(addDays(currentWeekStart, 6), "d MMM yyyy")}
+            </span>
+          </button>
+          
+          <button 
+            onClick={isDoctorSelected() ? goToNextWeek : undefined}
+            className={`p-2 rounded-full ${
+              isDoctorSelected() 
+                ? "hover:bg-gray-200 cursor-pointer" 
+                : "opacity-50 cursor-not-allowed"
+            }`}
+            disabled={!isDoctorSelected()}
+          >
+            <FaChevronRight />
+          </button>
+          
+          {/* Tarih Seçici Popup - yalnızca isDoctorSelected() true ise göster */}
+          {showDatePicker && isDoctorSelected() && (
+            <div className="absolute top-12 right-0 bg-white rounded-lg shadow-lg border p-4 z-20 w-auto min-w-[300px]">
+              <div className="flex justify-between items-center mb-3">
+                <h3 className="text-center font-medium text-gray-700">Hafta Seçin</h3>
+                
+                {/* Ay seçme butonu - ekledik */}
+                <button
+                  onClick={() => {
+                    setShowMonthPicker(true);
+                    setShowDatePicker(false);
+                  }}
+                  className="text-sm bg-blue-50 hover:bg-blue-100 text-blue-700 px-2 py-1 rounded-md flex items-center"
+                >
+                  <span>{formatMonthName(currentMonth)}</span>
+                  <FaChevronRight className="ml-1 text-xs" />
+                </button>
+              </div>
+              
+              {/* Hafta grid görünümü */}
+              <div className="grid grid-cols-3 gap-2">
+                {(() => {
+                  // İçinde bulunduğumuz haftadan önceki 4 hafta ve sonraki 7 hafta (toplam 12 hafta)
+                  const weeksToShow = 12;
+                  const pastWeeksToShow = 4; // Geçmişteki hafta sayısı
+                  
+                  // Şu anki haftadan 4 hafta geriye git (başlangıç noktası)
+                  const startDate = subWeeks(currentWeekStart, pastWeeksToShow);
+                  
+                  return Array.from({ length: weeksToShow }, (_, weekOffset) => {
+                    const weekStartDate = addWeeks(startDate, weekOffset);
+                    const weekEndDate = addDays(weekStartDate, 6);
+                    
+                    const isCurrentWeek = 
+                      format(weekStartDate, 'yyyy-MM-dd') === format(currentWeekStart, 'yyyy-MM-dd');
+                    
+                    return (
+                      <button
+                        key={`week-${weekOffset}`}
+                        onClick={() => goToSpecificWeek(weekStartDate)}
+                        className={`
+                          p-2 text-center rounded-md transition-colors
+                          ${isCurrentWeek 
+                            ? 'bg-[#007E85] text-white' 
+                            : 'bg-gray-100 hover:bg-[#c6eef0] text-gray-800'}
+                        `}
+                      >
+                        <div className="text-sm font-medium">
+                          {formatDate(weekStartDate, "d MMM")}
+                        </div>
+                        <div className="text-xs">
+                          - {formatDate(weekEndDate, "d MMM")}
+                        </div>
+                      </button>
+                    );
+                  });
+                })()}
+              </div>
+              
+              <div className="mt-4 flex justify-between">
+                <button 
+                  onClick={() => goToSpecificWeek(getWeekStart(new Date()))} 
+                  className="text-sm bg-blue-100 hover:bg-blue-200 text-blue-800 px-3 py-1 rounded"
+                >
+                  Bugün
+                </button>
+                <button 
+                  onClick={() => setShowDatePicker(false)} 
+                  className="text-sm bg-gray-100 hover:bg-gray-200 text-gray-800 px-3 py-1 rounded"
+                >
+                  Kapat
+                </button>
+              </div>
+            </div>
+          )}
+          
+          {/* Ay Seçici Popup - yalnızca isDoctorSelected() true ise göster */}
+          {showMonthPicker && isDoctorSelected() && (
+            <div className="absolute top-12 right-0 bg-white rounded-lg shadow-lg border p-4 z-20 w-auto min-w-[300px]">
+              <div className="flex justify-between items-center mb-3">
+                <h3 className="text-center font-medium text-gray-700">Ay Seçin</h3>
+                
+                {/* Hafta seçme geri butonu */}
+                <button
+                  onClick={() => {
+                    setShowMonthPicker(false);
+                    setShowDatePicker(true);
+                  }}
+                  className="text-sm bg-gray-50 hover:bg-gray-100 text-gray-700 px-2 py-1 rounded-md"
+                >
+                  Hafta Seçimine Dön
+                </button>
+              </div>
+              
+              {/* Ay grid görünümü */}
+              <div className="grid grid-cols-3 gap-2">
+                {Array.from({ length: 24 }, (_, monthOffset) => {
+                  // 12 ay geriden başla (1 yıl önce) ve 2 yıl ileriye kadar göster (toplam 24 ay)
+                  const targetMonth = addMonths(new Date(), monthOffset - 12);
+                  const isCurrentMonth = 
+                    format(targetMonth, 'yyyy-MM') === format(currentMonth, 'yyyy-MM');
+                  
+                  return (
+                    <button
+                      key={`month-${monthOffset}`}
+                      onClick={() => goToMonth(targetMonth)}
+                      className={`
+                        p-2 text-center rounded-md transition-colors
+                        ${isCurrentMonth 
+                          ? 'bg-[#007E85] text-white' 
+                          : 'bg-gray-100 hover:bg-[#c6eef0] text-gray-800'}
+                      `}
+                    >
+                      <div className="text-sm font-medium">
+                        {formatDate(targetMonth, "MMM")}
+                      </div>
+                      <div className="text-xs">
+                        {formatDate(targetMonth, "yyyy")}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+              
+              <div className="mt-4 flex justify-between">
+                <button 
+                  onClick={() => goToMonth(new Date())} 
+                  className="text-sm bg-blue-100 hover:bg-blue-200 text-blue-800 px-3 py-1 rounded"
+                >
+                  Bu Ay
+                </button>
+                <button 
+                  onClick={() => setShowMonthPicker(false)} 
+                  className="text-sm bg-gray-100 hover:bg-gray-200 text-gray-800 px-3 py-1 rounded"
+                >
+                  Kapat
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Uyarı Mesajı - Danışman seçilmediğinde göster */}
+      {!isDoctorSelected() && loggedInUser?.roleId?.roleName !== "doctor" && (
+        <div className="bg-yellow-50 border border-yellow-200 text-yellow-800 p-3 mb-4 rounded-md text-center">
+          Takvimi görüntülemek için lütfen bir danışman seçin
         </div>
       )}
 
-      {/* Takvim tablosu */}
-      <div className="max-h-[43.75rem] overflow-auto border rounded-lg">
+      {/* Takvim tablosu - Danışman seçili değilse gri tonlama yap */}
+      <div className={`max-h-[43.75rem] overflow-auto border rounded-lg ${!isDoctorSelected() ? "opacity-50" : ""}`}>
         <table className="table-fixed w-full border-collapse border border-gray-300">
           <thead>
             <tr>
@@ -436,7 +691,10 @@ export default function CalendarSchedulePage({ servicesData }) {
                   key={index}
                   className="border border-gray-300 p-2 bg-gray-50 text-center w-[calc(85%/7)]"
                 >
-                  {day}
+                  <div>{day}</div>
+                  <div className="text-xs font-normal mt-1 text-gray-500">
+                    {formatDate(weekDates[index], "d MMM")}
+                  </div>
                 </th>
               ))}
             </tr>
@@ -452,12 +710,16 @@ export default function CalendarSchedulePage({ servicesData }) {
                   return (
                     <td
                       key={dayIndex}
-                      onClick={() => handleCellClick(dayIndex, timeIndex, appt)}
-                      className={`relative border border-gray-300 p-2 cursor-pointer align-top ${
+                      onClick={isDoctorSelected() ? () => handleCellClick(dayIndex, timeIndex, appt) : undefined}
+                      className={`relative border border-gray-300 p-2 ${
                         appt ? getPastelColor(appt) : "bg-white"
+                      } ${
+                        isDoctorSelected() ? "cursor-pointer" : "cursor-not-allowed"
                       }`}
                       title={
-                        appt && appt.description
+                        !isDoctorSelected()
+                          ? "Danışman seçiniz"
+                          : appt && appt.description
                           ? `Randevu Açıklaması: ${appt.description}`
                           : ""
                       }
@@ -466,8 +728,10 @@ export default function CalendarSchedulePage({ servicesData }) {
                         <PaymentStatusCell
                           appointment={appt}
                           onClickPayNow={() => {
-                            setSelectedAppointment(appt);
-                            setPaymentOpen(true);
+                            if (isDoctorSelected()) {
+                              setSelectedAppointment(appt);
+                              setPaymentOpen(true);
+                            }
                           }}
                           refreshTrigger={paymentRefreshTrigger}
                           fetchAppointments={() => {

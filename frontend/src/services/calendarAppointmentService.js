@@ -1,19 +1,30 @@
 import axios from "axios";
 
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || "http://localhost:5000/api";
+const API_BASE_URL =
+  process.env.REACT_APP_API_BASE_URL || "http://localhost:5000/api";
 const api = axios.create({
   baseURL: `${API_BASE_URL}/api`,
   withCredentials: true,
 });
 
 // Tüm randevuları (veya spesifik doktorun) al
-export const getCalendarAppointments = async (doctorId) => {
+export const getCalendarAppointments = async (doctorId, weekStart) => {
   try {
-    const res = await api.get("/calendar-appointments", { params: { doctorId } });
+    let url = `/calendar-appointments`;
+
+    // Query parametreleri varsa ekle
+    const queryParams = [];
+    if (doctorId) queryParams.push(`doctorId=${doctorId}`);
+    if (weekStart) queryParams.push(`weekStart=${weekStart}`);
+
+    if (queryParams.length > 0) {
+      url += `?${queryParams.join("&")}`;
+    }
+
+    const res = await api.get(url);
     return res.data;
-  } catch (err) {
-    console.error("getCalendarAppointments error:", err);
-    return { success: false, message: err.message };
+  } catch (error) {
+    return { success: false, message: error.message };
   }
 };
 
