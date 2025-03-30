@@ -529,13 +529,13 @@ export default function FinanceDashboard() {
                                   style: {
                                     color: '#fff',
                                     background: '#10B981',
-                                    fontSize: '8px',
+                                    fontSize: '10px',
                                     fontWeight: 'bold',
                                     padding: {
-                                      left: 4,
-                                      right: 4,
-                                      top: 1,
-                                      bottom: 1
+                                      left: 5,
+                                      right: 5,
+                                      top: 2,
+                                      bottom: 2
                                     },
                                     borderRadius: 2
                                   }
