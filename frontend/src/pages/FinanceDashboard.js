@@ -523,7 +523,7 @@ export default function FinanceDashboard() {
                                   radius: 2,
                                 },
                                 label: {
-                                  text: `Ort. ${Math.round(item.amount / Math.max(1, (summary.patientCount / breakdown.incomeMethods.length))).toLocaleString()} ₺`,
+                                  text: item.method,
                                   borderColor: '#10B981',
                                   offsetY: 0,
                                   style: {
