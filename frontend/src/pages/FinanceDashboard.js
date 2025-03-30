@@ -523,7 +523,7 @@ export default function FinanceDashboard() {
                                   radius: 2,
                                 },
                                 label: {
-                                  text: `Ort. ${Math.round(item.patientCount > 0 ? (item.amount / item.patientCount) : 0).toLocaleString()} ₺/Hasta`,
+                                  text: `Ort. ${Math.round(item.paymentCount > 0 ? (item.amount / item.paymentCount) : 0).toLocaleString()} ₺/İşlem`,
                                   borderColor: '#10B981',
                                   offsetY: 0,
                                   style: {
