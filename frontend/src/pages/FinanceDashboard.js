@@ -523,7 +523,7 @@ export default function FinanceDashboard() {
                                   radius: 2,
                                 },
                                 label: {
-                                  text: item.method,
+                                  text: `Ort. ${Math.round(item.patientCount > 0 ? (item.amount / item.patientCount) : 0).toLocaleString()} ₺/Hasta`,
                                   borderColor: '#10B981',
                                   offsetY: 0,
                                   style: {
