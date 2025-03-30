@@ -244,11 +244,13 @@ export default function FinanceDashboard() {
               <div className="bg-white rounded-xl shadow-sm p-3 hover:shadow-lg hover:scale-[1.02] transition-all duration-300">
                 <div className="flex justify-between items-start">
                   <div>
-                    <p className="text-gray-500 text-sm font-medium">Toplam Gelir</p>
-                    <h3 className="text-xl font-bold text-gray-800">{summary.totalIncome.toLocaleString()} ₺</h3>
+                    <p className="text-gray-500 text-base font-medium">Toplam Gelir</p>
+                    <h3 className="text-2xl font-bold text-gray-800">{summary.totalIncome.toLocaleString()} ₺</h3>
                   </div>
-                  <div className={`flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${summary.incomeChange >= 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-                    {summary.incomeChange >= 0 ? '+' : ''}{summary.incomeChange}%
+                  <div className={`flex items-center rounded-full px-2.5 py-1 text-sm font-medium ${summary.incomeChange >= 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                    {summary.incomeChange !== null ? 
+                      `${summary.incomeChange >= 0 ? '+' : ''}${summary.incomeChange.toFixed(1)}%` : 
+                      '0%'}
                   </div>
                 </div>
                 <div className="mt-2 h-8">
@@ -269,11 +271,13 @@ export default function FinanceDashboard() {
               <div className="bg-white rounded-xl shadow-sm p-3 hover:shadow-lg hover:scale-[1.02] transition-all duration-300">
                 <div className="flex justify-between items-start">
                   <div>
-                    <p className="text-gray-500 text-sm font-medium">Toplam Gider</p>
-                    <h3 className="text-xl font-bold text-gray-800">{summary.totalExpense.toLocaleString()} ₺</h3>
+                    <p className="text-gray-500 text-base font-medium">Toplam Gider</p>
+                    <h3 className="text-2xl font-bold text-gray-800">{summary.totalExpense.toLocaleString()} ₺</h3>
                   </div>
-                  <div className={`flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${summary.expenseChange <= 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-                    {summary.expenseChange >= 0 ? '+' : ''}{summary.expenseChange}%
+                  <div className={`flex items-center rounded-full px-2.5 py-1 text-sm font-medium ${summary.expenseChange <= 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                    {summary.expenseChange !== null ? 
+                      `${summary.expenseChange >= 0 ? '+' : ''}${summary.expenseChange.toFixed(1)}%` : 
+                      '0%'}
                   </div>
                 </div>
                 <div className="mt-2 h-8">
@@ -294,13 +298,15 @@ export default function FinanceDashboard() {
               <div className="bg-white rounded-xl shadow-sm p-3 hover:shadow-lg hover:scale-[1.02] transition-all duration-300">
                 <div className="flex justify-between items-start">
                   <div>
-                    <p className="text-gray-500 text-sm font-medium">
+                    <p className="text-gray-500 text-base font-medium">
                       {selectedDoctor ? "Danışmana Ödenecek" : "Toplam Kâr"}
                     </p>
-                    <h3 className="text-xl font-bold text-gray-800">{summary.profit.toLocaleString()} ₺</h3>
+                    <h3 className="text-2xl font-bold text-gray-800">{summary.profit.toLocaleString()} ₺</h3>
                   </div>
-                  <div className={`flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${summary.profitChange >= 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-                    {summary.profitChange >= 0 ? '+' : ''}{summary.profitChange}%
+                  <div className={`flex items-center rounded-full px-2.5 py-1 text-sm font-medium ${summary.profitChange >= 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                    {summary.profitChange !== null ? 
+                      `${summary.profitChange >= 0 ? '+' : ''}${summary.profitChange.toFixed(1)}%` : 
+                      '0%'}
                   </div>
                 </div>
                 <div className="mt-2 h-8">
@@ -321,11 +327,13 @@ export default function FinanceDashboard() {
               <div className="bg-white rounded-xl shadow-sm p-3 hover:shadow-lg hover:scale-[1.02] transition-all duration-300">
                 <div className="flex justify-between items-start">
                   <div>
-                    <p className="text-gray-500 text-sm font-medium">Hasta Sayısı</p>
-                    <h3 className="text-xl font-bold text-gray-800">{summary.patientCount}</h3>
+                    <p className="text-gray-500 text-base font-medium">Hasta Sayısı</p>
+                    <h3 className="text-2xl font-bold text-gray-800">{summary.patientCount}</h3>
                   </div>
-                  <div className={`flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${summary.patientChange >= 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-                    {summary.patientChange >= 0 ? '+' : ''}{summary.patientChange}%
+                  <div className={`flex items-center rounded-full px-2.5 py-1 text-sm font-medium ${summary.patientChange >= 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                    {summary.patientChange !== null ? 
+                      `${summary.patientChange >= 0 ? '+' : ''}${summary.patientChange.toFixed(1)}%` : 
+                      '0%'}
                   </div>
                 </div>
                 <div className="mt-2 h-8">
