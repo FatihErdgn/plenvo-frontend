@@ -18,9 +18,9 @@ export default function FinanceDashboard() {
 
   const [endDate, setEndDate] = useState(() => {
     const d = new Date();
-    // Ayın son gününü bul
-    d.setMonth(d.getMonth() + 1); // Sonraki aya git
-    d.setDate(0); // Önceki ayın son gününe git
+    // İçinde bulunduğumuz ayın son gününü bul
+    d.setMonth(d.getMonth()); // Sonraki aya git
+    d.setDate(0); // Geçerli ayın son gününe git (bir önceki ayın son günü)
     return d.toISOString().split("T")[0];
   });
 
