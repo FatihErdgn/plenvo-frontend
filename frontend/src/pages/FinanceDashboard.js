@@ -541,7 +541,98 @@ export default function FinanceDashboard() {
                                   }
                                 }
                               }))
-                            } : {}
+                            } : {},
+                            responsive: [
+                              {
+                                breakpoint: 1000,
+                                options: {
+                                  chart: {
+                                    height: '100%'
+                                  }
+                                }
+                              },
+                              {
+                                // Mobil cihazlar için özel ayarlar
+                                breakpoint: 768,
+                                options: {
+                                  plotOptions: {
+                                    bar: {
+                                      horizontal: true,
+                                      borderRadius: 4,
+                                      barHeight: '60%',
+                                    }
+                                  },
+                                  dataLabels: {
+                                    offsetX: 10,
+                                    style: {
+                                      fontSize: '9px'
+                                    }
+                                  },
+                                  yaxis: {
+                                    labels: {
+                                      style: {
+                                        fontSize: '9px',
+                                        fontWeight: 'normal'
+                                      },
+                                      // Çok uzun metinleri kısalt
+                                      formatter: function(val) {
+                                        return val.length > 15 ? val.substring(0, 13) + '...' : val;
+                                      }
+                                    }
+                                  },
+                                  xaxis: {
+                                    labels: {
+                                      style: {
+                                        fontSize: '9px'
+                                      },
+                                      formatter: (value) => value > 999 ? `${(value/1000).toFixed(1)}K ₺` : `${value.toLocaleString()} ₺`
+                                    }
+                                  },
+                                  grid: {
+                                    padding: {
+                                      left: 5,
+                                      right: 5
+                                    }
+                                  },
+                                  annotations: {
+                                    points: breakdown.incomeMethods.map((item, index) => ({
+                                      x: item.amount,
+                                      y: item.method,
+                                      marker: {
+                                        size: 3,
+                                      },
+                                      label: {
+                                        text: breakdown.incomeMethods.length <= 3 ? 
+                                          `Ort. ${Math.round(item.paymentCount > 0 ? (item.amount / item.paymentCount) : 0).toLocaleString()} ₺` : '',
+                                        style: {
+                                          fontSize: '8px',
+                                          padding: {
+                                            left: 4,
+                                            right: 4,
+                                            top: 1,
+                                            bottom: 1
+                                          }
+                                        }
+                                      }
+                                    }))
+                                  }
+                                }
+                              },
+                              {
+                                // Çok küçük mobil cihazlar için
+                                breakpoint: 375,
+                                options: {
+                                  chart: {
+                                    height: '180px'
+                                  },
+                                  plotOptions: {
+                                    bar: {
+                                      barHeight: '50%',
+                                    }
+                                  }
+                                }
+                              }
+                            ]
                           }}
                           series={[{
                             name: "Gelir",
@@ -549,7 +640,7 @@ export default function FinanceDashboard() {
                           }]}
                           type="bar"
                           width="100%"
-                          height={breakdown.incomeMethods.length * 40 + 40}
+                          height={Math.min(breakdown.incomeMethods.length * 40 + 40, window.innerWidth < 768 ? 240 : 800)}
                         />
                       </div>
                     ) : (
