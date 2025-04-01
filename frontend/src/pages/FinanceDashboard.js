@@ -9,18 +9,19 @@ import { FaCalendarAlt, FaFilter, FaChartLine, FaMoneyBillWave, FaUserMd } from 
 const palette = ["#3B82F6", "#10B981", "#F59E0B", "#6366F1", "#EC4899"];
 
 export default function FinanceDashboard() {
-  // Tarih seçimleri
+  // Tarih seçimleri - Düzeltilmiş versiyonu
   const [startDate, setStartDate] = useState(() => {
-    const d = new Date();
-    d.setDate(1); // Ayın 1'i olarak ayarla
-    return d.toISOString().split("T")[0];
+    const today = new Date();
+    // Mevcut ayın ilk günü
+    const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+    return firstDay.toISOString().split('T')[0];
   });
 
   const [endDate, setEndDate] = useState(() => {
-    const d = new Date();
-    // Mevcut ayın son gününü bul
-    d.setDate(new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate());
-    return d.toISOString().split("T")[0];
+    const today = new Date();
+    // Mevcut ayın son günü
+    const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+    return lastDay.toISOString().split('T')[0];
   });
 
   const [dashboardData, setDashboardData] = useState(null);
