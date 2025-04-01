@@ -79,12 +79,12 @@ export default function ExpensesTableWrapper({
       key: "expenseDescription",
       label: "Açıklama",
       renderCell: (row) => (
-        <span
-          className="block w-[15.625rem] mx-auto text-center truncate"
+        <div
+          className="w-[15.625rem] mx-auto text-center whitespace-normal break-words line-clamp-4 overflow-hidden text-ellipsis"
           title={row.expenseDescription}
         >
           {row.expenseDescription}
-        </span>
+        </div>
       ),
     },
     {
@@ -130,12 +130,12 @@ export default function ExpensesTableWrapper({
       key: "expenseDescription",
       label: "Açıklama",
       renderCell: (row) => (
-        <span
-          className="block max-w-[15.625rem] mx-auto text-center truncate"
+        <div
+          className="max-w-[15.625rem] mx-auto text-center whitespace-normal break-words line-clamp-4 overflow-hidden text-ellipsis"
           title={row.expenseDescription}
         >
           {row.expenseDescription}
-        </span>
+        </div>
       ),
     },
     {

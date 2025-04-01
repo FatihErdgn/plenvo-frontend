@@ -685,8 +685,11 @@ export default function CalendarSchedulePage({ servicesData }) {
       )}
 
       {/* Takvim tablosu - Danışman seçili değilse gri tonlama yap */}
-      <div className={`max-h-[43.75rem] overflow-auto border rounded-lg ${!isDoctorSelected() ? "opacity-50" : ""}`}>
-        <table className="table-fixed w-full border-collapse border border-gray-300">
+      <div 
+        className={`md:max-h-[43.75rem] overflow-auto ${!isDoctorSelected() ? "opacity-50" : ""} 
+        overflow-x-auto md:overflow-x-hidden border rounded-lg`}
+      >
+        <table className="table-fixed w-full border-collapse border border-gray-300 min-w-[750px] md:min-w-0">
           <thead>
             <tr>
               <th
@@ -727,7 +730,7 @@ export default function CalendarSchedulePage({ servicesData }) {
                     <td
                       key={dayIndex}
                       onClick={isDoctorSelected() ? () => handleCellClick(dayIndex, timeIndex, appt) : undefined}
-                      className={`relative border border-gray-300 p-2 ${
+                      className={`relative border border-gray-300 p-2 md:p-2 h-[60px] md:h-auto ${
                         appt ? getPastelColor(appt) : "bg-white"
                       } ${
                         isDoctorSelected() ? "cursor-pointer" : "cursor-not-allowed"
