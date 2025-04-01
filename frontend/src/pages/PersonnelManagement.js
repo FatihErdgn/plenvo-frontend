@@ -133,11 +133,11 @@ export default function PersonnelManagementPage() {
   return (
     <div className="w-screen bg-[#f4f7fe] p-8 overflow-auto rounded-l-[2.5rem] relative z-20">
       {/* Başlık */}
-      <div className="flex flex-row justify-between items-center">
+      <div className="flex flex-col md:flex-row md:justify-between items-center mb-3">
         {isServiceModalOpen ? (
-          <h1 className="text-3xl font-bold mb-6">Hizmet Yönetimi</h1>
+          <h1 className="text-3xl font-bold mb-3">Hizmet Yönetimi</h1>
         ) : (
-          <h1 className="text-3xl font-bold mb-6">Personel Yönetimi</h1>
+          <h1 className="text-3xl font-bold mb-3">Personel Yönetimi</h1>
         )}
         <div className="flex flex-row justify-end gap-4 items-center">
           <SearchContainer onSearchChange={handleSearchChange} />

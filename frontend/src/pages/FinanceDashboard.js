@@ -163,7 +163,7 @@ export default function FinanceDashboard() {
   );
 
   return (
-    <div className="h-screen overflow-hidden bg-[#f4f7fe] w-screen rounded-l-[2.5rem] relative z-20 flex flex-col">
+    <div className="h-screen md:overflow-hidden overflow-auto bg-[#f4f7fe] w-screen rounded-l-[2.5rem] relative z-20 flex flex-col">
       {/* Başlık Bölümü - Daha kısa ve sıkı */}
       <div className="p-4 flex-shrink-0">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-2 mb-2">
@@ -225,7 +225,7 @@ export default function FinanceDashboard() {
       </div>
 
       {/* Ana İçerik - Flex yapı */}
-      <div className="flex-1 overflow-hidden px-4 pb-4 flex flex-col">
+      <div className="flex-1 overflow-y-auto px-4 pb-4 flex flex-col">
         {loading ? (
           <div className="flex-1 flex items-center justify-center">
             <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#007E85]"></div>
@@ -239,8 +239,8 @@ export default function FinanceDashboard() {
           </div>
         ) : (
           <>
-            {/* Ana Metriks Kartları - Hover efektli */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-3">
+            {/* Ana Metriks Kartları - Mobilde tek sütuna dönüşür */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 mb-3">
               <div className="bg-white rounded-xl shadow-sm p-3 hover:shadow-lg hover:scale-[1.02] transition-all duration-300">
                 <div className="flex justify-between items-start">
                   <div>
@@ -352,24 +352,24 @@ export default function FinanceDashboard() {
               </div>
             </div>
             
-            {/* Ana grafikler - Flexible layout */}
-            <div className="flex-1 grid grid-cols-12 gap-3 min-h-0">
-              {/* Sol bölüm - Ana grafikler */}
-              <div className="col-span-8 grid grid-rows-2 gap-3 min-h-0">
+            {/* Ana grafikler - Mobilde hepsi alt alta, desktop'ta orijinal grid yapısı korunacak */}
+            <div className="flex-1 grid grid-cols-1 md:grid-cols-12 gap-3 min-h-0">
+              {/* Sol kolon grafikler */}
+              <div className="md:col-span-8 grid md:grid-rows-2 gap-3">
                 {/* Trend Grafiği - Hover efektli */}
                 <div className="bg-white rounded-xl shadow-sm p-3 flex flex-col hover:shadow-lg hover:scale-[1.01] transition-all duration-300">
                   <div className="flex justify-between items-center mb-1">
                     <h2 className="text-base font-semibold text-gray-800 flex items-center gap-1">
                       <FaChartLine className="text-blue-600" /> Finansal Trend Analizi
-            </h2>
+                    </h2>
                     <div className="flex gap-2">
                       <div className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-blue-500"></span><span className="text-xs text-gray-500">Gelir</span></div>
                       <div className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-yellow-500"></span><span className="text-xs text-gray-500">Gider</span></div>
                       <div className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-indigo-500"></span><span className="text-xs text-gray-500">Kâr</span></div>
                     </div>
                   </div>
-                  <div className="flex-1 min-h-0">
-            <Chart
+                  <div className="flex-1 min-h-0 h-[300px] md:h-auto">
+                    <Chart
                       options={{
                         chart: { 
                           id: "trend-line-chart", 
@@ -416,14 +416,14 @@ export default function FinanceDashboard() {
                         { name: "Gider", data: trend.expense },
                         { name: "Kâr", data: trend.profit },
                       ]}
-              type="line"
+                      type="line"
                       width="100%"
                       height="100%"
-            />
-          </div>
-        </div>
+                    />
+                  </div>
+                </div>
 
-                {/* Hizmet Bazlı Gelir Analizi - Dropdown kaldırıldı */}
+                {/* Hizmet Bazlı Gelir Analizi - Trend grafiğinin altında */}
                 <div className="bg-white rounded-xl shadow-sm p-3 flex flex-col hover:shadow-lg hover:scale-[1.01] transition-all duration-300">
                   <div className="mb-1">
                     <h2 className="text-base font-semibold text-gray-800 flex items-center gap-1">
@@ -431,7 +431,7 @@ export default function FinanceDashboard() {
                     </h2>
                   </div>
                   
-                  <div className="flex-1 overflow-hidden flex flex-col min-h-0">
+                  <div className="flex-1 overflow-hidden flex flex-col min-h-0 h-[300px] md:h-auto">
                     {breakdown.incomeMethods && breakdown.incomeMethods.length > 0 ? (
                       <div className="flex-1 overflow-auto">
                         <Chart
@@ -587,17 +587,17 @@ export default function FinanceDashboard() {
                 </div>
               </div>
               
-              {/* Sağ bölüm - pie chartlar */}
-              <div className="col-span-4 grid grid-rows-2 gap-3 min-h-0">
+              {/* Sağ kolon grafikler */}
+              <div className="md:col-span-4 grid md:grid-rows-2 gap-3">
                 {/* Gelir Dağılımı - Hover efektli */}
                 <div className="bg-white rounded-xl shadow-sm p-3 flex flex-col hover:shadow-lg hover:scale-[1.01] transition-all duration-300">
                   <h2 className="text-base font-semibold text-gray-800 mb-1 flex items-center gap-1">
                     <FaMoneyBillWave className="text-green-600" /> Gelir Dağılımı
-            </h2>
+                  </h2>
                   
-                  <div className="flex-1 min-h-0">
-            {incomePieSeries.length > 0 ? (
-              <Chart
+                  <div className="flex-1 min-h-0 h-[300px] md:h-auto">
+                    {incomePieSeries.length > 0 ? (
+                      <Chart
                         options={{
                           labels: breakdown.incomeMethods.map((item) => item.method),
                           tooltip: { y: { formatter: (val) => `${val.toLocaleString()} ₺` } },
@@ -658,28 +658,28 @@ export default function FinanceDashboard() {
                             }
                           }]
                         }}
-                series={incomePieSeries}
+                        series={incomePieSeries}
                         type="donut"
                         width="100%"
                         height="100%"
-              />
-            ) : (
+                      />
+                    ) : (
                       <div className="h-full flex items-center justify-center">
                         <p className="text-gray-500 text-sm">Bu tarih aralığında veri bulunmamaktadır.</p>
                       </div>
-            )}
-          </div>
+                    )}
+                  </div>
                 </div>
                 
-                {/* Gider Dağılımı - Hover efektli */}
+                {/* Gider Dağılımı - Gelir dağılımının altında */}
                 <div className="bg-white rounded-xl shadow-sm p-3 flex flex-col hover:shadow-lg hover:scale-[1.01] transition-all duration-300">
                   <h2 className="text-base font-semibold text-gray-800 mb-1 flex items-center gap-1">
                     <FaMoneyBillWave className="text-yellow-600" /> Gider Dağılımı
-            </h2>
+                  </h2>
                   
-                  <div className="flex-1 min-h-0">
-            {expensePieSeries.length > 0 ? (
-              <Chart
+                  <div className="flex-1 min-h-0 h-[300px] md:h-auto">
+                    {expensePieSeries.length > 0 ? (
+                      <Chart
                         options={{
                           labels: breakdown.expenseDescriptions.map((item) => item.description),
                           tooltip: { y: { formatter: (val) => `${val.toLocaleString()} ₺` } },
@@ -740,18 +740,18 @@ export default function FinanceDashboard() {
                             }
                           }]
                         }}
-                series={expensePieSeries}
+                        series={expensePieSeries}
                         type="donut"
                         width="100%"
                         height="100%"
-              />
-            ) : (
+                      />
+                    ) : (
                       <div className="h-full flex items-center justify-center">
                         <p className="text-gray-500 text-sm">Bu tarih aralığında veri bulunmamaktadır.</p>
                       </div>
-            )}
-          </div>
-        </div>
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
           </>

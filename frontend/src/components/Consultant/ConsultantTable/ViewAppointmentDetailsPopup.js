@@ -347,7 +347,7 @@ export default function ViewAppointmentDetailsPopup({
 
   return (
     <>
-      <div className="fixed inset-0 flex justify-center items-center bg-opacity-50">
+      <div className="fixed inset-0 flex justify-center items-center bg-opacity-50 z-50">
         <div className="bg-white p-6 rounded-lg shadow-lg w-11/12 sm:w-2/3 lg:w-1/2 relative">
           <button onClick={onClose} className="absolute top-3 right-3">
             <IoIosCloseCircleOutline className="w-6 h-6 text-gray-500 hover:text-gray-700" />

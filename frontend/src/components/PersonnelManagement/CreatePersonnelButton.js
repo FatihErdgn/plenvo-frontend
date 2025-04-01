@@ -364,7 +364,7 @@ export default function AddPersonnel({
       </button>
 
       {isPopUpOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center">
+        <div className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50">
           {/* Modal Container */}
           <div
             className="bg-white relative p-6 rounded-[10px] shadow-lg w-[80%] max-w-[62.5rem] max-h-[90vh] overflow-auto"

@@ -17,7 +17,7 @@ import { format, addDays, startOfWeek, subWeeks, addWeeks, getDay, parse, isVali
 import { tr } from 'date-fns/locale';
 import { FaChevronLeft, FaChevronRight, FaRegCalendarAlt } from "react-icons/fa";
 
-// Haftanın günleri
+// Haftanın günleri - tam ve kısaltılmış versiyonlar
 const DAYS = [
   "Pazartesi",
   "Salı",
@@ -27,6 +27,18 @@ const DAYS = [
   "Cumartesi",
   "Pazar",
 ];
+
+// Mobil görünüm için kısaltılmış gün adları
+const DAYS_SHORT = [
+  "Pt",
+  "Sa",
+  "Çr",
+  "Pr",
+  "Cu",
+  "Ct",
+  "Pz",
+];
+
 // Saat dilimleri
 const TIME_SLOTS = [
   "09:00-09:50",
@@ -691,7 +703,11 @@ export default function CalendarSchedulePage({ servicesData }) {
                   key={index}
                   className="border border-gray-300 p-2 bg-gray-50 text-center w-[calc(85%/7)]"
                 >
-                  <div>{day}</div>
+                  <div>
+                    {/* Masaüstünde tam isim, mobilde kısaltılmış isim */}
+                    <span className="hidden md:inline">{day}</span>
+                    <span className="md:hidden">{DAYS_SHORT[index]}</span>
+                  </div>
                   <div className="text-xs font-normal mt-1 text-gray-500">
                     {formatDate(weekDates[index], "d MMM")}
                   </div>

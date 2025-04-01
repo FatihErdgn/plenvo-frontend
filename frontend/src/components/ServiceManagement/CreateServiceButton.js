@@ -280,9 +280,9 @@ export default function AddService({
       </button>
 
       {isPopUpOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center transition-opacity duration-300 ease-in-out">
+        <div className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center transition-opacity duration-300 ease-in-out z-50 p-4">
           <div
-            className="bg-white p-6 rounded-[10px] shadow-lg w-[30%] px-12 py-8 transform scale-95 transition-transform duration-300 ease-out max-h-[95vh] overflow-y-auto"
+            className="bg-white p-4 sm:p-6 rounded-[10px] shadow-lg w-[95%] sm:w-[80%] md:w-[60%] lg:w-[40%] xl:w-[30%] px-4 sm:px-8 md:px-12 py-6 sm:py-8 transform scale-95 transition-transform duration-300 ease-out max-h-[95vh] overflow-y-auto"
             style={{
               animation: "popupSlideIn 0.3s forwards",
             }}
@@ -303,14 +303,14 @@ export default function AddService({
               </Alert>
             </Collapse>
             <form onSubmit={handleSubmit}>
-              <label className="text-xs text-red-500 pb-6">
+              <label className="text-xs text-red-500 pb-6 block mb-4">
                 (Kişi bazlı hizmetlerde doktorun o hizmeti her randevuda sunduğu
                 varsayılacaktır. Değişken hizmetlerde 'Genel Hizmet' seçeneğini
                 kullanabilirsiniz.)
               </label>
               <div className="my-4">
                 {manualEntry.serviceName ? (
-                  <div className="flex gap-2 items-center">
+                  <div className="flex flex-col sm:flex-row gap-2 items-start sm:items-center">
                     <label
                       htmlFor="manualServiceName"
                       className="text-gray-700 mb-2 block"
@@ -327,7 +327,7 @@ export default function AddService({
                     />
                     <button
                       type="button"
-                      className="px-4 py-2 bg-red-500 text-white text-xs rounded-[10px] hover:bg-red-600"
+                      className="px-4 py-2 bg-red-500 text-white text-xs rounded-[10px] hover:bg-red-600 mt-2 sm:mt-0"
                       onClick={() => handleDisableManualEntry("serviceName")}
                     >
                       Manuel Girişi Kapat
@@ -389,17 +389,17 @@ export default function AddService({
                   "up"
                 )}
               </div>
-              <div className="flex justify-end">
+              <div className="flex justify-end mt-6 space-x-2">
                 <button
                   type="button"
                   onClick={() => setPopUpOpen(false)}
-                  className="px-4 py-2 bg-gray-300 rounded-[10px] mr-2 hover:bg-gray-400"
+                  className="px-4 py-2 bg-gray-300 rounded-[10px] hover:bg-gray-400 w-full sm:w-auto"
                 >
                   İptal
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-[#399AA1] text-white rounded-[10px] hover:bg-[#007E85]"
+                  className="px-4 py-2 bg-[#399AA1] text-white rounded-[10px] hover:bg-[#007E85] w-full sm:w-auto"
                 >
                   Onayla
                 </button>

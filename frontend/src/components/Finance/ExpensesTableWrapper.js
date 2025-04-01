@@ -173,7 +173,7 @@ export default function ExpensesTableWrapper({
       customFilterFn={customFilterFn}
       customDateFilterFn={customDateFilterFn}
     >
-      <div className="font-montserrat bg-white w-screen p-6 rounded-lg shadow-md flex flex-col justify-between">
+      <div className="font-montserrat bg-white w-full p-6 rounded-lg shadow-md flex flex-col justify-between">
         <div className="flex flex-row justify-between items-center mb-4">
           {/* Eğer başlık istemiyorsanız, boş bir <div /> veya <span /> bırakabilirsiniz */}
           <h2 className="text-lg font-semibold text-gray-700">

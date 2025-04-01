@@ -58,10 +58,10 @@ export default function AddAppointment({
         {prefilledData ? "Randevu Yenile" : "+ Randevu Ekle"}
       </button>
 
-      {/* POPUP */}
+      {/* POPUP - Responsive genişlik düzenlemesi */}
       {isPopUpOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50">
-          <div className="relative bg-white p-6 rounded-[10px] shadow-lg w-[30%] max-h-[95vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50 p-4">
+          <div className="relative bg-white p-6 rounded-[10px] shadow-lg w-[95%] sm:w-[80%] md:w-[60%] lg:w-[40%] xl:w-[30%] max-h-[95vh] overflow-y-auto">
             {/* KAPAT BUTONU */}
             <button
               className="absolute top-4 right-4 text-red-500 hover:text-gray-600"
@@ -76,7 +76,7 @@ export default function AddAppointment({
                 <h2 className="text-lg font-semibold mb-4 text-center">
                   Randevu Tipi Seçiniz
                 </h2>
-                <div className="flex justify-center gap-4">
+                <div className="flex flex-col sm:flex-row justify-center gap-4 sm:gap-4">
                   <button
                     onClick={() => setAppointmentType("single")}
                     className="bg-[#399AA1] text-white px-4 py-2 rounded-md hover:bg-[#007E85]"
@@ -108,7 +108,6 @@ export default function AddAppointment({
                     doctorList,
                     genderOptions,
                   }}
-                  // prefilledData'yı form bileşenine gönderiyoruz
                   prefilledData={
                     prefilledData && prefilledData.type === "single"
                       ? prefilledData

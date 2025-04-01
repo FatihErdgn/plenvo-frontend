@@ -175,10 +175,10 @@ export default function ViewServiceDetailsPopup({
   );
 
   return (
-    <div className="fixed inset-0 flex justify-center items-center">
-      <div className="bg-white p-6 rounded-lg shadow-lg w-1/2">
+    <div className="fixed inset-0 flex justify-center items-center z-50 p-4">
+      <div className="bg-white p-4 md:p-6 rounded-lg shadow-lg w-full md:w-4/5 lg:w-3/5 xl:w-1/2 max-h-[90vh] overflow-y-auto z-50">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-semibold">
+          <h2 className="text-lg md:text-xl font-semibold">
             Servis Ayrıntılarını Düzenle
           </h2>
           <button onClick={onClose}>
@@ -188,7 +188,7 @@ export default function ViewServiceDetailsPopup({
         <Collapse in={alertState.open}>
           <Alert
             severity={alertState.severity}
-            onClose={() => setAlertState({ ...alertState, open: false })} // Manuel kapanma
+            onClose={() => setAlertState({ ...alertState, open: false })}
           >
             {alertState.message}
           </Alert>
@@ -255,11 +255,11 @@ export default function ViewServiceDetailsPopup({
               "up"
             )}
           </div>
-          <div className="flex justify-center">
+          <div className="flex justify-center mt-6">
             {alertState.open ? (
               <button
                 type="submit"
-                className="px-12 py-2 bg-[#f0f0f0] text-white rounded-full cursor-not-allowed"
+                className="w-full sm:w-auto px-8 sm:px-12 py-2 bg-[#f0f0f0] text-white rounded-full cursor-not-allowed"
                 disabled
               >
                 Kaydet
@@ -267,7 +267,7 @@ export default function ViewServiceDetailsPopup({
             ) : (
               <button
                 type="submit"
-                className="px-12 py-2 bg-[#399AA1] text-white rounded-full hover:bg-[#007E85] cursor-pointer"
+                className="w-full sm:w-auto px-8 sm:px-12 py-2 bg-[#399AA1] text-white rounded-full hover:bg-[#007E85] cursor-pointer"
               >
                 Kaydet
               </button>
@@ -275,6 +275,9 @@ export default function ViewServiceDetailsPopup({
           </div>
         </form>
       </div>
+      
+      {/* Overlay arka plan */}
+      <div className="fixed inset-0 z-40" onClick={onClose}></div>
     </div>
   );
 }

@@ -137,15 +137,15 @@ export default function ConsultantPage() {
   const genderOptions = ["Erkek", "Kadın"];
 
   return (
-    <div className="w-screen bg-[#f4f7fe] p-8 overflow-auto rounded-l-[2.5rem] relative z-20">
+    <div className="w-screen bg-[#f4f7fe] p-4 md:p-8 overflow-auto rounded-l-[2.5rem] relative z-20">
       {/* Başlık ve Üst Alan */}
-      <div className="flex flex-col md:flex-row md:justify-between items-center mb-6">
+      <div className="flex flex-col md:flex-row md:justify-between items-center mb-3">
         {isCalendarModalOpen ? (
-          <h1 className="text-3xl font-bold">Takvimi Yönet</h1>
+          <h1 className="text-2xl md:text-3xl font-bold mb-3">Takvimi Yönet</h1>
         ) : (
-          <h1 className="text-3xl font-bold">Randevuları Yönet</h1>
+          <h1 className="text-2xl md:text-3xl font-bold mb-3">Randevu Yönetimi</h1>
         )}
-        <div className="flex flex-row justify-end gap-4 items-center">
+        <div className="flex flex-wrap justify-center md:justify-end gap-2 md:gap-4 items-center w-full md:w-auto">
           {isCalendarModalOpen ? (
             <div></div>
           ) : (
@@ -192,7 +192,8 @@ export default function ConsultantPage() {
               onClick={handleCalendarModalOpen}
               className="font-poppins flex flex-row bg-[#399AA1] text-white px-4 py-3 rounded-[0.625rem] hover:bg-[#007E85] shadow-md"
             >
-              Randevu Takvimleri
+              <span className="md:inline hidden">Randevu Takvimleri</span>
+              <span className="md:hidden inline">Takvim</span>
               <FiArrowRightCircle className="w-6 h-6 ml-2" />
             </button>
           </div>
@@ -205,7 +206,8 @@ export default function ConsultantPage() {
               onClick={handleCalendarModalOpen}
               className="font-poppins flex flex-row text-[#399AA1] font-semibold px-4 py-3 rounded-[0.625rem] hover:text-[#007E85]"
             >
-              Randevu Yönetimine Dön
+              <span className="md:inline hidden">Randevu Yönetimine Dön</span>
+              <span className="md:hidden inline">Geri Dön</span>
               <FiArrowLeftCircle className="w-6 h-6 ml-2" />
             </button>
           </div>
