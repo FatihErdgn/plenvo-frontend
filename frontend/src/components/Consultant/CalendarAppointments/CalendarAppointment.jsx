@@ -898,6 +898,7 @@ export default function CalendarSchedulePage({ servicesData }) {
                 placeholder="Randevu ile ilgili açıklama giriniz..."
               />
             </div>
+            {/* Randevu Yineleme ve Randevu Son Kapanış Tarihi */}
             {/* Kişi Sayısı */}
             <div className="mb-2">
               <label className="block font-medium">Kişi Sayısı</label>

@@ -36,7 +36,7 @@ export default function PaymentPopup({
     );
   }
 
-  const doctorFee = matchedService ? matchedService.serviceFee : 0;
+  const initialDoctorFee = matchedService ? matchedService.serviceFee : 0;
 
   let clientFirstName = "";
   let clientLastName = "";
@@ -65,6 +65,9 @@ export default function PaymentPopup({
   const [paymentNote, setPaymentNote] = useState("");
   const [sumPaid, setSumPaid] = useState(0);
   const [existingPayment, setExistingPayment] = useState(null);
+
+  // isCalendar true ise ve extra service seçiliyse doctorFee 0 olsun
+  const doctorFee = isCalendar && selectedExtras.length > 0 ? 0 : initialDoctorFee;
 
   // Eğer daha önce ödeme yapılmışsa, toplam tutar Payment belgesindeki serviceFee üzerinden alınır.
   // Aksi halde, toplam tutar doktor ücreti + seçilen ek hizmetlerin toplamıdır.
@@ -133,7 +136,7 @@ export default function PaymentPopup({
 
     // Ödeme için kullanılacak hizmet ID'leri: Doktor hizmeti (matchedService) + seçilen ek hizmetler
     const serviceIds = [];
-    if (matchedService) {
+    if (matchedService && (!isCalendar || selectedExtras.length === 0)) {
       serviceIds.push(matchedService._id);
     }
     serviceIds.push(...selectedExtras.map((svc) => svc._id));

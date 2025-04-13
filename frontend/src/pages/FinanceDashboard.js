@@ -9,20 +9,28 @@ import { FaCalendarAlt, FaFilter, FaChartLine, FaMoneyBillWave, FaUserMd } from 
 const palette = ["#3B82F6", "#10B981", "#F59E0B", "#6366F1", "#EC4899"];
 
 export default function FinanceDashboard() {
-  // Tarih seçimleri - Düzeltilmiş versiyonu
+  // Tarih seçimleri - Tamamen yeniden yazılmış versiyonu
   const [startDate, setStartDate] = useState(() => {
-    const today = new Date();
-    // Mevcut ayın ilk günü
-    const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
-    return firstDay.toISOString().split('T')[0];
+    const now = new Date();
+    // Manuel olarak tarih stringi oluştur: YYYY-MM-DD
+    const year = now.getFullYear();
+    const month = (now.getMonth() + 1).toString().padStart(2, '0'); // 01-12 formatında ay
+    return `${year}-${month}-01`; // Ayın ilk günü
   });
 
   const [endDate, setEndDate] = useState(() => {
-    const today = new Date();
-    // Mevcut ayın son günü
-    const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-    return lastDay.toISOString().split('T')[0];
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = (now.getMonth() + 1).toString().padStart(2, '0'); // 01-12 formatında ay
+    
+    // Ayın son gününü hesapla
+    const lastDay = new Date(year, now.getMonth() + 1, 0).getDate();
+    
+    return `${year}-${month}-${lastDay}`; // Ayın son günü
   });
+
+  // Debug için sadece geliştirme sırasında bırakın, production'da silin
+  // console.log("Başlangıç:", startDate, "Bitiş:", endDate);
 
   const [dashboardData, setDashboardData] = useState(null);
   const [loading, setLoading] = useState(false);

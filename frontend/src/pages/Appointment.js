@@ -67,10 +67,11 @@ export default function ConsultantPage() {
       const data = response.data || [];
       setServicesData(data);
       // calendarServicesData: serviceName içinde "Grup" geçenleri filtrele
-      const calendarData = data.filter((svc) =>
-        svc.serviceName.toLowerCase().includes("grup") && svc.provider.toLowerCase() === "genel hizmet"
-      );
-      setCalendarServicesData(calendarData);
+      // const calendarData = data.filter((svc) =>
+      //   svc.serviceName.toLowerCase().includes("grup") && svc.provider.toLowerCase() === "genel hizmet"
+      // );
+      // setCalendarServicesData(calendarData);
+      setCalendarServicesData(data);
     } catch (error) {
       console.error("Hizmetleri alırken hata oluştu:", error);
     } finally {

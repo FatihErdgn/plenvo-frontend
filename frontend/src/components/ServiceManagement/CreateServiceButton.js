@@ -14,6 +14,7 @@ export default function AddService({
     provider: "",
     validityDate: "",
     serviceFee: "",
+    serviceType: "",
     currencyName: "",
     status: "",
     //Manuel
@@ -29,6 +30,7 @@ export default function AddService({
     provider: false,
     status: false,
     currencyName: false,
+    serviceType: false,
   });
 
   const [alertState, setAlertState] = useState({
@@ -54,6 +56,7 @@ export default function AddService({
           ExpenseCategory: false,
           ExpenseKind: false,
           Currency: false,
+          serviceType: false,
         });
       }
     };
@@ -143,7 +146,8 @@ export default function AddService({
       !formData.validityDate ||
       !formData.serviceFee ||
       !formData.currencyName ||
-      !formData.status
+      !formData.status ||
+      !formData.serviceType
     ) {
       setAlertState({
         message: "Lütfen tüm alanları doldurun.",
@@ -159,15 +163,18 @@ export default function AddService({
         provider: formData.provider,
         validityDate: formData.validityDate,
         serviceFee: formData.serviceFee,
+        serviceType: formData.serviceType,
         currencyName: formData.currencyName,
         status: formData.status,
       });
+      // console.log(formData);
       // 4) Temizleme
       setFormData({
         serviceName: "",
         provider: "",
         validityDate: "",
         serviceFee: "",
+        serviceType: "",
         currencyName: "",
         status: "",
         //Manuel
@@ -194,7 +201,6 @@ export default function AddService({
       return;
     }
   };
-
   // Alert'i 5 sn sonra kapat
   useEffect(() => {
     if (alertState.open) {
@@ -380,6 +386,9 @@ export default function AddService({
                   onChange={handleInputChange}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg mb-3 focus:outline-none focus:ring-2 focus:ring-[#007E85]"
                 />
+              </div>
+              <div className="mb-4">
+                {renderDropdown("Hizmet Tipi", "serviceType", ["Ön Görüşme", "Rutin Görüşme", "Muayene"])}
               </div>
               <div className="mb-4">
                 {renderDropdown(
