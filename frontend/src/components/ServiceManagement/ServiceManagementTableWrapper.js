@@ -82,6 +82,7 @@ export default function ServiceManagementTableWrapper({
       ),
     },
     { key: "serviceFee", label: "Hizmet Bedeli" },
+    { key: "serviceType", label: "Hizmet Tipi" },
     { key: "currencyName", label: "Para Birimi" },
     {
       key: "actions",
@@ -115,6 +116,7 @@ export default function ServiceManagementTableWrapper({
       ),
     },
     { key: "serviceFee", label: "Hizmet Bedeli" },
+    { key: "serviceType", label: "Hizmet Tipi" },
     { key: "currencyName", label: "Para Birimi" },
   ];
 
@@ -229,6 +231,7 @@ function ServicePopupArea({ fetchServices }) {
       ? [...new Set(data.map((item) => item.provider))]
       : [];
   const statusOptions = ["Aktif", "Pasif"];
+  const serviceTypeOptions = ["Ön Görüşme", "Rutin Görüşme", "Muayene"];
   const currencyOptions = ["TRY", "USD", "EUR"];
 
   if (!isPopupOpen) return null;
@@ -248,6 +251,7 @@ function ServicePopupArea({ fetchServices }) {
           options={{
             provider: providerOptions,
             status: statusOptions,
+            serviceType: serviceTypeOptions,
             currency: currencyOptions,
           }}
         />

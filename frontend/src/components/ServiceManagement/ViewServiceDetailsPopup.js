@@ -10,6 +10,7 @@ export default function ViewServiceDetailsPopup({
   options: {
     provider: providerOptions,
     status: statusOptions,
+    serviceType: serviceTypeOptions,
     currency: currencyOptions,
   },
 }) {
@@ -17,6 +18,7 @@ export default function ViewServiceDetailsPopup({
   const [dropdownOpen, setDropdownOpen] = useState({
     provider: false,
     status: false,
+    serviceType: false,
     currency: false,
   });
   const [alertState, setAlertState] = useState({
@@ -40,6 +42,7 @@ export default function ViewServiceDetailsPopup({
         setDropdownOpen({
           provider: false,
           status: false,
+          serviceType: false,
           currency: false,
         });
       }
@@ -106,7 +109,8 @@ export default function ViewServiceDetailsPopup({
       !formData.validityDate ||
       !formData.serviceFee ||
       !formData.currencyName ||
-      !formData.status
+      !formData.status ||
+      !formData.serviceType
     ) {
       setAlertState({
         message: "Lütfen tüm alanları doldurun.",
@@ -248,6 +252,9 @@ export default function ViewServiceDetailsPopup({
             />
           </div>
           <div className="mb-4">
+            {renderDropdown("Hizmet Tipi", "serviceType", serviceTypeOptions)}
+          </div>
+          <div className="mb-4">
             {renderDropdown(
               "Para Birimi",
               "currencyName",
@@ -275,7 +282,7 @@ export default function ViewServiceDetailsPopup({
           </div>
         </form>
       </div>
-      
+
       {/* Overlay arka plan */}
       <div className="fixed inset-0 z-40" onClick={onClose}></div>
     </div>

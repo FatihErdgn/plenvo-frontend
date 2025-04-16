@@ -72,7 +72,14 @@ export const softDeletePayment = async (paymentId) => {
  */
 export const getPaymentsByAppointment = async (appointmentId) => {
   try {
-    const response = await api.get(`/payments/appointment/${appointmentId}`);
+    // Eğer appointmentId "_instance_" içeriyorsa, bu bir sanal instance'dır
+    // Parent ID'yi çıkarıp onu kullanmalıyız
+    let realAppointmentId = appointmentId;
+    if (appointmentId && appointmentId.includes("_instance_")) {
+      realAppointmentId = appointmentId.split("_instance_")[0];
+    }
+    
+    const response = await api.get(`/payments/appointment/${realAppointmentId}`);
     return response.data;
   } catch (error) {
     if (error.response?.status === 404) {

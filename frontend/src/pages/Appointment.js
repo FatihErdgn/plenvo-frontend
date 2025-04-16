@@ -120,6 +120,7 @@ export default function ConsultantPage() {
       )
     ),
   ];
+  const appointmentTypeOptions = ["Ön Görüşme", "Muayene"];
 
   // Doktorlar için detaylı liste (filtreleme için kullanılacak)
   const doctorList = userData.filter(
@@ -163,6 +164,7 @@ export default function ConsultantPage() {
                   doctorOptions,
                   doctorList,
                   genderOptions,
+                  appointmentTypeOptions,
                 }}
                 appointments={appointmentDateData}
               />
@@ -183,6 +185,7 @@ export default function ConsultantPage() {
               clinicOptions,
               doctorOptions,
               genderOptions,
+              appointmentTypeOptions,
             }}
             fetchAppointments={fetchAppointments}
             servicesData={servicesData}

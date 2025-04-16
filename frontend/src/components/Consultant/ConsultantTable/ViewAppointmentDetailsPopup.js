@@ -10,7 +10,7 @@ export default function ViewAppointmentDetailsPopup({
   data,
   isEditable,
   onClose,
-  options: { clinicOptions, doctorOptions, genderOptions },
+  options: { clinicOptions, doctorOptions, genderOptions, appointmentTypeOptions },
   onEditAppointment,
 }) {
   const [formData, setFormData] = useState(data || {});
@@ -25,6 +25,7 @@ export default function ViewAppointmentDetailsPopup({
     gender: false,
     clinic: false,
     doctor: false,
+    appointmentType: false,
   });
   const [alertState, setAlertState] = useState({
     message: "",
@@ -51,6 +52,7 @@ export default function ViewAppointmentDetailsPopup({
           gender: false,
           clinic: false,
           doctor: false,
+          appointmentType: false,
         });
       }
     };
@@ -195,7 +197,8 @@ export default function ViewAppointmentDetailsPopup({
       !formData.status ||
       !formData.datetime ||
       !formData.clinicName ||
-      !formData.doctorName
+      !formData.doctorName ||
+      !formData.appointmentType
     ) {
       setAlertState({
         message: "Lütfen (status, tarih, klinik, doktor) alanlarını doldurun.",
@@ -453,7 +456,22 @@ export default function ViewAppointmentDetailsPopup({
                 </>
               )}
             </div>
-
+            <div className="mb-4">
+              {isEditable ? (
+                renderDropdown("Randevu Tipi", "appointmentType", appointmentTypeOptions, "up")
+              ) : (
+                <>
+                  <label className="block text-gray-700">Randevu Tipi</label>
+                  <input
+                    type="text"
+                    name="appointmentType"
+                    value={formData.appointmentType || ""}
+                    disabled
+                    className="w-full px-4 py-2 border rounded-lg bg-gray-100"
+                  />
+                </>
+              )}
+            </div>
             <div className="mb-4">
               {!isEditable ? (
                 <>

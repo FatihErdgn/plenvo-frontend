@@ -31,11 +31,10 @@ export const getCalendarAppointments = async (doctorId, weekStart) => {
 // Yeni randevu oluştur
 export const createCalendarAppointment = async (data) => {
   try {
-    const res = await api.post("/calendar-appointments", data);
+    const res = await api.post(`/calendar-appointments`, data);
     return res.data;
-  } catch (err) {
-    console.error("createCalendarAppointment error:", err);
-    return { success: false, message: err.message };
+  } catch (error) {
+    return { success: false, message: error.message };
   }
 };
 
@@ -44,19 +43,22 @@ export const updateCalendarAppointment = async (id, data) => {
   try {
     const res = await api.put(`/calendar-appointments/${id}`, data);
     return res.data;
-  } catch (err) {
-    console.error("updateCalendarAppointment error:", err);
-    return { success: false, message: err.message };
+  } catch (error) {
+    return { success: false, message: error.message };
   }
 };
 
 // Randevu sil
-export const deleteCalendarAppointment = async (id) => {
+export const deleteCalendarAppointment = async (id, deleteMode = "single") => {
   try {
-    const res = await api.delete(`/calendar-appointments/${id}`);
+    // deleteMode: "single" (sadece bu tarih), "afterThis" (bu tarihten sonrakiler), "allSeries" (tüm seri)
+    let url = `/calendar-appointments/${id}`;
+    if (deleteMode !== "single") {
+      url += `?deleteMode=${deleteMode}`;
+    }
+    const res = await api.delete(url);
     return res.data;
-  } catch (err) {
-    console.error("deleteCalendarAppointment error:", err);
-    return { success: false, message: err.message };
+  } catch (error) {
+    return { success: false, message: error.message };
   }
 };

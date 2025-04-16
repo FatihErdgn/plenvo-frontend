@@ -19,7 +19,7 @@ export default function ConsultantTableWrapper({
   searchQuery,
   startDate,
   endDate,
-  options: { clinicOptions, doctorOptions, genderOptions },
+  options: { clinicOptions, doctorOptions, genderOptions, appointmentTypeOptions },
   fetchAppointments, // <-- API'den randevu verisi çekmek için kullanılacak fonksiyon
   servicesData,
 }) {
@@ -29,7 +29,7 @@ export default function ConsultantTableWrapper({
       case "Açık":
         return "items-center justify-center bg-[#EBF9F1] border-[1px] border-[#41BC63] text-[#41BC63] py-2.5 px-4 max-w-36 min-w-16 rounded-full text-center";
       case "Ödeme Bekleniyor":
-        return "items-center justify-center bg-[#FBF9F4] border-[1px] border-[#BC9241] text-[#BC9241] py-2.5 px-4 max-w-36 min-w-16 rounded-full text-center text-[0.875rem]";
+        return "flex flex-col items-center justify-center bg-[#FBF9F4] border-[1px] border-[#BC9241] text-[#BC9241] py-2 px-4 max-w-36 min-w-16 rounded-full text-center text-[0.875rem]";
       case "Tamamlandı":
         return "items-center justify-center bg-gray-100 border-[1px] border-gray-500 text-gray-500 py-2.5 px-4 w-[9.375rem] max-w-36 min-w-16 rounded-full text-center";
       case "İptal Edildi":
@@ -177,7 +177,7 @@ export default function ConsultantTableWrapper({
     },
     {
       key: "datetime",
-      label: "Randevu Tarihi ve Saati",
+      label: "Randevu Tarihi",
       renderCell: (row) => {
         const dateObj = new Date(row.datetime);
         const day = String(dateObj.getDate()).padStart(2, "0");
@@ -191,8 +191,28 @@ export default function ConsultantTableWrapper({
     {
       key: "status",
       label: "Durum",
+      renderCell: (row) => {
+        if (row.status === "Ödeme Bekleniyor") {
+          return (
+            <span className={getStatusClass(row.status)}>
+              <span>Ödeme</span>
+              <span>Bekleniyor</span>
+            </span>
+          );
+        }
+        return <span className={getStatusClass(row.status)}>{row.status}</span>;
+      },
+    },
+    {
+      key: "appointmentType",
+      label: "Randevu Tipi",
       renderCell: (row) => (
-        <span className={getStatusClass(row.status)}>{row.status}</span>
+        <span
+          className="block w-[7.5rem] mx-auto text-center truncate"
+          title={row.appointmentType}
+        >
+          {row.appointmentType}
+        </span>
       ),
     },
     {
@@ -201,7 +221,7 @@ export default function ConsultantTableWrapper({
       renderCell: (row) => (
         <ConsultantActions
           row={row}
-          options={{ clinicOptions, doctorOptions, genderOptions }}
+          options={{ clinicOptions, doctorOptions, genderOptions, appointmentTypeOptions }}
           servicesData={servicesData}
           fetchAppointments={fetchAppointments}
         />
@@ -347,6 +367,7 @@ export default function ConsultantTableWrapper({
             clinicOptions,
             doctorOptions,
             genderOptions,
+            appointmentTypeOptions,
           }}
           fetchAppointments={fetchAppointments}
         />
@@ -358,7 +379,7 @@ export default function ConsultantTableWrapper({
 // Tablodaki action butonları
 function ConsultantActions({
   row,
-  options: { clinicOptions, doctorOptions, genderOptions },
+  options: { clinicOptions, doctorOptions, genderOptions, appointmentTypeOptions },
   servicesData,
   fetchAppointments,
 }) {
@@ -445,8 +466,8 @@ function ConsultantActions({
   // getButtonClasses gibi bir fonksiyon da ekleyebilirsiniz
   const getButtonClasses = (enabled) => {
     return enabled
-      ? "bg-[#399AA1] text-white px-4 py-[9px] rounded-[1.25rem] hover:bg-[#007E85]"
-      : "bg-gray-300 text-gray-500 px-4 py-[9px] rounded-[1.25rem] cursor-not-allowed";
+      ? "bg-[#399AA1] text-white px-4 py-[9px] rounded-[1.25rem] hover:bg-[#007E85] whitespace-nowrap min-w-[100px]"
+      : "bg-gray-300 text-gray-500 px-4 py-[9px] rounded-[1.25rem] cursor-not-allowed whitespace-nowrap min-w-[100px]";
   };
 
   return (
@@ -454,7 +475,7 @@ function ConsultantActions({
       {row.status === "Tamamlandı" ? (
         <>
           <button
-            className="bg-[#399AA1] text-white px-4 py-[9px] rounded-[1.25rem] hover:bg-[#007E85]"
+            className="bg-[#399AA1] text-white px-4 py-[9px] rounded-[1.25rem] hover:bg-[#007E85] whitespace-nowrap min-w-[90px]"
             // disabled={!row.actions?.payNow}
             onClick={handlePayNow}
           >
@@ -482,7 +503,7 @@ function ConsultantActions({
             row={row} // hasta/doktor verisi
             servicesData={servicesData} // JSON liste
             onPaymentSuccess={fetchAppointments} // Ödeme başarılı olduğunda çalışacak fonksiyon
-            isCalendar={false} // Takvimde mi, tabloda mı ödeme yapılacak?
+            isCalendar={true} // Validasyonu etkinleştirmek için isCalendar=true olarak ayarla
           />
         </>
       )}
@@ -498,7 +519,7 @@ function ConsultantActions({
           isOpen={rebookOpen}
           onClose={() => setRebookOpen(false)}
           prefilledData={getPrefilledData()}
-          options={{ genderOptions, clinicOptions, doctorOptions }}
+          options={{ genderOptions, clinicOptions, doctorOptions, appointmentTypeOptions }}
         />
       </div> */}
       <button
@@ -523,7 +544,7 @@ function ConsultantActions({
 
 // Popup Alanı
 function ConsultantPopupArea({
-  options: { clinicOptions, doctorOptions, genderOptions },
+  options: { clinicOptions, doctorOptions, genderOptions, appointmentTypeOptions },
   fetchAppointments,
 }) {
   const { isPopupOpen, setIsPopupOpen, selectedData, isEditable } =
@@ -565,6 +586,7 @@ function ConsultantPopupArea({
             clinicOptions,
             doctorOptions,
             genderOptions,
+            appointmentTypeOptions,
           }}
         />
       </div>

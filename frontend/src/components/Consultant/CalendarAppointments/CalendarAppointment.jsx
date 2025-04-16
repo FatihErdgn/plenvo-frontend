@@ -90,7 +90,8 @@ const formatDate = (date, formatStr) => {
 // Pazartesi başlangıçlı hafta başı hesaplama
 const getWeekStart = (date) => {
   const day = getDay(date);
-  const diff = (day === 0 ? -6 : 1 - day); // 0 = Pazar, 1 = Pazartesi
+  // Pazartesi = 1, Pazar = 0 olduğu için
+  const diff = day === 0 ? -6 : 1 - day;
   return addDays(date, diff);
 };
 
@@ -178,6 +179,12 @@ export default function CalendarSchedulePage({ servicesData }) {
   const [description, setDescription] = useState("");
   const [paymentOpen, setPaymentOpen] = useState(false); // Ödeme popup kontrolü
   const [paymentRefreshTrigger, setPaymentRefreshTrigger] = useState(0); // Ödeme durumunu yenilemek için
+  const [isRecurring, setIsRecurring] = useState(true); // Randevunun tekrarlı olup olmadığı
+  const [endDate, setEndDate] = useState(null); // Tekrarlı randevunun bitiş tarihi
+  const [updateAllInstances, setUpdateAllInstances] = useState(false); // Tüm seriyi mi güncelliyoruz?
+  const [showDeleteOptionsModal, setShowDeleteOptionsModal] = useState(false); // Silme seçenekleri popup
+  const [deleteMode, setDeleteMode] = useState("single"); // Seçilen silme modu
+  const [appointmentType, setAppointmentType] = useState(""); // Randevu Tipi
 
   // Yeni: Hücre tıklama sonrası seçim modunu yönetmek için
   const [showChoiceModal, setShowChoiceModal] = useState(false);
@@ -195,6 +202,9 @@ export default function CalendarSchedulePage({ servicesData }) {
   // Ay seçimi için yeni state
   const [showMonthPicker, setShowMonthPicker] = useState(false);
   const [currentMonth, setCurrentMonth] = useState(new Date());
+
+  // Component içinde yeni state ekleme
+  const [participantError, setParticipantError] = useState(false);
 
   // Kullanıcı profilini al
   useEffect(() => {
@@ -309,10 +319,15 @@ export default function CalendarSchedulePage({ servicesData }) {
         appt.participants ? appt.participants.map((p) => p.name) : [""]
       );
       setDescription(appt.description || "");
+      setIsRecurring(appt.isRecurring !== undefined ? appt.isRecurring : true);
+      setEndDate(appt.endDate);
+      setUpdateAllInstances(false);
+      setAppointmentType(appt.appointmentType || ""); // Randevu Tipini ayarla
       setShowModal(true);
     } else {
       // Eğer randevu yoksa, seçenek modalını aç
       setSelectedAppointment(null);
+      setShowModal(false);
       setShowChoiceModal(true);
     }
   };
@@ -332,6 +347,10 @@ export default function CalendarSchedulePage({ servicesData }) {
     setParticipantNames([""]);
     setDescription("");
     setRebookBookingId(null);
+    setIsRecurring(true); // Varsayılan olarak tekrarlı
+    setEndDate(null); // Varsayılan olarak sonsuza kadar
+    setUpdateAllInstances(false);
+    setAppointmentType(""); // Randevu Tipini sıfırla
     setShowChoiceModal(false);
     setShowModal(true);
   };
@@ -365,6 +384,10 @@ export default function CalendarSchedulePage({ servicesData }) {
       appt.participants ? appt.participants.map((p) => p.name) : [""]
     );
     setDescription(appt.description || "");
+    setIsRecurring(appt.isRecurring !== undefined ? appt.isRecurring : true);
+    setEndDate(appt.endDate);
+    setUpdateAllInstances(false);
+    setAppointmentType(appt.appointmentType || ""); // Randevu Tipini ayarla
     setShowRebookModal(false);
     setShowModal(true);
   };
@@ -382,6 +405,18 @@ export default function CalendarSchedulePage({ servicesData }) {
   // Kaydet fonksiyonu: Eğer rebookBookingId set edilmişse payload içerisine eklenir.
   const handleSubmit = async () => {
     if (!selectedAppointment) return;
+    
+    // Hasta ismi validasyonu
+    if (!participantNames || 
+        participantNames.length === 0 || 
+        participantNames.some(name => !name || name.trim() === '')) {
+      // Hasta ismi eksikse hata göster
+      setParticipantError(true);
+      return;
+    } else {
+      setParticipantError(false);
+    }
+    
     const doctorId =
       loggedInUser?.roleId?.roleName === "doctor"
         ? loggedInUser._id
@@ -394,43 +429,85 @@ export default function CalendarSchedulePage({ servicesData }) {
       participants: participantNames.map((name) => ({ name })),
       description,
       appointmentDate: selectedAppointment.appointmentDate || selectedCell.appointmentDate,
+      isRecurring, // Tekrarlı randevu ayarı
+      endDate, // Bitiş tarihi
+      appointmentType // Randevu Tipi
     };
 
     if (rebookBookingId) {
       payload.bookingId = rebookBookingId;
     }
 
-    if (editMode) {
-      const res = await updateCalendarAppointment(
-        selectedAppointment._id,
-        payload
-      );
-      if (res.success) {
-        refreshAppointments(doctorId);
+    // Sanal instance için güncelleme yapılıyorsa
+    if (editMode && selectedAppointment._id && selectedAppointment._id.includes("_instance_")) {
+      payload.updateAllInstances = updateAllInstances;
+    }
+
+    try {
+      if (editMode) {
+        const res = await updateCalendarAppointment(
+          selectedAppointment._id,
+          payload
+        );
+        if (res.success) {
+          refreshAppointments(doctorId);
+          setShowModal(false);
+        }
+      } else {
+        const res = await createCalendarAppointment(payload);
+        if (res.success) {
+          refreshAppointments(doctorId);
+          setShowModal(false);
+        }
       }
-    } else {
-      const res = await createCalendarAppointment(payload);
-      if (res.success) {
-        refreshAppointments(doctorId);
+    } catch (err) {
+      // API hatası olursa
+      if (err.response && err.response.data && err.response.data.message) {
+        alert(err.response.data.message);
+      } else {
+        alert('Randevu kaydedilirken bir hata oluştu.');
       }
     }
-    setShowModal(false);
   };
 
   // Sil
   const handleDelete = async () => {
     if (!selectedAppointment) return;
+    
+    // Sanal instance için silme işlemini başlat
+    if (selectedAppointment._id && selectedAppointment._id.includes("_instance_")) {
+      setShowDeleteOptionsModal(true);
+    } else {
+      // Normal silme işlemi
+      const doctorId =
+        loggedInUser?.roleId?.roleName === "doctor"
+          ? loggedInUser._id
+          : selectedDoctor;
+          
+      const res = await deleteCalendarAppointment(selectedAppointment._id);
+      if (res.success) {
+        // Silme başarılı olduğunda bookingId'yi sıfırla
+        setRebookBookingId(null);
+        refreshAppointments(doctorId);
+        setShowModal(false);
+      }
+    }
+  };
+
+  // Seçilen silme modu ile randevuyu sil
+  const confirmDelete = async () => {
     const doctorId =
       loggedInUser?.roleId?.roleName === "doctor"
         ? loggedInUser._id
         : selectedDoctor;
-    const res = await deleteCalendarAppointment(selectedAppointment._id);
+        
+    const res = await deleteCalendarAppointment(selectedAppointment._id, deleteMode);
+    
     if (res.success) {
-      // Silme başarılı olduğunda bookingId'yi sıfırla
-      setRebookBookingId(null);
       refreshAppointments(doctorId);
+      setShowDeleteOptionsModal(false);
+      setShowModal(false);
     }
-    setShowModal(false);
   };
 
   // Takvimi yenile - tarih filtresini ekle
@@ -449,6 +526,11 @@ export default function CalendarSchedulePage({ servicesData }) {
     return appointments.find(
       (appt) => appt.dayIndex === dayIndex && appt.timeIndex === timeIndex
     );
+  };
+
+  // Sanal instance mi kontrol et
+  const isVirtualInstance = (appointment) => {
+    return appointment && appointment.isVirtualInstance;
   };
 
   // Seçili doktor adını göster
@@ -764,6 +846,11 @@ export default function CalendarSchedulePage({ servicesData }) {
                       ) : (
                         <div className="text-gray-400 italic">Boş</div>
                       )}
+
+                      {/* Sanal Instance Göstergesi */}
+                      {appt && isVirtualInstance(appt) && (
+                        <div className="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-blue-400" title="Tekrarlı Randevu"></div>
+                      )}
                     </td>
                   );
                 })}
@@ -898,7 +985,70 @@ export default function CalendarSchedulePage({ servicesData }) {
                 placeholder="Randevu ile ilgili açıklama giriniz..."
               />
             </div>
-            {/* Randevu Yineleme ve Randevu Son Kapanış Tarihi */}
+            
+            {/* Tekrarlı Randevu Seçeneği */}
+            <div className="mb-2">
+              <label className="flex items-center space-x-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={isRecurring}
+                  onChange={(e) => setIsRecurring(e.target.checked)}
+                  className="form-checkbox h-4 w-4 text-[#007E85] rounded"
+                />
+                <span className="text-gray-700">Tekrarlı Randevu</span>
+              </label>
+            </div>
+            
+            {/* Tekrarlı Randevu Bitiş Tarihi */}
+            {isRecurring && (
+              <div className="mb-2">
+                <label className="block font-medium">Bitiş Tarihi (Opsiyonel)</label>
+                <input
+                  type="date"
+                  value={endDate ? new Date(endDate).toISOString().split('T')[0] : ""}
+                  onChange={(e) => setEndDate(e.target.value ? new Date(e.target.value) : null)}
+                  className="border p-1 w-full cursor-pointer rounded-md"
+                  placeholder="Sonsuza kadar tekrarlanır"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Boş bırakırsanız, randevu siz silene kadar tekrarlanacaktır.
+                </p>
+              </div>
+            )}
+            
+            {/* Tekrarlı Randevu Güncelleme Seçeneği */}
+            {editMode && selectedAppointment && isVirtualInstance(selectedAppointment) && (
+              <div className="mb-2">
+                <label className="flex items-center space-x-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={updateAllInstances}
+                    onChange={(e) => setUpdateAllInstances(e.target.checked)}
+                    className="form-checkbox h-4 w-4 text-[#007E85] rounded"
+                  />
+                  <span className="text-gray-700">Tüm gelecek randevuları güncelle</span>
+                </label>
+                <p className="text-xs text-gray-500 mt-1">
+                  Seçiliyse tüm tekrarlı randevular güncellenecek, değilse sadece bu tarih için güncellenir.
+                </p>
+              </div>
+            )}
+            
+            {/* Randevu Tipi Dropdown */}
+            <div className="mb-2">
+              <label className="block font-medium">Randevu Tipi</label>
+              <select
+                value={appointmentType}
+                onChange={(e) => setAppointmentType(e.target.value)}
+                className="border p-1 w-full cursor-pointer rounded-md"
+              >
+                <option value="">Seçiniz</option>
+                <option value="Ön Görüşme">Ön Görüşme</option>
+                <option value="Rutin Görüşme">Rutin Görüşme</option>
+                <option value="Muayene">Muayene</option>
+              </select>
+            </div>
+            
             {/* Kişi Sayısı */}
             <div className="mb-2">
               <label className="block font-medium">Kişi Sayısı</label>
@@ -929,9 +1079,20 @@ export default function CalendarSchedulePage({ servicesData }) {
                     const newNames = [...participantNames];
                     newNames[i] = e.target.value;
                     setParticipantNames(newNames);
+                    // İsim girilince hatayı temizle
+                    if (e.target.value.trim() !== '') {
+                      setParticipantError(false);
+                    }
                   }}
-                  className="border p-1 w-full cursor-pointer rounded-md"
+                  className={`border p-1 w-full cursor-pointer rounded-md ${
+                    participantError && (!participantNames[i] || participantNames[i].trim() === '') 
+                    ? 'border-red-500 bg-red-50' 
+                    : ''
+                  }`}
                 />
+                {participantError && (!participantNames[i] || participantNames[i].trim() === '') && (
+                  <p className="text-red-500 text-xs mt-1">Hasta ismi boş olamaz</p>
+                )}
               </div>
             ))}
             {/* Butonlar */}
@@ -953,7 +1114,20 @@ export default function CalendarSchedulePage({ servicesData }) {
               {loggedInUser?.roleId?.roleName !== "doctor" && (
                 <button
                   onClick={handleSubmit}
-                  className="bg-[#007E85] text-white px-4 py-1 rounded"
+                  className={`px-4 py-1 rounded ${
+                    !participantNames || 
+                    participantNames.length === 0 || 
+                    participantNames.some(name => !name || name.trim() === '')
+                    ? 'bg-gray-300 cursor-not-allowed text-gray-500' 
+                    : 'bg-[#007E85] text-white hover:bg-[#00696F]'
+                  }`}
+                  title={
+                    !participantNames || 
+                    participantNames.length === 0 || 
+                    participantNames.some(name => !name || name.trim() === '')
+                    ? 'Lütfen tüm hasta isimlerini girin' 
+                    : 'Randevuyu kaydet'
+                  }
                 >
                   Kaydet
                 </button>
@@ -980,6 +1154,88 @@ export default function CalendarSchedulePage({ servicesData }) {
             }}
             isCalendar={true}
           />
+        </div>
+      )}
+
+      {/* Silme Seçenekleri Popup */}
+      {showDeleteOptionsModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-30 flex justify-center items-center z-50">
+          <div className="relative bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
+            <button
+              onClick={() => setShowDeleteOptionsModal(false)}
+              className="absolute top-2 right-2 text-red-500 hover:text-gray-600"
+            >
+              <IoIosCloseCircleOutline className="w-6 h-6" />
+            </button>
+            
+            <h2 className="text-2xl font-bold mb-4 text-gray-800">Randevu Silme Seçenekleri</h2>
+            
+            <p className="mb-4 text-gray-600">
+              Tekrarlı randevuyu silme şeklini seçin:
+            </p>
+            
+            <div className="space-y-3 mb-6">
+              <label className="flex items-center p-3 border rounded-md hover:bg-gray-50 cursor-pointer transition-colors">
+                <input
+                  type="radio"
+                  name="deleteMode"
+                  value="single"
+                  checked={deleteMode === "single"}
+                  onChange={() => setDeleteMode("single")}
+                  className="mr-3"
+                />
+                <div>
+                  <p className="font-medium text-gray-800">Sadece bu tarihi sil</p>
+                  <p className="text-sm text-gray-500">Bu tarih için randevu iptal edilir, diğer tarihler etkilenmez</p>
+                </div>
+              </label>
+              
+              <label className="flex items-center p-3 border rounded-md hover:bg-gray-50 cursor-pointer transition-colors">
+                <input
+                  type="radio"
+                  name="deleteMode"
+                  value="afterThis"
+                  checked={deleteMode === "afterThis"}
+                  onChange={() => setDeleteMode("afterThis")}
+                  className="mr-3"
+                />
+                <div>
+                  <p className="font-medium text-gray-800">Bu tarihten sonrakileri sil</p>
+                  <p className="text-sm text-gray-500">Bu tarih ve sonraki tüm tekrarlar iptal edilir</p>
+                </div>
+              </label>
+              
+              <label className="flex items-center p-3 border rounded-md hover:bg-gray-50 cursor-pointer transition-colors">
+                <input
+                  type="radio"
+                  name="deleteMode"
+                  value="allSeries"
+                  checked={deleteMode === "allSeries"}
+                  onChange={() => setDeleteMode("allSeries")}
+                  className="mr-3"
+                />
+                <div>
+                  <p className="font-medium text-gray-800">Tüm tekrarlı randevuları sil</p>
+                  <p className="text-sm text-gray-500">Bu randevunun tüm geçmiş ve gelecek tekrarları silinir</p>
+                </div>
+              </label>
+            </div>
+            
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setShowDeleteOptionsModal(false)}
+                className="px-4 py-2 bg-gray-300 hover:bg-gray-400 rounded-md text-gray-800"
+              >
+                İptal
+              </button>
+              <button
+                onClick={confirmDelete}
+                className="px-4 py-2 bg-red-500 hover:bg-red-600 rounded-md text-white"
+              >
+                Sil
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
