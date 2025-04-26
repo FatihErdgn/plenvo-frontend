@@ -32,7 +32,7 @@ export default function ViewAppointmentDetailsPopup({
     severity: "",
     open: false,
   });
-  // İptal popup’ı ve iptal nedeni state’leri
+  // İptal popup'ı ve iptal nedeni state'leri
   const [isCancelPopupOpen, setIsCancelPopupOpen] = useState(false);
   const [cancelReason, setCancelReason] = useState("");
 
@@ -142,7 +142,7 @@ export default function ViewAppointmentDetailsPopup({
     setParticipants(updated);
   };
 
-  // İptal et butonuna basıldığında popup’ı aç
+  // İptal et butonuna basıldığında popup'ı aç
   const handleCancelAppointment = () => {
     setIsCancelPopupOpen(true);
   };
@@ -717,7 +717,7 @@ export default function ViewAppointmentDetailsPopup({
       </div>
 
       {isCancelPopupOpen && (
-        <div className="fixed inset-0 flex justify-center items-center bg-opacity-50">
+        <div className="fixed inset-0 flex justify-center items-center bg-opacity-50 z-[60]">
           <div
             style={{ animation: "fadeIn 0.3s ease-out", width: "30%" }}
             className="bg-white p-6 rounded-lg shadow-xl relative"
