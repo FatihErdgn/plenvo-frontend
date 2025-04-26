@@ -208,7 +208,7 @@ export default function PaymentPopup({
     }
 
     // Eğer randevu tipi "Ön Görüşme" değilse ve eşleşen hizmet yoksa ödeme yapma 
-    if (isCalendar && appointmentData.appointmentType && appointmentData.appointmentType !== "Ön Görüşme" && !matchedService) {
+    if (isCalendar && appointmentData.appointmentType && appointmentData.appointmentType.includes("Ön Görüşme","Rutin Görüşme") && !matchedService) {
       alert(`"${appointmentData.appointmentType}" randevu tipi için tanımlanmış hizmet bulunamadı. Ödeme yapılamıyor.`);
       onClose(); // Ödeme popup'ını kapat
       return;
