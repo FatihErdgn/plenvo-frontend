@@ -388,18 +388,28 @@ export default function PaymentPopup({
             
             {/* Randevu Tipi-Hizmet Eşleşme Uyarısı */}
             {isCalendar && appointmentData.appointmentType && !matchedService && (
-              <div className={`mb-4 p-3 border rounded-md ${appointmentData.appointmentType === "Ön Görüşme" ? 'bg-blue-50 border-blue-200 text-blue-800' : 'bg-orange-50 border-orange-200 text-orange-800'}`}>
+              <div className={`mb-4 p-3 border rounded-md ${
+                appointmentData.appointmentType === "Ön Görüşme" 
+                  ? 'bg-blue-50 border-blue-200 text-blue-800' 
+                  : appointmentData.appointmentType === "Rutin Görüşme"
+                    ? 'bg-cyan-50 border-cyan-200 text-cyan-800'
+                    : 'bg-orange-50 border-orange-200 text-orange-800'
+              }`}>
                 <p className="font-medium">
                   {appointmentData.appointmentType === "Ön Görüşme" 
                     ? "Bilgi: Ön Görüşme ödemesi" 
-                    : "Uyarı: Eşleşen hizmet bulunamadı!"}
+                    : appointmentData.appointmentType === "Rutin Görüşme"
+                      ? "Bilgi: Rutin Görüşme ödemesi"
+                      : "Uyarı: Eşleşen hizmet bulunamadı!"}
                 </p>
                 <p className="text-sm">
                   {appointmentData.appointmentType === "Ön Görüşme" 
                     ? "Seçilen randevu tipi \"Ön Görüşme\" için bu doktora ait tanımlanmış bir hizmet bulunamadı. Ancak Ön Görüşme randevuları için ücret belirlenmemişse 0 TL ödeme yapabilirsiniz." 
-                    : `Seçilen randevu tipi "${appointmentData.appointmentType}" için bu doktora ait tanımlanmış bir hizmet bulunamadı. Lütfen ilgili hizmeti doktor için tanımlayın veya farklı bir randevu tipi seçin.`}
+                    : appointmentData.appointmentType === "Rutin Görüşme"
+                      ? "Seçilen randevu tipi \"Rutin Görüşme\" için bu doktora ait tanımlanmış bir hizmet bulunamadı. Ancak Rutin Görüşme randevuları için ücret belirlenmemişse 0 TL ödeme yapabilirsiniz."
+                      : `Seçilen randevu tipi "${appointmentData.appointmentType}" için bu doktora ait tanımlanmış bir hizmet bulunamadı. Lütfen ilgili hizmeti doktor için tanımlayın veya farklı bir randevu tipi seçin.`}
                 </p>
-                {appointmentData.appointmentType !== "Ön Görüşme" && (
+                {appointmentData.appointmentType !== "Ön Görüşme" && appointmentData.appointmentType !== "Rutin Görüşme" && (
                   <p className="text-xs mt-1">
                     Not: Servislerde, doktor adı ile eşleşen ve serviceType alanı "{appointmentData.appointmentType}" olan bir kayıt olmalıdır.
                   </p>
