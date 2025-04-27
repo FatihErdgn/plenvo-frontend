@@ -25,30 +25,39 @@ export default function PaymentPopup({
 }) {
   // Doktora ait hizmeti bul (doktor adı ve "Aktif" durumu kontrolü)
   let matchedService = null;
-  
+
   // Tekrarlı randevularda (recurringParentId varsa), doktor ve randevu tipi bilgilerini yönet
   const appointmentData = { ...row };
-  
+
   // Tekrarlı randevu instanclarında doktorName ve appointmentType eksik olabilir
   // Bu durumda eksik verileri doldur
   useEffect(() => {
     // Randevu tipi ve doktor adı eksikse ve ID'de "_instance_" varsa tekrarlı randevu olabilir
     const isRecurringInstance = row._id && row._id.includes("_instance_");
-    
-    if (isCalendar && isRecurringInstance && (!row.appointmentType || !row.doctorName)) {
+
+    if (
+      isCalendar &&
+      isRecurringInstance &&
+      (!row.appointmentType || !row.doctorName)
+    ) {
       // Takvim randevusunda eksik veri varsa ana randevudan bilgileri almak için
       // Parent ID'yi tanımla
       const parentId = row._id?.split("_instance_")[0];
-      
+
       if (parentId) {
         // Burada normalde API'ye istek atıp ana randevuyu getirmek gerekebilir
         // Ancak basit bir çözüm olarak UI'da gösterilen alanları dolduralım
-        
+
         // Eğer doktor ID'si varsa ama adı yoksa sadece UI için ekleyelim
-        if (row.doctorId && !row.doctorName && row.doctorFirstName && row.doctorLastName) {
+        if (
+          row.doctorId &&
+          !row.doctorName &&
+          row.doctorFirstName &&
+          row.doctorLastName
+        ) {
           appointmentData.doctorName = `${row.doctorFirstName} ${row.doctorLastName}`;
         }
-        
+
         // Eğer appointmentType yoksa ve parent formdan geliyorsa göster
         if (!row.appointmentType && row.recurringParentType) {
           appointmentData.appointmentType = row.recurringParentType;
@@ -56,7 +65,7 @@ export default function PaymentPopup({
           // Varsayılan olarak "Muayene" tipini kullan
           appointmentData.appointmentType = "Muayene";
         }
-        
+
         // Eğer artık randevu tipi ve doktor adı varsa, uyarıyı kaldır
         if (appointmentData.appointmentType && appointmentData.doctorName) {
           setShowAppointmentTypeWarning(false);
@@ -64,17 +73,17 @@ export default function PaymentPopup({
       }
     }
   }, [row, isCalendar]);
-  
+
   if (isCalendar) {
     if (appointmentData?.appointmentType) {
       // Randevu tipi seçiliyse, SADECE o tipe uygun hizmeti ara
       matchedService = servicesData.find(
-        (s) => 
-          s.provider === appointmentData?.doctorName && 
+        (s) =>
+          s.provider === appointmentData?.doctorName &&
           s.status === "Aktif" &&
-          s.serviceType === appointmentData.appointmentType  // serviceType ile appointmentType eşleşmeli
+          s.serviceType === appointmentData.appointmentType // serviceType ile appointmentType eşleşmeli
       );
-      
+
       // Eşleşen hizmet yoksa matchedService null kalacak, ücreti 0 TL olacak
     } else {
       // Randevu tipi seçili değilse, matchedService null olmalı (ücret 0 TL olacak)
@@ -94,7 +103,8 @@ export default function PaymentPopup({
   let doctorName = "";
   let allNames = "";
   if (isCalendar) {
-    allNames = appointmentData?.participants?.map((p) => p.name).join(" - ") || "";
+    allNames =
+      appointmentData?.participants?.map((p) => p.name).join(" - ") || "";
     doctorName = appointmentData?.doctorName;
   } else {
     clientFirstName = appointmentData.clientFirstName;
@@ -115,15 +125,17 @@ export default function PaymentPopup({
   const [paymentNote, setPaymentNote] = useState("");
   const [sumPaid, setSumPaid] = useState(0);
   const [existingPayment, setExistingPayment] = useState(null);
-  const [showAppointmentTypeWarning, setShowAppointmentTypeWarning] = useState(false); // Randevu tipi uyarısı
+  const [showAppointmentTypeWarning, setShowAppointmentTypeWarning] =
+    useState(false); // Randevu tipi uyarısı
 
   // Sadece "Rutin Görüşme" randevu tipinde ek hizmet seçildiğinde doktor ücreti sıfırlansın
   // Diğer randevu tipleri (Ön Görüşme, Muayene vb.) için sıfırlanmamalı
-  const doctorFee = isCalendar && 
-                    selectedExtras.length > 0 && 
-                    appointmentData.appointmentType === "Rutin Görüşme" 
-                    ? 0 
-                    : initialDoctorFee;
+  const doctorFee =
+    isCalendar &&
+    selectedExtras.length > 0 &&
+    appointmentData.appointmentType === "Rutin Görüşme"
+      ? 0
+      : initialDoctorFee;
 
   // Eğer daha önce ödeme yapılmışsa, toplam tutar Payment belgesindeki serviceFee üzerinden alınır.
   // Aksi halde, toplam tutar doktor ücreti + seçilen ek hizmetlerin toplamıdır.
@@ -156,6 +168,11 @@ export default function PaymentPopup({
           );
           setSumPaid(totalPaid);
           setExistingPayment(payments[0]); // İlk ödeme kaydı üzerinden bilgiler alınır
+          
+          // Önceki ödeme açıklamasını yükle
+          if (payments[0].paymentDescription) {
+            setPaymentNote(payments[0].paymentDescription);
+          }
         } else {
           setSumPaid(0);
           setExistingPayment(null);
@@ -167,7 +184,7 @@ export default function PaymentPopup({
     if (isOpen && row && row._id) {
       fetchPayments();
     }
-    
+
     // Eğer takvim randevusuysa ve randevu tipi seçilmemişse uyarı göster
     if (isOpen && isCalendar && !appointmentData.appointmentType) {
       setShowAppointmentTypeWarning(true);
@@ -188,7 +205,7 @@ export default function PaymentPopup({
       }
       return;
     }
-    
+
     const alreadySelected = selectedExtras.find((ex) => ex._id === service._id);
     if (alreadySelected) {
       setSelectedExtras(selectedExtras.filter((ex) => ex._id !== service._id));
@@ -207,13 +224,21 @@ export default function PaymentPopup({
       return;
     }
 
-    // Eğer randevu tipi "Ön Görüşme" değilse ve eşleşen hizmet yoksa ödeme yapma 
-    if (isCalendar && appointmentData.appointmentType && appointmentData.appointmentType.includes("Ön Görüşme","Rutin Görüşme") && !matchedService) {
-      alert(`"${appointmentData.appointmentType}" randevu tipi için tanımlanmış hizmet bulunamadı. Ödeme yapılamıyor.`);
+    // Eğer randevu tipi "Ön Görüşme" değilse ve eşleşen hizmet yoksa ödeme yapma
+    if (
+      isCalendar &&
+      appointmentData.appointmentType &&
+      appointmentData.appointmentType !== "Ön Görüşme" &&
+      appointmentData.appointmentType !== "Rutin Görüşme" &&
+      !matchedService
+    ) {
+      alert(
+        `"${appointmentData.appointmentType}" randevu tipi için tanımlanmış hizmet bulunamadı. Ödeme yapılamıyor.`
+      );
       onClose(); // Ödeme popup'ını kapat
       return;
     }
-    
+
     // Ödenecek tutar:
     // - Tam ödeme modunda "kalan tutar" ödeniyor.
     // - Kısmi ödeme modunda kullanıcı tarafından girilen tutar.
@@ -231,8 +256,9 @@ export default function PaymentPopup({
     // "Ön Görüşme" için özel durum: Tutar 0 TL olabilir
     if (
       paymentMode === "partial" &&
-      ((appointmentData.appointmentType !== "Ön Görüşme" && paymentAmountValue <= 0) || 
-       paymentAmountValue > remainingAmount)
+      ((appointmentData.appointmentType !== "Ön Görüşme" &&
+        paymentAmountValue <= 0) ||
+        paymentAmountValue > remainingAmount)
     ) {
       alert(
         "Lütfen geçerli bir kısmi ödeme tutarı giriniz. Kalan tutar: " +
@@ -302,19 +328,23 @@ export default function PaymentPopup({
   const isPaymentCompleteDisabled = () => {
     // Randevu tipi seçilmemişse butonu devre dışı bırak (takvim randevuları için)
     if (isCalendar && !appointmentData.appointmentType) return true;
-    
+
     // Randevu tipi "Ön Görüşme" dışında bir şeyse, eşleşen hizmet yoksa ve ek hizmet de seçilmemişse devre dışı bırak
-    if (isCalendar && 
-        appointmentData.appointmentType && 
-        appointmentData.appointmentType !== "Ön Görüşme" && 
-        !matchedService && 
-        selectedExtras.length === 0) return true;
-    
+    if (
+      isCalendar &&
+      appointmentData.appointmentType &&
+      appointmentData.appointmentType !== "Ön Görüşme" &&
+      appointmentData.appointmentType !== "Rutin Görüşme" &&
+      !matchedService &&
+      selectedExtras.length === 0
+    )
+      return true;
+
     // Ödeme tipi seçilmemişse devre dışı bırak
     if (!paymentMode) return true;
-    
-    // "Ön Görüşme" için özel durum: Tutar 0 olsa bile ödeme yapılabilir
-    if (appointmentData.appointmentType === "Ön Görüşme") {
+
+    // "Ön Görüşme" ve "Rutin Görüşme" için özel durum: Tutar 0 olsa bile ödeme yapılabilir
+    if (appointmentData.appointmentType === "Ön Görüşme" || appointmentData.appointmentType === "Rutin Görüşme") {
       if (paymentMode === "full") {
         return !paymentType; // Sadece ödeme tipinin seçili olması yeterli
       } else if (paymentMode === "partial") {
@@ -322,7 +352,7 @@ export default function PaymentPopup({
         return !paymentType || amt < 0 || amt > remainingAmount; // 0 TL ödemeye izin ver
       }
     } else {
-      // Normal durum (Ön Görüşme değilse)
+      // Normal durum (Ön Görüşme ve Rutin Görüşme değilse)
       if (paymentMode === "full") {
         return !paymentType || remainingAmount <= 0;
       } else if (paymentMode === "partial") {
@@ -356,15 +386,16 @@ export default function PaymentPopup({
             <h3 className="text-xl font-semibold mb-3 text-gray-700">
               Ücret Detayları
             </h3>
-            
+
             {/* Randevu Tipi Uyarısı */}
             {showAppointmentTypeWarning && (
               <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 text-yellow-800 rounded-md">
                 <p className="font-medium">Dikkat: Randevu tipi seçilmemiş!</p>
                 <p className="text-sm">
-                  Ödeme yapmadan önce lütfen randevu formundan randevu tipini (Ön Görüşme, Rutin Görüşme veya Muayene) seçin.
+                  Ödeme yapmadan önce lütfen randevu formundan randevu tipini
+                  (Ön Görüşme, Rutin Görüşme veya Muayene) seçin.
                 </p>
-                <button 
+                <button
                   onClick={onClose}
                   className="mt-2 bg-yellow-200 hover:bg-yellow-300 text-yellow-800 px-3 py-1 rounded-md text-sm"
                 >
@@ -372,51 +403,58 @@ export default function PaymentPopup({
                 </button>
               </div>
             )}
-            
+
             {/* Tekrarlı Randevu Bilgi Mesajı */}
             {row._id && row._id.includes("_instance_") && (
               <div className="mb-4 p-3 bg-blue-50 border border-blue-200 text-blue-800 rounded-md">
                 <p className="font-medium">Bilgi: Tekrarlı Randevu</p>
                 <p className="text-sm">
-                  Bu, tekrarlı randevu serisindeki bir randevudur. 
-                  {appointmentData.appointmentType ? 
-                    ` Randevu tipi "${appointmentData.appointmentType}" olarak belirlenmiştir.` :
-                    " Randevu tipini göremiyorsanız, lütfen ana randevudan ayarlayın."}
+                  Bu, tekrarlı randevu serisindeki bir randevudur.
+                  {appointmentData.appointmentType
+                    ? ` Randevu tipi "${appointmentData.appointmentType}" olarak belirlenmiştir.`
+                    : " Randevu tipini göremiyorsanız, lütfen ana randevudan ayarlayın."}
                 </p>
               </div>
             )}
-            
+
             {/* Randevu Tipi-Hizmet Eşleşme Uyarısı */}
-            {isCalendar && appointmentData.appointmentType && !matchedService && (
-              <div className={`mb-4 p-3 border rounded-md ${
-                appointmentData.appointmentType === "Ön Görüşme" 
-                  ? 'bg-blue-50 border-blue-200 text-blue-800' 
-                  : appointmentData.appointmentType === "Rutin Görüşme"
-                    ? 'bg-cyan-50 border-cyan-200 text-cyan-800'
-                    : 'bg-orange-50 border-orange-200 text-orange-800'
-              }`}>
-                <p className="font-medium">
-                  {appointmentData.appointmentType === "Ön Görüşme" 
-                    ? "Bilgi: Ön Görüşme ödemesi" 
-                    : appointmentData.appointmentType === "Rutin Görüşme"
+            {isCalendar &&
+              appointmentData.appointmentType &&
+              !matchedService && (
+                <div
+                  className={`mb-4 p-3 border rounded-md ${
+                    appointmentData.appointmentType === "Ön Görüşme"
+                      ? "bg-blue-50 border-blue-200 text-blue-800"
+                      : appointmentData.appointmentType === "Rutin Görüşme"
+                      ? "bg-cyan-50 border-cyan-200 text-cyan-800"
+                      : "bg-orange-50 border-orange-200 text-orange-800"
+                  }`}
+                >
+                  <p className="font-medium">
+                    {appointmentData.appointmentType === "Ön Görüşme"
+                      ? "Bilgi: Ön Görüşme ödemesi"
+                      : appointmentData.appointmentType === "Rutin Görüşme"
                       ? "Bilgi: Rutin Görüşme ödemesi"
                       : "Uyarı: Eşleşen hizmet bulunamadı!"}
-                </p>
-                <p className="text-sm">
-                  {appointmentData.appointmentType === "Ön Görüşme" 
-                    ? "Seçilen randevu tipi \"Ön Görüşme\" için bu doktora ait tanımlanmış bir hizmet bulunamadı. Ancak Ön Görüşme randevuları için ücret belirlenmemişse 0 TL ödeme yapabilirsiniz." 
-                    : appointmentData.appointmentType === "Rutin Görüşme"
-                      ? "Seçilen randevu tipi \"Rutin Görüşme\" için bu doktora ait tanımlanmış bir hizmet bulunamadı. Ancak Rutin Görüşme randevuları için ücret belirlenmemişse 0 TL ödeme yapabilirsiniz."
-                      : `Seçilen randevu tipi "${appointmentData.appointmentType}" için bu doktora ait tanımlanmış bir hizmet bulunamadı. Lütfen ilgili hizmeti doktor için tanımlayın veya farklı bir randevu tipi seçin.`}
-                </p>
-                {appointmentData.appointmentType !== "Ön Görüşme" && appointmentData.appointmentType !== "Rutin Görüşme" && (
-                  <p className="text-xs mt-1">
-                    Not: Servislerde, doktor adı ile eşleşen ve serviceType alanı "{appointmentData.appointmentType}" olan bir kayıt olmalıdır.
                   </p>
-                )}
-              </div>
-            )}
-            
+                  <p className="text-sm">
+                    {appointmentData.appointmentType === "Ön Görüşme"
+                      ? 'Seçilen randevu tipi "Ön Görüşme" için bu doktora ait tanımlanmış bir hizmet bulunamadı. Ancak Ön Görüşme randevuları için ücret belirlenmemişse 0 TL ödeme yapabilirsiniz.'
+                      : appointmentData.appointmentType === "Rutin Görüşme"
+                      ? 'Seçilen randevu tipi "Rutin Görüşme" için bu doktora ait tanımlanmış bir hizmet bulunamadı. Ancak Rutin Görüşme randevuları için ücret belirlenmemişse 0 TL ödeme yapabilirsiniz.'
+                      : `Seçilen randevu tipi "${appointmentData.appointmentType}" için bu doktora ait tanımlanmış bir hizmet bulunamadı. Lütfen ilgili hizmeti doktor için tanımlayın veya farklı bir randevu tipi seçin.`}
+                  </p>
+                  {appointmentData.appointmentType !== "Ön Görüşme" && 
+                   appointmentData.appointmentType !== "Rutin Görüşme" && (
+                    <p className="text-xs mt-1">
+                      Not: Servislerde, doktor adı ile eşleşen ve serviceType
+                      alanı "{appointmentData.appointmentType}" olan bir kayıt
+                      olmalıdır.
+                    </p>
+                  )}
+                </div>
+              )}
+
             <div className="space-y-2">
               <p className="text-lg text-gray-600">
                 <strong className="text-gray-700">Hasta:</strong>{" "}
@@ -427,14 +465,20 @@ export default function PaymentPopup({
               </p>
               <p className="text-lg text-gray-600">
                 <strong className="text-gray-700">Randevu Tipi:</strong>{" "}
-                {appointmentData.appointmentType || <span className="text-red-500 italic">Seçilmemiş</span>}
+                {appointmentData.appointmentType || (
+                  <span className="text-red-500 italic">Seçilmemiş</span>
+                )}
               </p>
               <p className="text-lg text-gray-600">
                 <strong className="text-gray-700">Muayene Ücreti:</strong>{" "}
                 {!appointmentData.appointmentType ? (
-                  <span className="text-red-500 italic">Önce randevu tipi seçilmeli</span>
+                  <span className="text-red-500 italic">
+                    Önce randevu tipi seçilmeli
+                  </span>
                 ) : !matchedService ? (
-                  <span className="text-amber-600 italic">Bu randevu tipi için ücret tanımlanmamış</span>
+                  <span className="text-amber-600 italic">
+                    Bu randevu tipi için ücret tanımlanmamış
+                  </span>
                 ) : (
                   `${doctorFee} TL`
                 )}
@@ -447,11 +491,14 @@ export default function PaymentPopup({
               {extraServices.map((svc) => {
                 const checked = selectedExtras.some((ex) => ex._id === svc._id);
                 // Randevu tipi seçilmemiş veya mevcut ödeme varsa, checkbox'ları disable et
-                const isDisabled = existingPayment || (isCalendar && !row.appointmentType);
+                const isDisabled =
+                  existingPayment || (isCalendar && !row.appointmentType);
                 return (
                   <label
                     key={svc._id}
-                    className={`block text-lg mb-1 ${isDisabled ? 'text-gray-400' : 'text-gray-700'}`}
+                    className={`block text-lg mb-1 ${
+                      isDisabled ? "text-gray-400" : "text-gray-700"
+                    }`}
                   >
                     <input
                       type="checkbox"
@@ -462,7 +509,9 @@ export default function PaymentPopup({
                     />
                     {svc.serviceName} (+{svc.serviceFee} TL)
                     {isCalendar && !row.appointmentType && (
-                      <span className="ml-2 text-sm text-red-500 italic">(Önce randevu tipi seçin)</span>
+                      <span className="ml-2 text-sm text-red-500 italic">
+                        (Önce randevu tipi seçin)
+                      </span>
                     )}
                   </label>
                 );
