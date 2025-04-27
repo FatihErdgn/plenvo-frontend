@@ -216,11 +216,18 @@ export default function PaymentPopup({
 
   // Ödeme tamamlanma işlemi
   const handlePaymentComplete = async () => {
+    // İşlem başlamadan önce popup'ı kapatma fonksiyonu
+    const closePopupFirst = () => {
+      if (typeof onClose === 'function') {
+        onClose();
+      }
+    };
+    
     // Eğer takvim randevusuysa ve randevu tipi seçilmemişse ödeme yapma
     if (isCalendar && !appointmentData.appointmentType) {
       // Ek hizmet seçili olsa bile randevu tipi seçilmemişse ödeme yapılamaz
       alert("Lütfen önce randevu tipini seçin. Ödeme yapılamıyor.");
-      onClose(); // Ödeme popup'ını kapat
+      closePopupFirst();
       return;
     }
 
@@ -235,7 +242,7 @@ export default function PaymentPopup({
       alert(
         `"${appointmentData.appointmentType}" randevu tipi için tanımlanmış hizmet bulunamadı. Ödeme yapılamıyor.`
       );
-      onClose(); // Ödeme popup'ını kapat
+      closePopupFirst();
       return;
     }
 
@@ -283,8 +290,10 @@ export default function PaymentPopup({
       paymentAmount: paymentAmountValue,
       paymentDescription: paymentNote,
       appointmentId: realAppointmentId, // Gerçek Randevu ID'si
-      // paymentDate: new Date().toISOString(), // Opsiyonel
     };
+    
+    // ÖNEMLİ: API çağrılarından ÖNCE popup'ı kapatalım
+    closePopupFirst();
 
     try {
       // Eğer daha önce ödeme yapılmışsa, updatePayment çalışsın; yoksa createPayment
@@ -305,19 +314,22 @@ export default function PaymentPopup({
           paymentDescription: paymentNote,
           paymentStatus: updatedPaymentStatus,
           appointmentId: realAppointmentId, // Gerçek Randevu ID'si
-          // paymentDate: new Date().toISOString(), // Opsiyonel
         };
         await updatePayment(existingPayment._id, updatedPayload);
-        // console.log("Ödeme güncellendi:", payload);
       } else {
         await createPayment(payload);
       }
+      
+      // Ödeme başarı mesajı
       alert("Ödeme başarıyla gerçekleştirildi.");
-      // Ödeme başarılı olduktan sonra callback çalışsın
-      if (typeof onPaymentSuccess === "function") {
-        onPaymentSuccess();
-      }
-      onClose();
+      
+      // Ödeme başarılı olduktan sonra daha uzun bir gecikme ile callback'i çağıralım
+      // Ödeme tamamlandı mesajını kapattıktan sonra işlem yapılsın
+      setTimeout(() => {
+        if (typeof onPaymentSuccess === "function") {
+          onPaymentSuccess();
+        }
+      }, 250); // 1.5 saniye daha uzun gecikme
     } catch (error) {
       console.error("Ödeme oluşturulamadı:", error);
       alert("Ödeme gerçekleştirilirken bir hata oluştu.");

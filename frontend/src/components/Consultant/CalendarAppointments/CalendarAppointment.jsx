@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
   getCalendarAppointments,
   createCalendarAppointment,
@@ -101,12 +101,36 @@ function PaymentStatusCell({
   onClickPayNow,
   refreshTrigger,
   fetchAppointments,
+  preventAutoPopup
 }) {
   const { completed, halfPaid, totalPaid } = usePaymentStatus(
     appointment._id,
     refreshTrigger
   );
   const [viewPaymentOpen, setViewPaymentOpen] = useState(false);
+  
+  // İlk mount sonrası oluşan değişiklikleri izleyen ref
+  const initialRenderRef = useRef(true);
+  const lastCompletedRef = useRef(completed);
+  
+  // Tamamlanma durumu değişince ve bu ilk render değilse ve preventAutoPopup aktif değilse
+  useEffect(() => {
+    // İlk mount sırasında (ilk render) hiçbir şey yapma
+    if (initialRenderRef.current) {
+      initialRenderRef.current = false;
+      lastCompletedRef.current = completed;
+      return;
+    }
+    
+    // Tamamlanma durumu false'dan true'ya değiştiyse ve preventAutoPopup aktif değilse
+    // Bu, bir ödeme işlemi sonrası "completed" durumunun değiştiğini gösterir
+    if (completed && !lastCompletedRef.current && preventAutoPopup) {
+      // Otomatik popup açılmasını engelle
+      setViewPaymentOpen(false);
+    }
+    
+    lastCompletedRef.current = completed;
+  }, [completed, preventAutoPopup]);
 
   return (
     <div className="relative">
@@ -115,6 +139,7 @@ function PaymentStatusCell({
           <button
             onClick={(e) => {
               e.stopPropagation();
+              // Sadece manuel tıklamalarda açılsın
               setViewPaymentOpen(true);
             }}
             title={`Toplam Ödenen Miktar: ${totalPaid} TL`}
@@ -185,6 +210,8 @@ export default function CalendarSchedulePage({ servicesData }) {
   const [showDeleteOptionsModal, setShowDeleteOptionsModal] = useState(false); // Silme seçenekleri popup
   const [deleteMode, setDeleteMode] = useState("single"); // Seçilen silme modu
   const [appointmentType, setAppointmentType] = useState(""); // Randevu Tipi
+  // Orijinal randevu silme uyarısı için yeni state
+  const [showOriginalDeleteWarning, setShowOriginalDeleteWarning] = useState(false);
 
   // Yeni: Hücre tıklama sonrası seçim modunu yönetmek için
   const [showChoiceModal, setShowChoiceModal] = useState(false);
@@ -205,6 +232,9 @@ export default function CalendarSchedulePage({ servicesData }) {
 
   // Component içinde yeni state ekleme
   const [participantError, setParticipantError] = useState(false);
+
+  // Ödeme sonrası otomatik popup'ı engelleyen bayrak - true olduğunda popup engellenir
+  const [preventAutoPopup, setPreventAutoPopup] = useState(false);
 
   // Kullanıcı profilini al
   useEffect(() => {
@@ -478,19 +508,25 @@ export default function CalendarSchedulePage({ servicesData }) {
     if (selectedAppointment._id && selectedAppointment._id.includes("_instance_")) {
       setShowDeleteOptionsModal(true);
     } else {
-      // Normal silme işlemi
-      const doctorId =
-        loggedInUser?.roleId?.roleName === "doctor"
-          ? loggedInUser._id
-          : selectedDoctor;
-          
-      const res = await deleteCalendarAppointment(selectedAppointment._id);
-      if (res.success) {
-        // Silme başarılı olduğunda bookingId'yi sıfırla
-        setRebookBookingId(null);
-        refreshAppointments(doctorId);
-        setShowModal(false);
-      }
+      // Orijinal randevu için silme onayı uyarısı göster
+      setShowOriginalDeleteWarning(true);
+    }
+  };
+
+  // Orijinal randevu silme işlemini onayla
+  const confirmOriginalDelete = async () => {
+    const doctorId =
+      loggedInUser?.roleId?.roleName === "doctor"
+        ? loggedInUser._id
+        : selectedDoctor;
+        
+    const res = await deleteCalendarAppointment(selectedAppointment._id);
+    if (res.success) {
+      // Silme başarılı olduğunda bookingId'yi sıfırla
+      setRebookBookingId(null);
+      refreshAppointments(doctorId);
+      setShowOriginalDeleteWarning(false);
+      setShowModal(false);
     }
   };
 
@@ -512,6 +548,9 @@ export default function CalendarSchedulePage({ servicesData }) {
 
   // Takvimi yenile - tarih filtresini ekle
   const refreshAppointments = async (doctorId) => {
+    // Önce engelleyici flag'i aktif et
+    setPreventAutoPopup(true);
+    
     const res = await getCalendarAppointments(doctorId, currentWeekStart.toISOString());
     if (res.success) {
       setAppointments(res.data);
@@ -519,6 +558,11 @@ export default function CalendarSchedulePage({ servicesData }) {
       setSelectedAppointment(null);
       setRebookBookingId(null);
     }
+    
+    // Belirli bir süre sonra flag'i devre dışı bırak (3 saniye daha uzun bir süre)
+    setTimeout(() => {
+      setPreventAutoPopup(false);
+    }, 3000);
   };
 
   // Hücredeki randevuyu bul
@@ -842,6 +886,7 @@ export default function CalendarSchedulePage({ servicesData }) {
                                 : selectedDoctor;
                             refreshAppointments(doctorId);
                           }}
+                          preventAutoPopup={preventAutoPopup}
                         />
                       ) : (
                         <div className="text-gray-400 italic">Boş</div>
@@ -1142,10 +1187,23 @@ export default function CalendarSchedulePage({ servicesData }) {
         <div className="flex flex-row justify-center text-sm items-center px-4 py-[0.875rem] space-x-2">
           <PaymentPopup
             isOpen={paymentOpen}
-            onClose={() => setPaymentOpen(false)}
+            onClose={() => {
+              setPaymentOpen(false);
+              
+              // Ödeme popup'ını kapattığımızda otomatik ReadOnly popup'ı engelle
+              setPreventAutoPopup(true);
+              
+              // Daha uzun bir süre (3 saniye) engelleyici aktif kalsın
+              setTimeout(() => {
+                setPreventAutoPopup(false); 
+              }, 3000);
+            }}
             servicesData={servicesData}
             row={selectedAppointment}
             onPaymentSuccess={() => {
+              // Önce engelleyici flag'i aktif et
+              setPreventAutoPopup(true);
+              
               const doctorId =
                 loggedInUser?.roleId?.roleName === "doctor"
                   ? loggedInUser._id
@@ -1233,6 +1291,46 @@ export default function CalendarSchedulePage({ servicesData }) {
                 className="px-4 py-2 bg-red-500 hover:bg-red-600 rounded-md text-white"
               >
                 Sil
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {/* Orijinal Randevu Silme Uyarısı */}
+      {showOriginalDeleteWarning && (
+        <div className="fixed inset-0 bg-black bg-opacity-30 flex justify-center items-center z-50">
+          <div className="relative bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
+            <button
+              onClick={() => setShowOriginalDeleteWarning(false)}
+              className="absolute top-2 right-2 text-red-500 hover:text-gray-600"
+            >
+              <IoIosCloseCircleOutline className="w-6 h-6" />
+            </button>
+            
+            <h2 className="text-2xl font-bold mb-4 text-gray-800">Randevu Silme Uyarısı</h2>
+            
+            <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-md">
+              <p className="text-gray-700 leading-relaxed">
+                Bu, tarafınızdan oluşturulan orijinal bir randevudur. Bu randevuyu sildiğinizde, buna bağlı tüm tekrarlı randevular da silinecektir.
+              </p>
+              <p className="mt-2 text-gray-700 leading-relaxed">
+                İlerleyen tarihlerde aynı randevuyu tekrar oluşturmanız gerekebilir.
+              </p>
+            </div>
+            
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setShowOriginalDeleteWarning(false)}
+                className="px-4 py-2 bg-gray-300 hover:bg-gray-400 rounded-md text-gray-800"
+              >
+                İptal Et
+              </button>
+              <button
+                onClick={confirmOriginalDelete}
+                className="px-4 py-2 bg-red-500 hover:bg-red-600 rounded-md text-white"
+              >
+                Randevuyu Sil
               </button>
             </div>
           </div>
