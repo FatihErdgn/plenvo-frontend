@@ -210,8 +210,10 @@ export default function CalendarSchedulePage({ servicesData }) {
   const [showDeleteOptionsModal, setShowDeleteOptionsModal] = useState(false); // Silme seçenekleri popup
   const [deleteMode, setDeleteMode] = useState("single"); // Seçilen silme modu
   const [appointmentType, setAppointmentType] = useState(""); // Randevu Tipi
-  // Orijinal randevu silme uyarısı için yeni state
-  const [showOriginalDeleteWarning, setShowOriginalDeleteWarning] = useState(false);
+  
+  // Eski uyarı state'i yerine yeni state'ler ekliyoruz
+  const [showRutinDeleteWarning, setShowRutinDeleteWarning] = useState(false); // Rutin Görüşme için uzun uyarı
+  const [showSimpleDeleteWarning, setShowSimpleDeleteWarning] = useState(false); // Diğer tipler için basit uyarı
 
   // Yeni: Hücre tıklama sonrası seçim modunu yönetmek için
   const [showChoiceModal, setShowChoiceModal] = useState(false);
@@ -508,13 +510,19 @@ export default function CalendarSchedulePage({ servicesData }) {
     if (selectedAppointment._id && selectedAppointment._id.includes("_instance_")) {
       setShowDeleteOptionsModal(true);
     } else {
-      // Orijinal randevu için silme onayı uyarısı göster
-      setShowOriginalDeleteWarning(true);
+      // Orijinal randevu için randevu tipine göre uygun uyarıyı göster
+      if (selectedAppointment.appointmentType === "Rutin Görüşme") {
+        // Rutin Görüşme tipli randevu için uzun uyarı göster
+        setShowRutinDeleteWarning(true);
+      } else {
+        // Diğer randevu tipleri için basit onay uyarısı göster
+        setShowSimpleDeleteWarning(true);
+      }
     }
   };
 
-  // Orijinal randevu silme işlemini onayla
-  const confirmOriginalDelete = async () => {
+  // Orijinal randevu silme işlemini onayla - Rutin Görüşme için
+  const confirmRutinDelete = async () => {
     const doctorId =
       loggedInUser?.roleId?.roleName === "doctor"
         ? loggedInUser._id
@@ -525,7 +533,24 @@ export default function CalendarSchedulePage({ servicesData }) {
       // Silme başarılı olduğunda bookingId'yi sıfırla
       setRebookBookingId(null);
       refreshAppointments(doctorId);
-      setShowOriginalDeleteWarning(false);
+      setShowRutinDeleteWarning(false);
+      setShowModal(false);
+    }
+  };
+  
+  // Diğer randevular için basit silme onayı
+  const confirmSimpleDelete = async () => {
+    const doctorId =
+      loggedInUser?.roleId?.roleName === "doctor"
+        ? loggedInUser._id
+        : selectedDoctor;
+        
+    const res = await deleteCalendarAppointment(selectedAppointment._id);
+    if (res.success) {
+      // Silme başarılı olduğunda bookingId'yi sıfırla
+      setRebookBookingId(null);
+      refreshAppointments(doctorId);
+      setShowSimpleDeleteWarning(false);
       setShowModal(false);
     }
   };
@@ -1297,22 +1322,22 @@ export default function CalendarSchedulePage({ servicesData }) {
         </div>
       )}
       
-      {/* Orijinal Randevu Silme Uyarısı */}
-      {showOriginalDeleteWarning && (
+      {/* Rutin Görüşme Randevu Silme Uyarısı */}
+      {showRutinDeleteWarning && (
         <div className="fixed inset-0 bg-black bg-opacity-30 flex justify-center items-center z-50">
           <div className="relative bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
             <button
-              onClick={() => setShowOriginalDeleteWarning(false)}
+              onClick={() => setShowRutinDeleteWarning(false)}
               className="absolute top-2 right-2 text-red-500 hover:text-gray-600"
             >
               <IoIosCloseCircleOutline className="w-6 h-6" />
             </button>
             
-            <h2 className="text-2xl font-bold mb-4 text-gray-800">Randevu Silme Uyarısı</h2>
+            <h2 className="text-2xl font-bold mb-4 text-gray-800">Rutin Görüşme Silme Uyarısı</h2>
             
             <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-md">
               <p className="text-gray-700 leading-relaxed">
-                Bu, tarafınızdan oluşturulan orijinal bir randevudur. Bu randevuyu sildiğinizde, buna bağlı tüm tekrarlı randevular da silinecektir.
+                Bu, tarafınızdan oluşturulan orijinal bir Rutin Görüşme randevusudur. Bu randevuyu sildiğinizde, buna bağlı tüm tekrarlı randevular da silinecektir.
               </p>
               <p className="mt-2 text-gray-700 leading-relaxed">
                 İlerleyen tarihlerde aynı randevuyu tekrar oluşturmanız gerekebilir.
@@ -1321,13 +1346,48 @@ export default function CalendarSchedulePage({ servicesData }) {
             
             <div className="flex justify-end gap-3">
               <button
-                onClick={() => setShowOriginalDeleteWarning(false)}
+                onClick={() => setShowRutinDeleteWarning(false)}
                 className="px-4 py-2 bg-gray-300 hover:bg-gray-400 rounded-md text-gray-800"
               >
                 İptal Et
               </button>
               <button
-                onClick={confirmOriginalDelete}
+                onClick={confirmRutinDelete}
+                className="px-4 py-2 bg-red-500 hover:bg-red-600 rounded-md text-white"
+              >
+                Randevuyu Sil
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {/* Basit Randevu Silme Onayı */}
+      {showSimpleDeleteWarning && (
+        <div className="fixed inset-0 bg-black bg-opacity-30 flex justify-center items-center z-50">
+          <div className="relative bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
+            <button
+              onClick={() => setShowSimpleDeleteWarning(false)}
+              className="absolute top-2 right-2 text-red-500 hover:text-gray-600"
+            >
+              <IoIosCloseCircleOutline className="w-6 h-6" />
+            </button>
+            
+            <h2 className="text-2xl font-bold mb-4 text-gray-800">Randevu Silme Onayı</h2>
+            
+            <p className="mb-6 text-gray-700">
+              Bu randevuyu silmek istediğinize emin misiniz?
+            </p>
+            
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setShowSimpleDeleteWarning(false)}
+                className="px-4 py-2 bg-gray-300 hover:bg-gray-400 rounded-md text-gray-800"
+              >
+                İptal Et
+              </button>
+              <button
+                onClick={confirmSimpleDelete}
                 className="px-4 py-2 bg-red-500 hover:bg-red-600 rounded-md text-white"
               >
                 Randevuyu Sil
