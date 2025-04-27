@@ -95,6 +95,15 @@ const getWeekStart = (date) => {
   return addDays(date, diff);
 };
 
+// Türkiye telefon numarası formatını kontrol eden yardımcı fonksiyon
+const validateTurkishPhoneNumber = (phone) => {
+  if (!phone) return true; // Boş numara kabul edilebilir
+  
+  // 0 ile başlayan 10-11 haneli numara kontrolü
+  const regex = /^0[5][0-9]{8,9}$/;
+  return regex.test(phone);
+};
+
 // PaymentStatusCell: Randevuya ait ödeme durumunu kontrol eder.
 function PaymentStatusCell({
   appointment,
@@ -201,6 +210,8 @@ export default function CalendarSchedulePage({ servicesData }) {
   const [selectedAppointment, setSelectedAppointment] = useState(null);
   const [participantCount, setParticipantCount] = useState(1);
   const [participantNames, setParticipantNames] = useState([""]);
+  const [participantPhones, setParticipantPhones] = useState([""]);
+  const [phoneErrors, setPhoneErrors] = useState([]); // Telefon numarası validasyon hataları
   const [description, setDescription] = useState("");
   const [paymentOpen, setPaymentOpen] = useState(false); // Ödeme popup kontrolü
   const [paymentRefreshTrigger, setPaymentRefreshTrigger] = useState(0); // Ödeme durumunu yenilemek için
@@ -347,9 +358,23 @@ export default function CalendarSchedulePage({ servicesData }) {
       setEditMode(true);
       setSelectedAppointment(appt);
       setParticipantCount(appt.participants ? appt.participants.length : 1);
-      setParticipantNames(
-        appt.participants ? appt.participants.map((p) => p.name) : [""]
-      );
+      
+      // İsim ve telefon bilgilerini ayarla
+      if (appt.participants) {
+        // Katılımcı isimleri
+        setParticipantNames(appt.participants.map((p) => p.name || ""));
+        
+        // Katılımcı telefon numaraları
+        setParticipantPhones(appt.participants.map((p) => p.phone || ""));
+        
+        // Telefon hatalarını sıfırla
+        setPhoneErrors(appt.participants.map(() => ""));
+      } else {
+        setParticipantNames([""]);
+        setParticipantPhones([""]);
+        setPhoneErrors([""]);
+      }
+      
       setDescription(appt.description || "");
       setIsRecurring(appt.isRecurring !== undefined ? appt.isRecurring : true);
       setEndDate(appt.endDate);
@@ -362,6 +387,22 @@ export default function CalendarSchedulePage({ servicesData }) {
       setShowModal(false);
       setShowChoiceModal(true);
     }
+  };
+
+  // Telefon numarası girişi için handler
+  const handlePhoneChange = (index, value) => {
+    const newPhones = [...participantPhones];
+    newPhones[index] = value;
+    setParticipantPhones(newPhones);
+    
+    // Telefon formatını kontrol et
+    const newPhoneErrors = [...phoneErrors];
+    if (value && !validateTurkishPhoneNumber(value)) {
+      newPhoneErrors[index] = "Telefon 0 ile başlamalı ve 05XX XXX XX XX formatında olmalıdır";
+    } else {
+      newPhoneErrors[index] = "";
+    }
+    setPhoneErrors(newPhoneErrors);
   };
 
   // "Yeni Randevu Oluştur" butonuna basınca: Form modalını varsayılan şekilde açar.
@@ -377,6 +418,8 @@ export default function CalendarSchedulePage({ servicesData }) {
     }
     setParticipantCount(1);
     setParticipantNames([""]);
+    setParticipantPhones([""]);
+    setPhoneErrors([""]); // Telefon hata state'ini de sıfırla
     setDescription("");
     setRebookBookingId(null);
     setIsRecurring(true); // Varsayılan olarak tekrarlı
@@ -396,25 +439,33 @@ export default function CalendarSchedulePage({ servicesData }) {
 
   // Randevu Yinele listesinden bir randevu seçildiğinde:
   const selectRebookAppointment = (appt) => {
-    // Hata ayıklama için bookingId değerlerini görelim
-    // console.log('Seçilen randevunun bookingId değeri:', appt.bookingId);
-    // console.log('Seçilen randevunun _id değeri:', appt._id);
-
     // Eğer appt.bookingId varsa o değeri al, yoksa appt._id'yi kullan
     setRebookBookingId(appt.bookingId || appt._id);
-
-    // Bu değer ne oldu görelim
-    // console.log('Ayarlanan rebookBookingId:', appt.bookingId || appt._id);
 
     setSelectedAppointment({
       ...appt,
       dayIndex: selectedCell.dayIndex,
       timeIndex: selectedCell.timeIndex,
     });
+    
     setParticipantCount(appt.participants ? appt.participants.length : 1);
-    setParticipantNames(
-      appt.participants ? appt.participants.map((p) => p.name) : [""]
-    );
+    
+    // İsim ve telefon bilgilerini ayarla
+    if (appt.participants) {
+      // Katılımcı isimleri
+      setParticipantNames(appt.participants.map((p) => p.name || ""));
+      
+      // Katılımcı telefon numaraları
+      setParticipantPhones(appt.participants.map((p) => p.phone || ""));
+      
+      // Telefon hatalarını sıfırla
+      setPhoneErrors(appt.participants.map(() => ""));
+    } else {
+      setParticipantNames([""]);
+      setParticipantPhones([""]);
+      setPhoneErrors([""]);
+    }
+    
     setDescription(appt.description || "");
     setIsRecurring(appt.isRecurring !== undefined ? appt.isRecurring : true);
     setEndDate(appt.endDate);
@@ -424,14 +475,26 @@ export default function CalendarSchedulePage({ servicesData }) {
     setShowModal(true);
   };
 
+  // Kişi sayısı değiştiğinde isimleri ve telefonları güncelleme
   const handleParticipantCountChange = (count) => {
     setParticipantCount(count);
     const currentNames = [...participantNames];
+    const currentPhones = [...participantPhones];
+    const currentPhoneErrors = [...phoneErrors];
+    
     while (currentNames.length < count) {
       currentNames.push("");
+      currentPhones.push("");
+      currentPhoneErrors.push("");
     }
+    
     currentNames.splice(count);
+    currentPhones.splice(count);
+    currentPhoneErrors.splice(count);
+    
     setParticipantNames(currentNames);
+    setParticipantPhones(currentPhones);
+    setPhoneErrors(currentPhoneErrors);
   };
 
   // Kaydet fonksiyonu: Eğer rebookBookingId set edilmişse payload içerisine eklenir.
@@ -449,6 +512,19 @@ export default function CalendarSchedulePage({ servicesData }) {
       setParticipantError(false);
     }
     
+    // Telefon numarası validasyonu
+    const invalidPhones = participantPhones.filter(phone => phone && !validateTurkishPhoneNumber(phone));
+    if (invalidPhones.length > 0) {
+      // Telefon numara formatı hatası
+      const newPhoneErrors = participantPhones.map(phone => 
+        phone && !validateTurkishPhoneNumber(phone) ? 
+          "Telefon 0 ile başlamalı ve 05XX XXX XX XX formatında olmalıdır" : ""
+      );
+      setPhoneErrors(newPhoneErrors);
+      alert("Lütfen telefon numaralarını doğru formatta giriniz (05XX XXX XX XX)");
+      return;
+    }
+    
     const doctorId =
       loggedInUser?.roleId?.roleName === "doctor"
         ? loggedInUser._id
@@ -458,7 +534,10 @@ export default function CalendarSchedulePage({ servicesData }) {
       dayIndex: selectedAppointment.dayIndex,
       timeIndex: selectedAppointment.timeIndex,
       doctorId,
-      participants: participantNames.map((name) => ({ name })),
+      participants: participantNames.map((name, index) => ({ 
+        name, 
+        phone: participantPhones[index] || "" 
+      })),
       description,
       appointmentDate: selectedAppointment.appointmentDate || selectedCell.appointmentDate,
       isRecurring, // Tekrarlı randevu ayarı
@@ -1026,7 +1105,7 @@ export default function CalendarSchedulePage({ servicesData }) {
       {/* Randevu Modalı: Yeni randevu oluşturma veya düzenleme formu */}
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-30 flex justify-center items-center z-50">
-          <div className="bg-white p-4 rounded shadow-md w-96">
+          <div className="bg-white p-4 rounded shadow-md w-96 max-h-[90vh] overflow-y-auto">
             <h2 className="text-xl font-bold mb-2">
               {editMode
                 ? "Randevu Düzenle"
@@ -1136,33 +1215,57 @@ export default function CalendarSchedulePage({ servicesData }) {
                 ))}
               </select>
             </div>
-            {/* Kişi İsimleri */}
+            {/* Kişi İsimleri ve Telefon Numaraları */}
             {Array.from({ length: participantCount }, (_, i) => (
-              <div key={i} className="mb-2">
-                <label className="block text-sm font-medium">
-                  Kişi {i + 1} Adı
-                </label>
-                <input
-                  type="text"
-                  value={participantNames[i] || ""}
-                  onChange={(e) => {
-                    const newNames = [...participantNames];
-                    newNames[i] = e.target.value;
-                    setParticipantNames(newNames);
-                    // İsim girilince hatayı temizle
-                    if (e.target.value.trim() !== '') {
-                      setParticipantError(false);
-                    }
-                  }}
-                  className={`border p-1 w-full cursor-pointer rounded-md ${
-                    participantError && (!participantNames[i] || participantNames[i].trim() === '') 
-                    ? 'border-red-500 bg-red-50' 
-                    : ''
-                  }`}
-                />
-                {participantError && (!participantNames[i] || participantNames[i].trim() === '') && (
-                  <p className="text-red-500 text-xs mt-1">Hasta ismi boş olamaz</p>
-                )}
+              <div key={i} className="mb-4">
+                <div className="mb-2">
+                  <label className="block text-sm font-medium">
+                    Kişi {i + 1} Adı
+                  </label>
+                  <input
+                    type="text"
+                    value={participantNames[i] || ""}
+                    onChange={(e) => {
+                      const newNames = [...participantNames];
+                      newNames[i] = e.target.value;
+                      setParticipantNames(newNames);
+                      // İsim girilince hatayı temizle
+                      if (e.target.value.trim() !== '') {
+                        setParticipantError(false);
+                      }
+                    }}
+                    className={`border p-1 w-full cursor-pointer rounded-md ${
+                      participantError && (!participantNames[i] || participantNames[i].trim() === '') 
+                      ? 'border-red-500 bg-red-50' 
+                      : ''
+                    }`}
+                  />
+                  {participantError && (!participantNames[i] || participantNames[i].trim() === '') && (
+                    <p className="text-red-500 text-xs mt-1">Hasta ismi boş olamaz</p>
+                  )}
+                </div>
+                <div>
+                  <label className="block text-sm font-medium">
+                    Kişi {i + 1} Telefon
+                  </label>
+                  <input
+                    type="text"
+                    value={participantPhones[i] || ""}
+                    onChange={(e) => handlePhoneChange(i, e.target.value)}
+                    className={`border p-1 w-full cursor-pointer rounded-md ${
+                      phoneErrors[i] ? 'border-red-500 bg-red-50' : ''
+                    }`}
+                    placeholder="05XX XXX XX XX"
+                  />
+                  {phoneErrors[i] && (
+                    <p className="text-red-500 text-xs mt-1">{phoneErrors[i]}</p>
+                  )}
+                  {!phoneErrors[i] && (
+                    <p className="text-gray-500 text-xs mt-1">
+                      Telefon numarası 0 ile başlamalıdır (Örn: 05XX XXX XX XX)
+                    </p>
+                  )}
+                </div>
               </div>
             ))}
             {/* Butonlar */}
