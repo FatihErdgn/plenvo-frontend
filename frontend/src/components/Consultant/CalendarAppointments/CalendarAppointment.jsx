@@ -442,10 +442,17 @@ export default function CalendarSchedulePage({ servicesData }) {
     // Eğer appt.bookingId varsa o değeri al, yoksa appt._id'yi kullan
     setRebookBookingId(appt.bookingId || appt._id);
 
+    // Önemli: Randevu tarihini seçilen hücrenin gün ve saat indeksine göre yeniden hesapla
+    const newAppointmentDate = new Date(weekDates[selectedCell.dayIndex]);
+    newAppointmentDate.setHours(9 + Math.floor(selectedCell.timeIndex));
+    newAppointmentDate.setMinutes(0);
+    newAppointmentDate.setSeconds(0);
+
     setSelectedAppointment({
       ...appt,
       dayIndex: selectedCell.dayIndex,
       timeIndex: selectedCell.timeIndex,
+      appointmentDate: newAppointmentDate // Yeni hesaplanmış tarih
     });
     
     setParticipantCount(appt.participants ? appt.participants.length : 1);
@@ -530,6 +537,17 @@ export default function CalendarSchedulePage({ servicesData }) {
         ? loggedInUser._id
         : selectedDoctor;
         
+    // Randevu tarihini kontrol et - eğer tanımlı değilse, seçilen hücreye göre oluştur
+    let appointmentDate = selectedAppointment.appointmentDate;
+    
+    if (!appointmentDate) {
+      const newDate = new Date(weekDates[selectedAppointment.dayIndex]);
+      newDate.setHours(9 + Math.floor(selectedAppointment.timeIndex));
+      newDate.setMinutes(0);
+      newDate.setSeconds(0);
+      appointmentDate = newDate;
+    }
+        
     const payload = {
       dayIndex: selectedAppointment.dayIndex,
       timeIndex: selectedAppointment.timeIndex,
@@ -539,7 +557,7 @@ export default function CalendarSchedulePage({ servicesData }) {
         phone: participantPhones[index] || "" 
       })),
       description,
-      appointmentDate: selectedAppointment.appointmentDate || selectedCell.appointmentDate,
+      appointmentDate: appointmentDate,
       isRecurring, // Tekrarlı randevu ayarı
       endDate, // Bitiş tarihi
       appointmentType // Randevu Tipi
@@ -602,19 +620,19 @@ export default function CalendarSchedulePage({ servicesData }) {
 
   // Orijinal randevu silme işlemini onayla - Rutin Görüşme için
   const confirmRutinDelete = async () => {
-    const doctorId =
-      loggedInUser?.roleId?.roleName === "doctor"
-        ? loggedInUser._id
-        : selectedDoctor;
-        
-    const res = await deleteCalendarAppointment(selectedAppointment._id);
-    if (res.success) {
-      // Silme başarılı olduğunda bookingId'yi sıfırla
-      setRebookBookingId(null);
-      refreshAppointments(doctorId);
+      const doctorId =
+        loggedInUser?.roleId?.roleName === "doctor"
+          ? loggedInUser._id
+          : selectedDoctor;
+          
+      const res = await deleteCalendarAppointment(selectedAppointment._id);
+      if (res.success) {
+        // Silme başarılı olduğunda bookingId'yi sıfırla
+        setRebookBookingId(null);
+        refreshAppointments(doctorId);
       setShowRutinDeleteWarning(false);
-      setShowModal(false);
-    }
+        setShowModal(false);
+      }
   };
   
   // Diğer randevular için basit silme onayı
@@ -1219,30 +1237,30 @@ export default function CalendarSchedulePage({ servicesData }) {
             {Array.from({ length: participantCount }, (_, i) => (
               <div key={i} className="mb-4">
                 <div className="mb-2">
-                  <label className="block text-sm font-medium">
-                    Kişi {i + 1} Adı
-                  </label>
-                  <input
-                    type="text"
-                    value={participantNames[i] || ""}
-                    onChange={(e) => {
-                      const newNames = [...participantNames];
-                      newNames[i] = e.target.value;
-                      setParticipantNames(newNames);
-                      // İsim girilince hatayı temizle
-                      if (e.target.value.trim() !== '') {
-                        setParticipantError(false);
-                      }
-                    }}
-                    className={`border p-1 w-full cursor-pointer rounded-md ${
-                      participantError && (!participantNames[i] || participantNames[i].trim() === '') 
-                      ? 'border-red-500 bg-red-50' 
-                      : ''
-                    }`}
-                  />
-                  {participantError && (!participantNames[i] || participantNames[i].trim() === '') && (
-                    <p className="text-red-500 text-xs mt-1">Hasta ismi boş olamaz</p>
-                  )}
+                <label className="block text-sm font-medium">
+                  Kişi {i + 1} Adı
+                </label>
+                <input
+                  type="text"
+                  value={participantNames[i] || ""}
+                  onChange={(e) => {
+                    const newNames = [...participantNames];
+                    newNames[i] = e.target.value;
+                    setParticipantNames(newNames);
+                    // İsim girilince hatayı temizle
+                    if (e.target.value.trim() !== '') {
+                      setParticipantError(false);
+                    }
+                  }}
+                  className={`border p-1 w-full cursor-pointer rounded-md ${
+                    participantError && (!participantNames[i] || participantNames[i].trim() === '') 
+                    ? 'border-red-500 bg-red-50' 
+                    : ''
+                  }`}
+                />
+                {participantError && (!participantNames[i] || participantNames[i].trim() === '') && (
+                  <p className="text-red-500 text-xs mt-1">Hasta ismi boş olamaz</p>
+                )}
                 </div>
                 <div>
                   <label className="block text-sm font-medium">
