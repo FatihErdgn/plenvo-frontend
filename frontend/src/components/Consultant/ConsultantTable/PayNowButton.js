@@ -128,6 +128,10 @@ export default function PaymentPopup({
   const [showAppointmentTypeWarning, setShowAppointmentTypeWarning] =
     useState(false); // Randevu tipi uyarısı
 
+  // Yeni: Ödeme periyodu seçimi
+  const [paymentPeriod, setPaymentPeriod] = useState("single"); // "single", "monthly", "quarterly", "biannual"
+  const [showRecurringOptions, setShowRecurringOptions] = useState(false); // Tekrarlı seçenekleri göster/gizle
+
   // Sadece "Rutin Görüşme" randevu tipinde ek hizmet seçildiğinde doktor ücreti sıfırlansın
   // Diğer randevu tipleri (Ön Görüşme, Muayene vb.) için sıfırlanmamalı
   const doctorFee =
@@ -169,9 +173,12 @@ export default function PaymentPopup({
           setSumPaid(totalPaid);
           setExistingPayment(payments[0]); // İlk ödeme kaydı üzerinden bilgiler alınır
           
-          // Önceki ödeme açıklamasını yükle
+          // Önceki ödeme açıklamasını ve periyodunu yükle
           if (payments[0].paymentDescription) {
             setPaymentNote(payments[0].paymentDescription);
+          }
+          if (payments[0].paymentPeriod) {
+            setPaymentPeriod(payments[0].paymentPeriod);
           }
         } else {
           setSumPaid(0);
@@ -191,7 +198,25 @@ export default function PaymentPopup({
     } else {
       setShowAppointmentTypeWarning(false);
     }
-  }, [isOpen, row, isCalendar]);
+
+    // Eğer takvim randevusuysa ve tekrarlı randevuysa, ödeme periyodu seçeneklerini göster
+    if (isOpen && isCalendar && row && (row.isRecurring || (row._id && row._id.includes("_instance_")))) {
+      setShowRecurringOptions(true);
+      
+      // Rutin Görüşme için varsayılan periyot "Aylık" olarak ayarlanmalı
+      if (appointmentData.appointmentType === "Rutin Görüşme" && !existingPayment) {
+        // Eğer mevcut bir ödeme yoksa ve randevu tipi "Rutin Görüşme" ise
+        // "Tek Seferlik" seçeneğini devre dışı bırak, "Aylık" seçeneğini varsayılan yap
+        setPaymentPeriod("monthly");
+      } else if (!existingPayment) {
+        // Diğer randevu tipleri için varsayılan olarak "Tek Seferlik" olabilir
+        setPaymentPeriod("single");
+      }
+    } else {
+      setShowRecurringOptions(false);
+      setPaymentPeriod("single"); // Tekrarlı olmayan randevularda tek seferlik ödeme
+    }
+  }, [isOpen, row, isCalendar, appointmentData.appointmentType, existingPayment]);
 
   if (!isOpen) return null;
 
@@ -211,6 +236,21 @@ export default function PaymentPopup({
       setSelectedExtras(selectedExtras.filter((ex) => ex._id !== service._id));
     } else {
       setSelectedExtras([...selectedExtras, service]);
+    }
+  };
+
+  // Ödeme periyodunu Türkçe olarak göstermek için yardımcı fonksiyon
+  const getPaymentPeriodText = (period) => {
+    switch (period) {
+      case "monthly":
+        return "Aylık";
+      case "quarterly":
+        return "3 Aylık";
+      case "biannual":
+        return "6 Aylık";
+      case "single":
+      default:
+        return "Tek Seferlik";
     }
   };
 
@@ -290,6 +330,7 @@ export default function PaymentPopup({
       paymentAmount: paymentAmountValue,
       paymentDescription: paymentNote,
       appointmentId: realAppointmentId, // Gerçek Randevu ID'si
+      paymentPeriod: paymentPeriod, // Yeni: Ödeme periyodu
     };
     
     // ÖNEMLİ: API çağrılarından ÖNCE popup'ı kapatalım
@@ -314,6 +355,7 @@ export default function PaymentPopup({
           paymentDescription: paymentNote,
           paymentStatus: updatedPaymentStatus,
           appointmentId: realAppointmentId, // Gerçek Randevu ID'si
+          paymentPeriod: paymentPeriod, // Yeni: Ödeme periyodu
         };
         await updatePayment(existingPayment._id, updatedPayload);
       } else {
@@ -546,6 +588,110 @@ export default function PaymentPopup({
             <h3 className="text-lg font-semibold mb-3 text-gray-700">
               Ödeme Seçenekleri
             </h3>
+
+            {/* Ödeme Periyodu Seçimi - Sadece tekrarlı randevularda göster */}
+            {showRecurringOptions && (
+              <div className="mb-5 pb-4 border-b border-gray-200">
+                <p className="font-semibold text-gray-700 mb-2 flex items-center">
+                  <span className="inline-block w-3 h-3 bg-blue-500 rounded-full mr-2"></span>
+                  Ödeme Geçerlilik Süresi
+                </p>
+                
+                <div className="flex flex-wrap gap-2 mb-3">
+                  {/* Tek Seferlik seçeneği - Rutin Görüşme dışındaki randevu tiplerinde göster */}
+                  {appointmentData.appointmentType !== "Rutin Görüşme" && (
+                    <div 
+                      className={`flex-1 rounded-lg p-3 text-center cursor-pointer transition-all ${
+                        paymentPeriod === "single" 
+                          ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-md" 
+                          : "bg-gray-100 hover:bg-gray-200 text-gray-700"
+                      }`}
+                      onClick={() => !existingPayment && setPaymentPeriod("single")}
+                    >
+                      <span className="font-medium">Tek Seferlik</span>
+                      <p className="text-xs mt-1">
+                        {paymentPeriod === "single" ? "Seçildi" : "Sadece bu randevu için geçerli"}
+                      </p>
+                    </div>
+                  )}
+                  
+                  <div 
+                    className={`flex-1 rounded-lg p-3 text-center cursor-pointer transition-all ${
+                      paymentPeriod === "monthly" 
+                        ? "bg-gradient-to-r from-green-500 to-green-600 text-white shadow-md" 
+                        : "bg-gray-100 hover:bg-gray-200 text-gray-700"
+                    }`}
+                    onClick={() => !existingPayment && setPaymentPeriod("monthly")}
+                  >
+                    <span className="font-medium">Aylık</span>
+                    <p className="text-xs mt-1">
+                      {paymentPeriod === "monthly" ? "Seçildi" : "1 ay tüm randevular için geçerli"}
+                    </p>
+                  </div>
+                  
+                  <div 
+                    className={`flex-1 rounded-lg p-3 text-center cursor-pointer transition-all ${
+                      paymentPeriod === "quarterly" 
+                        ? "bg-gradient-to-r from-purple-500 to-purple-600 text-white shadow-md" 
+                        : "bg-gray-100 hover:bg-gray-200 text-gray-700"
+                    }`}
+                    onClick={() => !existingPayment && setPaymentPeriod("quarterly")}
+                  >
+                    <span className="font-medium">3 Aylık</span>
+                    <p className="text-xs mt-1">
+                      {paymentPeriod === "quarterly" ? "Seçildi" : "3 ay tüm randevular için geçerli"}
+                    </p>
+                  </div>
+                  
+                  <div 
+                    className={`flex-1 rounded-lg p-3 text-center cursor-pointer transition-all ${
+                      paymentPeriod === "biannual" 
+                        ? "bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-md" 
+                        : "bg-gray-100 hover:bg-gray-200 text-gray-700"
+                    }`}
+                    onClick={() => !existingPayment && setPaymentPeriod("biannual")}
+                  >
+                    <span className="font-medium">6 Aylık</span>
+                    <p className="text-xs mt-1">
+                      {paymentPeriod === "biannual" ? "Seçildi" : "6 ay tüm randevular için geçerli"}
+                    </p>
+                  </div>
+                </div>
+                
+                {existingPayment && existingPayment.paymentPeriod && existingPayment.periodEndDate && (
+                  <div className="p-3 mt-2 bg-blue-50 border border-blue-100 rounded-md text-blue-700">
+                    <p className="flex items-center">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      <strong>Mevcut ödeme:</strong> {getPaymentPeriodText(existingPayment.paymentPeriod)},
+                      <span className="ml-1 font-medium">
+                        {new Date(existingPayment.periodEndDate).toLocaleDateString('tr-TR')} tarihine kadar geçerli
+                      </span>
+                    </p>
+                  </div>
+                )}
+
+                {/* Bilgi notu */}
+                <div className="text-xs text-gray-600 mt-2 p-2 bg-gray-50 rounded border border-gray-200">
+                  <p className="flex items-center mb-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <strong>Periyot Seçimi Hakkında:</strong>
+                  </p>
+                  <ul className="list-disc list-inside pl-1">
+                    {appointmentData.appointmentType !== "Rutin Görüşme" && (
+                      <li><strong>Tek Seferlik:</strong> Sadece seçili randevu için geçerlidir.</li>
+                    )}
+                    <li><strong>Aylık/3 Aylık/6 Aylık:</strong> Belirtilen süre içindeki tüm tekrarlı randevular için geçerlidir.</li>
+                    {appointmentData.appointmentType === "Rutin Görüşme" && (
+                      <li className="mt-1 text-blue-600"><strong>Not:</strong> Rutin Görüşme randevuları için periyodik ödeme zorunludur.</li>
+                    )}
+                  </ul>
+                </div>
+              </div>
+            )}
 
             {/* Ödeme Modu (Tam/Kısmi) */}
             <div className="flex gap-4 mb-4 justify-center items-center">

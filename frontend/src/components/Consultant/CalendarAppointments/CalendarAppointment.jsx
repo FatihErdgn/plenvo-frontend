@@ -112,7 +112,7 @@ function PaymentStatusCell({
   fetchAppointments,
   preventAutoPopup
 }) {
-  const { completed, halfPaid, totalPaid } = usePaymentStatus(
+  const { completed, halfPaid, totalPaid, isExpired } = usePaymentStatus(
     appointment._id,
     refreshTrigger
   );
@@ -140,6 +140,27 @@ function PaymentStatusCell({
     
     lastCompletedRef.current = completed;
   }, [completed, preventAutoPopup]);
+
+  // Ödeme periyodu sona ermişse özel bir durum gösterilmeli
+  if (isExpired) {
+    return (
+      <div className="relative">
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onClickPayNow();
+          }}
+          title="Ödeme periyodu dolmuş! Yeni ödeme gerekiyor."
+          className="absolute top-1 right-1 bg-orange-500 hover:bg-orange-600 text-white text-xs px-1 py-0.5 rounded"
+        >
+          <FaMoneyBills className="w-[1.25rem] h-[1.25rem]" />
+        </button>
+        <div className="text-sm font-medium pr-8">
+          {appointment.participants.map((p) => p.name).join(" - ")}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="relative">

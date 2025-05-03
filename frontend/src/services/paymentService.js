@@ -75,11 +75,21 @@ export const getPaymentsByAppointment = async (appointmentId) => {
     // Eğer appointmentId "_instance_" içeriyorsa, bu bir sanal instance'dır
     // Parent ID'yi çıkarıp onu kullanmalıyız
     let realAppointmentId = appointmentId;
+    let instanceDate = "";
+    
     if (appointmentId && appointmentId.includes("_instance_")) {
-      realAppointmentId = appointmentId.split("_instance_")[0];
+      const parts = appointmentId.split("_instance_");
+      realAppointmentId = parts[0];
+      instanceDate = parts[1] || "";
     }
     
-    const response = await api.get(`/payments/appointment/${realAppointmentId}`);
+    // Eğer instance tarihi varsa, bu bilgiyi query parameter olarak ekle
+    let url = `/payments/appointment/${realAppointmentId}`;
+    if (instanceDate) {
+      url += `?instanceDate=${instanceDate}`;
+    }
+    
+    const response = await api.get(url);
     return response.data;
   } catch (error) {
     if (error.response?.status === 404) {
