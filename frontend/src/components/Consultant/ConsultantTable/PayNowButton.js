@@ -127,6 +127,9 @@ export default function PaymentPopup({
   const [existingPayment, setExistingPayment] = useState(null);
   const [showAppointmentTypeWarning, setShowAppointmentTypeWarning] =
     useState(false); // Randevu tipi uyarısı
+  
+  // Önceki/süresi dolmuş ödeme bilgisi
+  const [previousPaymentInfo, setPreviousPaymentInfo] = useState(null);
 
   // Yeni: Ödeme periyodu seçimi
   const [paymentPeriod, setPaymentPeriod] = useState("single"); // "single", "monthly", "quarterly", "biannual"
@@ -166,26 +169,91 @@ export default function PaymentPopup({
         // console.log("Önceki ödemeler alındı:", res);
         if (res.payments && res.payments.length > 0) {
           const payments = res.payments;
-          const totalPaid = payments.reduce(
+          
+          // Ödemeleri isValid durumuna göre ayır
+          const validPayments = payments.filter(payment => payment.isValid === true);
+          const expiredPayments = payments.filter(payment => payment.isValid === false);
+          
+          // Ödemeleri isCompleted durumuna göre de ayır (tamamlanmış ve kısmi ödemeler)
+          const completedPayments = payments.filter(payment => payment.isCompleted === true);
+          const partialPayments = payments.filter(payment => payment.isValid === true && payment.isCompleted === false);
+          
+          // Toplam ödenen miktarı hesapla - ÖNEMLİ: Sadece geçerli ödemeleri hesaba kat
+          const totalPaid = validPayments.reduce(
             (acc, payment) => acc + Number(payment.paymentAmount),
             0
           );
           setSumPaid(totalPaid);
-          setExistingPayment(payments[0]); // İlk ödeme kaydı üzerinden bilgiler alınır
           
-          // Önceki ödeme açıklamasını ve periyodunu yükle
-          if (payments[0].paymentDescription) {
-            setPaymentNote(payments[0].paymentDescription);
+          // Eğer geçerli ve tamamlanmış ödeme varsa, onu mevcut ödeme olarak ayarla
+          if (completedPayments.length > 0) {
+            setExistingPayment(completedPayments[0]); // İlk tamamlanmış ödeme kaydını kullan
+            
+            // Önceki ödeme açıklamasını ve periyodunu yükle
+            if (completedPayments[0].paymentDescription) {
+              setPaymentNote(completedPayments[0].paymentDescription);
+            }
+            if (completedPayments[0].paymentPeriod) {
+              setPaymentPeriod(completedPayments[0].paymentPeriod);
+            }
+          } 
+          // Eğer tamamlanmamış ama geçerli (kısmi) ödeme varsa
+          else if (partialPayments.length > 0) {
+            setExistingPayment(partialPayments[0]); // İlk kısmi ödeme kaydını kullan
+            
+            // Önceki ödeme açıklamasını ve periyodunu yükle
+            if (partialPayments[0].paymentDescription) {
+              setPaymentNote(partialPayments[0].paymentDescription);
+            }
+            if (partialPayments[0].paymentPeriod) {
+              setPaymentPeriod(partialPayments[0].paymentPeriod);
+            }
           }
-          if (payments[0].paymentPeriod) {
-            setPaymentPeriod(payments[0].paymentPeriod);
+          else if (expiredPayments.length > 0) {
+            // Geçerli ödeme yoksa ama süresi dolmuş ödeme varsa:
+            // Bunlar mevcut ödeme olarak KULLANILMAYACAK (null olarak bırakılır)
+            setExistingPayment(null);
+            
+            // Ancak notlar tekrar kullanılabilir
+            if (expiredPayments[0].paymentDescription) {
+              setPaymentNote(expiredPayments[0].paymentDescription);
+            }
+            
+            // Tekrarlı randevularda süresi dolmuş ödemede tek seferlik seçildiyse,
+            // default olarak aylık değerini öner, değilse eski periyodu koru
+            if (expiredPayments[0].paymentPeriod === "single" && 
+                isCalendar && 
+                (row.isRecurring || (row._id && row._id.includes("_instance_")))) {
+              setPaymentPeriod("monthly");
+            } else {
+              setPaymentPeriod(expiredPayments[0].paymentPeriod);
+            }
+            
+            // Ayrıca süresi dolmuş ödemelere dair bilgilendirme göster
+            if (expiredPayments[0].periodEndDate) {
+              // Bu bilgi ekranda gösterilecek
+              setPreviousPaymentInfo({
+                expired: true,
+                periodEndDate: expiredPayments[0].periodEndDate,
+                paymentPeriod: expiredPayments[0].paymentPeriod
+              });
+            }
+          } else {
+            // Hiç ödeme yoksa
+            setSumPaid(0);
+            setExistingPayment(null);
+            setPreviousPaymentInfo(null);
           }
         } else {
+          // Ödeme bulunamadı
           setSumPaid(0);
           setExistingPayment(null);
+          setPreviousPaymentInfo(null);
         }
       } catch (err) {
         console.error("Önceki ödemeler alınamadı:", err);
+        setExistingPayment(null);
+        setPreviousPaymentInfo(null);
       }
     }
     if (isOpen && row && row._id) {
@@ -216,14 +284,14 @@ export default function PaymentPopup({
       setShowRecurringOptions(false);
       setPaymentPeriod("single"); // Tekrarlı olmayan randevularda tek seferlik ödeme
     }
-  }, [isOpen, row, isCalendar, appointmentData.appointmentType, existingPayment]);
+  }, [isOpen, row, isCalendar, appointmentData.appointmentType]);
 
   if (!isOpen) return null;
 
   // Mevcut ödeme varsa, ek hizmet seçimlerine izin vermiyoruz.
   const handleExtraChange = (service) => {
-    // Randevu tipi seçilmemiş veya mevcut ödeme varsa, ek hizmet seçimine izin verme
-    if (existingPayment || (isCalendar && !appointmentData.appointmentType)) {
+    // Randevu tipi seçilmemiş veya VALID mevcut ödeme varsa, ek hizmet seçimine izin verme
+    if ((existingPayment && existingPayment.isValid) || (isCalendar && !appointmentData.appointmentType)) {
       // Eğer randevu tipi seçilmemişse ve kullanıcı ek hizmet seçmeye çalışıyorsa uyarı göster
       if (isCalendar && !appointmentData.appointmentType) {
         alert("Ek hizmet seçmeden önce lütfen randevu tipini belirleyin.");
@@ -322,6 +390,59 @@ export default function PaymentPopup({
       realAppointmentId = row._id.split("_instance_")[0];
     }
 
+    // Instance tarihi - recurringStart veya startTime veya appointmentDate
+    let instanceDate = null;
+    if (isCalendar) {
+      // Takvim görünümünde startTime veya recurringStart'ı kullan
+      instanceDate = row.startTime || row.recurringStart;
+      
+      // Eğer instance ID'si varsa (yani _instance_ içeriyorsa) ve tarihi çıkarabiliyorsak
+      if (row._id && row._id.includes("_instance_")) {
+        const instancePart = row._id.split("_instance_")[1];
+        if (instancePart) {
+          try {
+            // Instance ID'den tarihi çıkarmayı dene
+            const dateFromId = new Date(instancePart);
+            if (!isNaN(dateFromId.getTime())) {
+              // Geçerli bir tarihse, instanceDate'i güncelle
+              console.log("Instance ID'den tarih çıkarıldı:", dateFromId.toISOString());
+              instanceDate = dateFromId.toISOString();
+            }
+          } catch (e) {
+            console.error("Instance ID'den tarih çıkarma hatası:", e);
+          }
+        }
+      }
+    } else {
+      // Normal tablo görünümünde appointmentDate'i kullan
+      instanceDate = row.appointmentDate;
+    }
+    
+    // Debug için tarih formatını kontrol et
+    console.log("Frontend - Instance bilgileri:", {
+      isCalendar,
+      id: row._id,
+      recurringStart: row.recurringStart,
+      startTime: row.startTime,
+      appointmentDate: row.appointmentDate,
+      instanceDate
+    });
+    
+    if (instanceDate) {
+      try {
+        const instanceDateObj = new Date(instanceDate);
+        if (!isNaN(instanceDateObj.getTime())) {
+          console.log("Geçerli tarih nesnesi oluşturuldu:", instanceDateObj.toISOString());
+          // ISO formatı tercih et - backend için en güvenli format
+          instanceDate = instanceDateObj.toISOString();
+        } else {
+          console.error("Geçersiz tarih formatı:", instanceDate);
+        }
+      } catch (e) {
+        console.error("Frontend - Tarih çevirme hatası:", e);
+      }
+    }
+
     // Gönderilecek payload
     const payload = {
       currencyName: "TRY", // Varsayılan para birimi (gerekirse güncellenebilir)
@@ -330,7 +451,8 @@ export default function PaymentPopup({
       paymentAmount: paymentAmountValue,
       paymentDescription: paymentNote,
       appointmentId: realAppointmentId, // Gerçek Randevu ID'si
-      paymentPeriod: paymentPeriod, // Yeni: Ödeme periyodu
+      paymentPeriod: paymentPeriod, // Ödeme periyodu
+      actualAppointmentDate: instanceDate, // Instance'ın gerçek tarihi - backend buna göre periyot hesaplayacak
     };
     
     // ÖNEMLİ: API çağrılarından ÖNCE popup'ı kapatalım
@@ -338,7 +460,7 @@ export default function PaymentPopup({
 
     try {
       // Eğer daha önce ödeme yapılmışsa, updatePayment çalışsın; yoksa createPayment
-      if (existingPayment) {
+      if (existingPayment && existingPayment.isValid) {
         let updatedPaymentStatus;
         if (paymentAmountValue === remainingAmount) {
           // Eğer kalan tutar kadar ödeme yapılıyorsa, ödeme tamamlanmış sayılır.
@@ -355,10 +477,12 @@ export default function PaymentPopup({
           paymentDescription: paymentNote,
           paymentStatus: updatedPaymentStatus,
           appointmentId: realAppointmentId, // Gerçek Randevu ID'si
-          paymentPeriod: paymentPeriod, // Yeni: Ödeme periyodu
+          paymentPeriod: paymentPeriod, // Ödeme periyodu
+          actualAppointmentDate: instanceDate, // Instance'ın gerçek tarihi - backend buna göre periyot hesaplayacak
         };
         await updatePayment(existingPayment._id, updatedPayload);
       } else {
+        // Süresi dolmuş ödeme veya hiç ödeme yoksa, yeni bir ödeme kaydı oluştur
         await createPayment(payload);
       }
       
@@ -544,9 +668,9 @@ export default function PaymentPopup({
               <p className="font-semibold text-gray-700 mb-2">Ek Hizmetler</p>
               {extraServices.map((svc) => {
                 const checked = selectedExtras.some((ex) => ex._id === svc._id);
-                // Randevu tipi seçilmemiş veya mevcut ödeme varsa, checkbox'ları disable et
+                // Randevu tipi seçilmemiş veya geçerli mevcut ödeme varsa, checkbox'ları disable et
                 const isDisabled =
-                  existingPayment || (isCalendar && !row.appointmentType);
+                  (existingPayment && existingPayment.isValid) || (isCalendar && !row.appointmentType);
                 return (
                   <label
                     key={svc._id}
@@ -589,6 +713,44 @@ export default function PaymentPopup({
               Ödeme Seçenekleri
             </h3>
 
+            {/* Süresi Dolmuş Ödeme Uyarısı */}
+            {previousPaymentInfo && previousPaymentInfo.expired && (
+              <div className="mb-4 p-3 bg-amber-50 border border-amber-200 text-amber-800 rounded-md">
+                <p className="font-medium flex items-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                  Ödeme Süresi Dolmuş!
+                </p>
+                <p className="text-sm mt-1">
+                  Önceki {getPaymentPeriodText(previousPaymentInfo.paymentPeriod)} ödeme periyodu 
+                  <strong className="mx-1">{new Date(previousPaymentInfo.periodEndDate).toLocaleDateString('tr-TR')}</strong>
+                  tarihinde sona ermiştir. Yeni bir ödeme yapmanız gerekmektedir.
+                </p>
+              </div>
+            )}
+            
+            {/* Kısmi Ödeme Bilgilendirmesi */}
+            {existingPayment && !existingPayment.isCompleted && (
+              <div className="mb-4 p-3 bg-blue-50 border border-blue-200 text-blue-800 rounded-md">
+                <p className="font-medium flex items-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  Kısmi Ödeme Yapılmış
+                </p>
+                <p className="text-sm mt-1">
+                  Bu randevu için <strong>{existingPayment.paymentAmount} TL</strong> kısmi ödeme yapılmıştır. 
+                  Kalan tutar: <strong>{totalCost - sumPaid} TL</strong>
+                </p>
+                <p className="text-xs mt-1 text-blue-600">
+                  {getPaymentPeriodText(existingPayment.paymentPeriod)} ödeme periyodu 
+                  <strong className="mx-1">{new Date(existingPayment.periodEndDate).toLocaleDateString('tr-TR')}</strong>
+                  tarihine kadar geçerlidir.
+                </p>
+              </div>
+            )}
+
             {/* Ödeme Periyodu Seçimi - Sadece tekrarlı randevularda göster */}
             {showRecurringOptions && (
               <div className="mb-5 pb-4 border-b border-gray-200">
@@ -606,7 +768,7 @@ export default function PaymentPopup({
                           ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-md" 
                           : "bg-gray-100 hover:bg-gray-200 text-gray-700"
                       }`}
-                      onClick={() => !existingPayment && setPaymentPeriod("single")}
+                      onClick={() => !(existingPayment && existingPayment.isValid) && setPaymentPeriod("single")}
                     >
                       <span className="font-medium">Tek Seferlik</span>
                       <p className="text-xs mt-1">
@@ -621,7 +783,7 @@ export default function PaymentPopup({
                         ? "bg-gradient-to-r from-green-500 to-green-600 text-white shadow-md" 
                         : "bg-gray-100 hover:bg-gray-200 text-gray-700"
                     }`}
-                    onClick={() => !existingPayment && setPaymentPeriod("monthly")}
+                    onClick={() => !(existingPayment && existingPayment.isValid) && setPaymentPeriod("monthly")}
                   >
                     <span className="font-medium">Aylık</span>
                     <p className="text-xs mt-1">
@@ -635,7 +797,7 @@ export default function PaymentPopup({
                         ? "bg-gradient-to-r from-purple-500 to-purple-600 text-white shadow-md" 
                         : "bg-gray-100 hover:bg-gray-200 text-gray-700"
                     }`}
-                    onClick={() => !existingPayment && setPaymentPeriod("quarterly")}
+                    onClick={() => !(existingPayment && existingPayment.isValid) && setPaymentPeriod("quarterly")}
                   >
                     <span className="font-medium">3 Aylık</span>
                     <p className="text-xs mt-1">
@@ -649,7 +811,7 @@ export default function PaymentPopup({
                         ? "bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-md" 
                         : "bg-gray-100 hover:bg-gray-200 text-gray-700"
                     }`}
-                    onClick={() => !existingPayment && setPaymentPeriod("biannual")}
+                    onClick={() => !(existingPayment && existingPayment.isValid) && setPaymentPeriod("biannual")}
                   >
                     <span className="font-medium">6 Aylık</span>
                     <p className="text-xs mt-1">
@@ -658,7 +820,7 @@ export default function PaymentPopup({
                   </div>
                 </div>
                 
-                {existingPayment && existingPayment.paymentPeriod && existingPayment.periodEndDate && (
+                {existingPayment && existingPayment.paymentPeriod && existingPayment.periodEndDate && existingPayment.isCompleted && (
                   <div className="p-3 mt-2 bg-blue-50 border border-blue-100 rounded-md text-blue-700">
                     <p className="flex items-center">
                       <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">

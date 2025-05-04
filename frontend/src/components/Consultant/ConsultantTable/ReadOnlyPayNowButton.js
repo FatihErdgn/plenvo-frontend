@@ -72,14 +72,24 @@ export default function ReadOnlyPaymentPopup({
   // Hasta adını oluşturan helper fonksiyon
   const getPatientName = () => {
     // ConsultantTable'dan gelen grup randevusu
-    if (row.type === "group" && row.participants && row.participants.length > 0) {
+    if (
+      row.type === "group" &&
+      row.participants &&
+      row.participants.length > 0
+    ) {
       return row.participants
-        .map(p => `${p.clientFirstName || ""} ${p.clientLastName || ""}`.trim())
+        .map((p) =>
+          `${p.clientFirstName || ""} ${p.clientLastName || ""}`.trim()
+        )
         .join(" - ");
     }
     // Takvimden gelen randevu (participants içinde name değerleri var)
-    else if (row.participants && row.participants.length > 0 && row.participants[0].name) {
-      return row.participants.map(p => p.name).join(" - ");
+    else if (
+      row.participants &&
+      row.participants.length > 0 &&
+      row.participants[0].name
+    ) {
+      return row.participants.map((p) => p.name).join(" - ");
     }
     // Tek kişilik normal randevu
     else {
@@ -134,8 +144,14 @@ export default function ReadOnlyPaymentPopup({
                 )}
                 {payment.paymentDate && (
                   <p className="text-lg text-gray-700">
-                    <strong>Tarih:</strong>{" "}
+                    <strong>Ödeme Tarihi:</strong>{" "}
                     {new Date(payment.paymentDate).toLocaleString()}
+                  </p>
+                )}
+                {payment.periodEndDate && (
+                  <p className="text-lg text-gray-700">
+                    <strong>Ödeme Son Geçerlilik Tarihi:</strong>{" "}
+                    {new Date(payment.periodEndDate).toLocaleString()}
                   </p>
                 )}
                 {/* Ödemeyi İptal Et Butonu */}

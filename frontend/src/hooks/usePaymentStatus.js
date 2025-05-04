@@ -27,20 +27,12 @@ export default function usePaymentStatus(appointmentId, refreshTrigger = 0) {
         }
         
         if (res.success && res.payments && res.payments.length > 0) {
-          // Periyot kontrolü: Ödeme periyodu var mı ve bitiş tarihi geçilmiş mi?
-          const hasValidPayment = res.payments.some(payment => {
-            // Tek seferlik (veya periodEndDate tanımlanmamış) ödeme ise periyot kontrolü yapma
-            if (payment.paymentPeriod === "single" || !payment.periodEndDate) {
-              return true;
-            }
-            
-            // Periyotlu ödeme için: Randevu tarihi ödeme periyodunun bitiş tarihinden önce mi?
-            const periodEnd = new Date(payment.periodEndDate);
-            return appointmentDate <= periodEnd;
-          });
+          // Geçerli ödemeleri filtrele (isValid özelliği backend'den geliyor)
+          const validPayments = res.payments.filter(payment => payment.isValid === true);
+          const expiredPayments = res.payments.filter(payment => payment.isValid === false);
           
-          // Eğer geçerli bir ödeme yoksa tüm durumlar sıfırlanır
-          if (!hasValidPayment) {
+          // Hiç geçerli ödeme yoksa ama süresi dolmuş ödemeler varsa
+          if (validPayments.length === 0 && expiredPayments.length > 0) {
             setCompleted(false);
             setHalfPaid(false);
             setTotalPaid(0);
@@ -48,16 +40,21 @@ export default function usePaymentStatus(appointmentId, refreshTrigger = 0) {
             return;
           }
           
-          // Geçerli ödeme varsa durumu kontrol et
-          const isCompleted = res.payments.some(
-            (payment) => payment.paymentStatus === "Tamamlandı"
+          // Geçerli ödemeler varsa durumu kontrol et
+          // ÖNEMLİ: "Tamamlandı" statüsüne bakmak yerine artık isCompleted alanını kontrol ediyoruz
+          // isCompleted = isValid && paymentStatus === "Tamamlandı" (backend'de hesaplanıyor)
+          const isCompleted = validPayments.some(payment => payment.isCompleted === true);
+          
+          // Kısmi ödeme durumu: Geçerli ama tamamlanmamış ödemeler
+          const isPartialPayment = validPayments.some(payment => 
+            payment.isValid === true && payment.isCompleted === false
           );
-          const isHalfPaid = res.payments.some(
-            (payment) => payment.paymentAmount < payment.serviceFee
-          );
+          
           setCompleted(isCompleted);
-          setHalfPaid(isHalfPaid);
-          const total = res.payments.reduce(
+          setHalfPaid(isPartialPayment);
+          
+          // Toplam ödenen miktarı hesapla (sadece geçerli ödemelerden)
+          const total = validPayments.reduce(
             (acc, payment) => acc + Number(payment.paymentAmount),
             0
           );
