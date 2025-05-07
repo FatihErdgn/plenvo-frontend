@@ -242,6 +242,7 @@ export default function CalendarSchedulePage({ servicesData }) {
   const [showDeleteOptionsModal, setShowDeleteOptionsModal] = useState(false); // Silme seçenekleri popup
   const [deleteMode, setDeleteMode] = useState("single"); // Seçilen silme modu
   const [appointmentType, setAppointmentType] = useState(""); // Randevu Tipi
+  const [selectedService, setSelectedService] = useState(""); // Randevu Hizmeti
   
   // Eski uyarı state'i yerine yeni state'ler ekliyoruz
   const [showRutinDeleteWarning, setShowRutinDeleteWarning] = useState(false); // Rutin Görüşme için uzun uyarı
@@ -269,6 +270,8 @@ export default function CalendarSchedulePage({ servicesData }) {
 
   // Ödeme sonrası otomatik popup'ı engelleyen bayrak - true olduğunda popup engellenir
   const [preventAutoPopup, setPreventAutoPopup] = useState(false);
+
+  console.log(servicesData);
 
   // Kullanıcı profilini al
   useEffect(() => {
@@ -401,6 +404,7 @@ export default function CalendarSchedulePage({ servicesData }) {
       setEndDate(appt.endDate);
       setUpdateAllInstances(false);
       setAppointmentType(appt.appointmentType || ""); // Randevu Tipini ayarla
+      setSelectedService(appt.serviceId || "");
       setShowModal(true);
     } else {
       // Eğer randevu yoksa, seçenek modalını aç
@@ -426,6 +430,21 @@ export default function CalendarSchedulePage({ servicesData }) {
     setPhoneErrors(newPhoneErrors);
   };
 
+  // Handle service selection change
+  const handleServiceChange = (serviceId) => {
+    setSelectedService(serviceId);
+  };
+
+  // Filter services based on selected doctor
+  const getFilteredServices = () => {
+    if (!servicesData || !selectedDoctor) return [];
+    
+    const selectedDoctorName = getSelectedDoctorName();
+    return servicesData.filter(service => 
+      service.provider === selectedDoctorName
+    );
+  };
+
   // "Yeni Randevu Oluştur" butonuna basınca: Form modalını varsayılan şekilde açar.
   const handleNewAppointment = () => {
     setEditMode(false);
@@ -437,16 +456,7 @@ export default function CalendarSchedulePage({ servicesData }) {
         participants: [],
       });
     }
-    setParticipantCount(1);
-    setParticipantNames([""]);
-    setParticipantPhones([""]);
-    setPhoneErrors([""]); // Telefon hata state'ini de sıfırla
-    setDescription("");
-    setRebookBookingId(null);
-    setIsRecurring(true); // Varsayılan olarak tekrarlı
-    setEndDate(null); // Varsayılan olarak sonsuza kadar
-    setUpdateAllInstances(false);
-    setAppointmentType(""); // Randevu Tipini sıfırla
+    resetFormData();
     setShowChoiceModal(false);
     setShowModal(true);
   };
@@ -498,7 +508,8 @@ export default function CalendarSchedulePage({ servicesData }) {
     setIsRecurring(appt.isRecurring !== undefined ? appt.isRecurring : true);
     setEndDate(appt.endDate);
     setUpdateAllInstances(false);
-    setAppointmentType(appt.appointmentType || ""); // Randevu Tipini ayarla
+    setAppointmentType(appt.appointmentType || "");
+    setSelectedService(appt.serviceId || "");
     setShowRebookModal(false);
     setShowModal(true);
   };
@@ -523,6 +534,21 @@ export default function CalendarSchedulePage({ servicesData }) {
     setParticipantNames(currentNames);
     setParticipantPhones(currentPhones);
     setPhoneErrors(currentPhoneErrors);
+  };
+
+  // Yeni randevu oluşturma veya düzenleme sırasında form verilerini resetleme
+  const resetFormData = () => {
+    setParticipantCount(1);
+    setParticipantNames([""]);
+    setParticipantPhones([""]);
+    setPhoneErrors([""]);
+    setDescription("");
+    setRebookBookingId(null);
+    setIsRecurring(true);
+    setEndDate(null);
+    setUpdateAllInstances(false);
+    setAppointmentType("");
+    setSelectedService("");
   };
 
   // Kaydet fonksiyonu: Eğer rebookBookingId set edilmişse payload içerisine eklenir.
@@ -581,7 +607,8 @@ export default function CalendarSchedulePage({ servicesData }) {
       appointmentDate: appointmentDate,
       isRecurring, // Tekrarlı randevu ayarı
       endDate, // Bitiş tarihi
-      appointmentType // Randevu Tipi
+      appointmentType, // Randevu Tipi
+      serviceId: selectedService // Randevu Hizmeti
     };
 
     if (rebookBookingId) {
@@ -1234,6 +1261,23 @@ export default function CalendarSchedulePage({ servicesData }) {
                 <option value="Ön Görüşme">Ön Görüşme</option>
                 <option value="Rutin Görüşme">Rutin Görüşme</option>
                 <option value="Muayene">Muayene</option>
+              </select>
+            </div>
+            
+            {/* Randevu Hizmeti Dropdown - YENİ EKLENEN */}
+            <div className="mb-2">
+              <label className="block font-medium">Randevu Hizmeti</label>
+              <select
+                value={selectedService}
+                onChange={(e) => handleServiceChange(e.target.value)}
+                className="border p-1 w-full cursor-pointer rounded-md"
+              >
+                <option value="">Seçiniz</option>
+                {getFilteredServices().map((service) => (
+                  <option key={service._id} value={service._id}>
+                    {service.serviceName}
+                  </option>
+                ))}
               </select>
             </div>
             

@@ -75,7 +75,14 @@ export default function PaymentPopup({
   }, [row, isCalendar]);
 
   if (isCalendar) {
-    if (appointmentData?.appointmentType) {
+    // Önce serviceId'ye göre hizmeti bul (varsa)
+    if (appointmentData?.serviceId) {
+      matchedService = servicesData.find(
+        (s) => s._id === appointmentData.serviceId && s.status === "Aktif"
+      );
+    }
+    // Eğer serviceId ile hizmet bulunamadıysa, appointmentType'a göre ara
+    else if (appointmentData?.appointmentType) {
       // Randevu tipi seçiliyse, SADECE o tipe uygun hizmeti ara
       matchedService = servicesData.find(
         (s) =>
@@ -647,6 +654,12 @@ export default function PaymentPopup({
                   <span className="text-red-500 italic">Seçilmemiş</span>
                 )}
               </p>
+              {appointmentData?.serviceId && matchedService && (
+                <p className="text-lg text-gray-600">
+                  <strong className="text-gray-700">Hizmet Adı:</strong>{" "}
+                  {matchedService.serviceName}
+                </p>
+              )}
               <p className="text-lg text-gray-600">
                 <strong className="text-gray-700">Muayene Ücreti:</strong>{" "}
                 {!appointmentData.appointmentType ? (
