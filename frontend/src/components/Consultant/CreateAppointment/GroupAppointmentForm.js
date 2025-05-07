@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { IoIosCloseCircleOutline } from "react-icons/io";
 import Alert from "@mui/material/Alert";
 import Collapse from "@mui/material/Collapse";
@@ -10,6 +10,7 @@ export default function GroupAppointmentForm({
   options: { clinicOptions, doctorOptions, doctorList, genderOptions },
   prefilledData,
   onAddAppointment,
+  servicesData,
 }) {
   // Katılımcılar
   const [participants, setParticipants] = useState(
@@ -30,6 +31,8 @@ export default function GroupAppointmentForm({
   const [groupData, setGroupData] = useState({
     clinic: prefilledData?.clinic || "",
     doctor: prefilledData?.doctor || "",
+    appointmentType: prefilledData?.appointmentType || "",
+    serviceId: prefilledData?.serviceId || "",
     datetime: "", // Tarihi boş bırakmak istiyorsanız
   });
 
@@ -37,7 +40,9 @@ export default function GroupAppointmentForm({
     // Grup için dropdown
     clinic: false,
     doctor: false,
-    // Katılımcı gender dropdown’ları için index bazlı tutmak gerekebilir:
+    appointmentType: false,
+    serviceId: false,
+    // Katılımcı gender dropdown'ları için index bazlı tutmak gerekebilir:
     // Örn: { clinic: false, doctor: false, gender0: false, gender1: false, ... }
   });
 
@@ -46,6 +51,25 @@ export default function GroupAppointmentForm({
     severity: "",
     open: false,
   });
+
+  // Reset service when appointment type or doctor changes
+  useEffect(() => {
+    setGroupData(prev => ({
+      ...prev,
+      serviceId: ""
+    }));
+  }, [groupData.appointmentType, groupData.doctor]);
+
+  // Filter services based on selected doctor and appointment type
+  const filteredServices = useMemo(() => {
+    if (!servicesData || !groupData.doctor || !groupData.appointmentType) return [];
+    
+    return servicesData.filter(service => 
+      service.provider === groupData.doctor &&
+      service.serviceType === groupData.appointmentType &&
+      service.status === "Aktif"
+    );
+  }, [servicesData, groupData.doctor, groupData.appointmentType]);
 
   // Yeni katılımcı ekle
   const addParticipant = () => {
@@ -93,7 +117,8 @@ export default function GroupAppointmentForm({
       ) ||
       !groupData.clinic ||
       !groupData.doctor ||
-      !groupData.datetime
+      !groupData.datetime ||
+      !groupData.appointmentType
     ) {
       setAlertState({
         message: "Lütfen tüm alanları doldurun.",
@@ -149,7 +174,6 @@ export default function GroupAppointmentForm({
         datetime: new Date(groupData.datetime).toISOString(),
       };
 
-      // console.log("Group form Data:", finalData);
       onAddAppointment(finalData);
       onClose();
     } catch (error) {
@@ -160,19 +184,6 @@ export default function GroupAppointmentForm({
         open: true,
       });
     }
-
-    // // Tüm veri
-    // const finalData = {
-    //   ...groupData,
-    //   participants: participants,
-    // };
-    // console.log("Form Data:", finalData);
-
-    // setAlertState({
-    //   message: "Başarılı bir şekilde eklendi.",
-    //   severity: "success",
-    //   open: true,
-    // });
   };
 
   // Ortak dropdown aç/kapa
@@ -246,7 +257,7 @@ export default function GroupAppointmentForm({
     direction = "down"
   ) => {
     const dropdownKey = `gender${index}`;
-    // her katılımcının gender dropdown’unu ayrı kontrol etmek için
+    // her katılımcının gender dropdown'unu ayrı kontrol etmek için
 
     return (
       <>
@@ -278,7 +289,7 @@ export default function GroupAppointmentForm({
                       updated[index][key] = option;
                       return updated;
                     });
-                    // Dropdown’u kapat
+                    // Dropdown'u kapat
                     setDropdownOpen((prev) => ({
                       ...prev,
                       [dropdownKey]: false,
@@ -400,6 +411,73 @@ export default function GroupAppointmentForm({
             "down"
           )}
         </div>
+
+        {/* Randevu Tipi */}
+        <div className="mb-4">
+          {renderGroupDropdown("Randevu Tipi", "appointmentType", ["Ön Görüşme", "Muayene"], "down")}
+        </div>
+
+        {/* Randevu Hizmeti */}
+        <div className="mb-4">
+          <label className="text-gray-700 mb-2 block">Randevu Hizmeti</label>
+          <div className="relative mb-4 dropdown-container">
+            <div
+              className={`px-4 py-2 border border-gray-300 hover:border-[#399AA1] hover:border-[2px] rounded-lg cursor-pointer bg-white flex justify-between items-center ${
+                !groupData.appointmentType || !groupData.doctor || filteredServices.length === 0 ? 'bg-gray-100' : ''
+              }`}
+              onClick={() => {
+                if (groupData.appointmentType && groupData.doctor && filteredServices.length > 0) {
+                  toggleDropdown('serviceId');
+                }
+              }}
+            >
+              {groupData.serviceId ? 
+                filteredServices.find(s => s._id === groupData.serviceId)?.serviceName || "Hizmet Seçin" 
+                : "Hizmet Seçin"}
+              <span className="ml-2 transform transition-transform duration-200 opacity-50">
+                {dropdownOpen.serviceId ? "▲" : "▼"}
+              </span>
+            </div>
+            {dropdownOpen.serviceId && (
+              <ul className="absolute left-0 right-0 bg-white border border-gray-300 rounded-lg max-h-[7.5rem] overflow-auto z-10 top-full mt-1">
+                {filteredServices.map((service, idx) => (
+                  <li
+                    key={idx}
+                    className="px-4 py-2 hover:bg-[#007E85] hover:text-white cursor-pointer"
+                    onClick={() => {
+                      setGroupData(prev => ({
+                        ...prev,
+                        serviceId: service._id
+                      }));
+                      setDropdownOpen(prev => ({
+                        ...prev,
+                        serviceId: false
+                      }));
+                    }}
+                  >
+                    {service.serviceName}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+          {!groupData.appointmentType && (
+            <p className="text-amber-500 text-xs mt-1">
+              Önce Randevu Tipi seçmelisiniz
+            </p>
+          )}
+          {groupData.appointmentType && !groupData.doctor && (
+            <p className="text-amber-500 text-xs mt-1">
+              Önce Doktor seçmelisiniz
+            </p>
+          )}
+          {groupData.appointmentType && groupData.doctor && filteredServices.length === 0 && (
+            <p className="text-red-500 text-xs mt-1">
+              {`"${groupData.appointmentType}" tipi için tanımlı hizmet bulunamadı`}
+            </p>
+          )}
+        </div>
+
         <div className="mb-4">
           <AppointmentDatePicker
             selectedDate={groupData.datetime}
@@ -410,17 +488,6 @@ export default function GroupAppointmentForm({
             selectedClinic={groupData.clinic}
             selectedDoctor={groupData.doctor}
           />
-          {/* <label className="block text-gray-700 mb-1">
-            Randevu Tarihi ve Saati
-          </label>
-          <input
-            type="datetime-local"
-            name="datetime"
-            value={groupData.datetime}
-            onChange={handleGroupDataChange}
-            className="w-full px-3 py-2 border rounded"
-            required
-          /> */}
         </div>
 
         {/* Butonlar */}

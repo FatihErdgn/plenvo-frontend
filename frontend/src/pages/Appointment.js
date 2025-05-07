@@ -167,6 +167,7 @@ export default function ConsultantPage() {
                   appointmentTypeOptions,
                 }}
                 appointments={appointmentDateData}
+                servicesData={servicesData}
               />
             </>
           )}

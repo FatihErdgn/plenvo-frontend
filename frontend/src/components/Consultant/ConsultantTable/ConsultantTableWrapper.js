@@ -370,6 +370,7 @@ export default function ConsultantTableWrapper({
             appointmentTypeOptions,
           }}
           fetchAppointments={fetchAppointments}
+          servicesData={servicesData}
         />
       </div>
     </TableProvider>
@@ -546,6 +547,7 @@ function ConsultantActions({
 function ConsultantPopupArea({
   options: { clinicOptions, doctorOptions, genderOptions, appointmentTypeOptions },
   fetchAppointments,
+  servicesData,
 }) {
   const { isPopupOpen, setIsPopupOpen, selectedData, isEditable } =
     useTableContext();
@@ -556,7 +558,6 @@ function ConsultantPopupArea({
 
   const handleEditAppointment = async (formData) => {
     try {
-      // console.log("Güncellenecek randevu verisi:", formData);
       await updateAppointment(formData._id, formData);
       fetchAppointments();
       setTimeout(() => {
@@ -588,6 +589,7 @@ function ConsultantPopupArea({
             genderOptions,
             appointmentTypeOptions,
           }}
+          servicesData={servicesData}
         />
       </div>
     </div>

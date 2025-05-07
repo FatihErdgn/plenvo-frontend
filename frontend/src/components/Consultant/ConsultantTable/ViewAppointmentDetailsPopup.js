@@ -6,12 +6,56 @@ import { format } from "date-fns";
 import AppointmentDatePicker from "../CreateAppointment/DatePicker";
 import { getAppointments } from "../../../services/appointmentService";
 
+/**
+ * Finds and returns the serviceName based on serviceId
+ * @param {string} serviceId - The ID of the service to look up
+ * @param {Array} servicesData - Array of service objects with _id and serviceName fields
+ * @returns {string} The service name or a default message if not found
+ */
+const getServiceNameById = (serviceId, servicesData) => {
+  // Return early if either parameter is missing
+  if (!serviceId || !servicesData || !servicesData.length) {
+    return "Hizmet seçilmemiş";
+  }
+
+  // Find the service with matching ID
+  const service = servicesData.find(service => service._id === serviceId);
+  
+  // Return the service name if found, otherwise return a default message
+  return service ? service.serviceName : "Hizmet bulunamadı";
+};
+
+// For server-side use with async/await and MongoDB
+const getServiceNameByIdAsync = async (serviceId) => {
+  try {
+    if (!serviceId) return "Hizmet seçilmemiş";
+    
+    // Assuming you have a Service model
+    const Service = require("../models/Service");
+    
+    // Query the database for the service
+    const service = await Service.findById(serviceId);
+    
+    // Return the service name if found, otherwise return a default message
+    return service ? service.serviceName : "Hizmet bulunamadı";
+  } catch (error) {
+    console.error("Error fetching service name:", error);
+    return "Hizmet bilgisi alınamadı";
+  }
+};
+
 export default function ViewAppointmentDetailsPopup({
   data,
   isEditable,
   onClose,
-  options: { clinicOptions, doctorOptions, genderOptions, appointmentTypeOptions },
+  options: {
+    clinicOptions,
+    doctorOptions,
+    genderOptions,
+    appointmentTypeOptions,
+  },
   onEditAppointment,
+  servicesData,
 }) {
   const [formData, setFormData] = useState(data || {});
   const [appointmentData, setAppointmentData] = useState([]);
@@ -26,6 +70,7 @@ export default function ViewAppointmentDetailsPopup({
     clinic: false,
     doctor: false,
     appointmentType: false,
+    serviceId: false,
   });
   const [alertState, setAlertState] = useState({
     message: "",
@@ -53,6 +98,7 @@ export default function ViewAppointmentDetailsPopup({
           clinic: false,
           doctor: false,
           appointmentType: false,
+          serviceId: false,
         });
       }
     };
@@ -273,6 +319,85 @@ export default function ViewAppointmentDetailsPopup({
 
   const statusOptions = ["Açık", "Ödeme Bekleniyor"];
 
+  // Special dropdown for services that shows serviceNames but works with serviceIds
+  const renderServiceDropdown = (label, key, direction = "down") => {
+    // Filter services based on selected doctor and appointment type
+    const filteredServices = servicesData?.filter(service => 
+      service.provider === formData.doctorName &&
+      service.serviceType === formData.appointmentType &&
+      service.status === "Aktif"
+    ) || [];
+
+    // Get the current service name based on serviceId
+    const currentServiceName = getServiceNameById(formData[key], servicesData);
+
+    return (
+      <>
+        <label className="text-gray-700 mb-2 block">{label}</label>
+        <div className="relative mb-4 dropdown-container">
+          <div
+            className={`px-4 py-2 border border-gray-300 hover:border-[#399AA1] hover:border-[2px] rounded-lg cursor-pointer bg-white flex justify-between items-center ${
+              !formData.appointmentType || !formData.doctorName || filteredServices.length === 0 ? 'bg-gray-100' : ''
+            }`}
+            onClick={() => {
+              // Only allow opening the dropdown if we have doctor and appointment type selected
+              if (formData.appointmentType && formData.doctorName && filteredServices.length > 0) {
+                toggleDropdown(key);
+              }
+            }}
+          >
+            {currentServiceName || `Hizmet Seçin`}
+            <span className="ml-2 transform transition-transform duration-200 opacity-50">
+              {dropdownOpen[key] ? "▲" : "▼"}
+            </span>
+          </div>
+          {dropdownOpen[key] && (
+            <ul
+              className={`absolute left-0 right-0 bg-white border border-gray-300 rounded-lg max-h-[7.5rem] overflow-auto z-10 ${
+                direction === "up" ? "bottom-full mb-1" : "top-full mt-1"
+              }`}
+            >
+              {filteredServices.map((service, idx) => (
+                <li
+                  key={idx}
+                  className="px-4 py-2 hover:bg-[#007E85] hover:text-white cursor-pointer"
+                  onClick={() => {
+                    // Update formData with the serviceId, but display the serviceName
+                    setFormData(prev => ({
+                      ...prev,
+                      [key]: service._id
+                    }));
+                    setDropdownOpen(prev => ({
+                      ...prev,
+                      [key]: false
+                    }));
+                  }}
+                >
+                  {service.serviceName}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+        {!formData.appointmentType && (
+          <p className="text-amber-500 text-xs mt-1">
+            Önce Randevu Tipi seçmelisiniz
+          </p>
+        )}
+        {formData.appointmentType && !formData.doctorName && (
+          <p className="text-amber-500 text-xs mt-1">
+            Önce Doktor seçmelisiniz
+          </p>
+        )}
+        {formData.appointmentType && formData.doctorName && filteredServices.length === 0 && (
+          <p className="text-red-500 text-xs mt-1">
+            {`"${formData.appointmentType}" tipi için tanımlı hizmet bulunamadı`}
+          </p>
+        )}
+      </>
+    );
+  };
+
   const renderDropdown = (label, key, options, direction = "down") => (
     <>
       <label className="text-gray-700 mb-2 block">{label}</label>
@@ -458,7 +583,12 @@ export default function ViewAppointmentDetailsPopup({
             </div>
             <div className="mb-4">
               {isEditable ? (
-                renderDropdown("Randevu Tipi", "appointmentType", appointmentTypeOptions, "up")
+                renderDropdown(
+                  "Randevu Tipi",
+                  "appointmentType",
+                  appointmentTypeOptions,
+                  "up"
+                )
               ) : (
                 <>
                   <label className="block text-gray-700">Randevu Tipi</label>
@@ -466,6 +596,22 @@ export default function ViewAppointmentDetailsPopup({
                     type="text"
                     name="appointmentType"
                     value={formData.appointmentType || ""}
+                    disabled
+                    className="w-full px-4 py-2 border rounded-lg bg-gray-100"
+                  />
+                </>
+              )}
+            </div>
+            <div className="mb-4">
+              {isEditable ? (
+                renderServiceDropdown("Randevu Hizmeti", "serviceId", "up")
+              ) : (
+                <>
+                  <label className="block text-gray-700">Randevu Hizmeti</label>
+                  <input
+                    type="text"
+                    name="serviceId"
+                    value={getServiceNameById(formData.serviceId, servicesData) || ""}
                     disabled
                     className="w-full px-4 py-2 border rounded-lg bg-gray-100"
                   />

@@ -8,6 +8,7 @@ export default function AddAppointment({
   options: { clinicOptions, doctorOptions, genderOptions, doctorList }, // <-- select input seçenekleri
   prefilledData = null, // <-- tablo satırından gelecek veriler (opsiyonel)
   appointments, // <-- randevu verileri
+  servicesData, // <-- hizmet verileri
 }) {
   const [isPopUpOpen, setPopUpOpen] = useState(false);
   // Randevu tipi (single/group)
@@ -114,6 +115,7 @@ export default function AddAppointment({
                       : null
                   }
                   onAddAppointment={onAddAppointment}
+                  servicesData={servicesData}
                 />
               </div>
             )}
@@ -139,6 +141,7 @@ export default function AddAppointment({
                       : null
                   }
                   onAddAppointment={onAddAppointment}
+                  servicesData={servicesData}
                 />
               </div>
             )}
