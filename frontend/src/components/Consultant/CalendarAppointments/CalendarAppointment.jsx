@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useMemo, useCallback } from "react";
 import {
   getCalendarAppointments,
   createCalendarAppointment,
@@ -430,20 +430,82 @@ export default function CalendarSchedulePage({ servicesData }) {
     setPhoneErrors(newPhoneErrors);
   };
 
-  // Handle service selection change
-  const handleServiceChange = (serviceId) => {
-    setSelectedService(serviceId);
-  };
+  // Reset service selection when appointment type changes
+  useEffect(() => {
+    setSelectedService("");
+  }, [appointmentType]);
 
-  // Filter services based on selected doctor
-  const getFilteredServices = () => {
+  // Optimize getSelectedDoctorName with useMemo
+  const getSelectedDoctorName = useCallback(() => {
+    if (!loggedInUser) return "Yükleniyor...";
+    if (loggedInUser.roleId?.roleName === "doctor") {
+      return `${loggedInUser.firstName} ${loggedInUser.lastName}`;
+    } else if (
+      ["admin", "manager", "superadmin"].includes(loggedInUser.roleId?.roleName)
+    ) {
+      const doc = doctorList.find((d) => d._id === selectedDoctor);
+      return doc ? `${doc.firstName} ${doc.lastName}` : "Danışman Seçiniz";
+    }
+    return "Kullanıcı Rolü Tanımsız";
+  }, [loggedInUser, selectedDoctor, doctorList]);
+
+  // Filter services based on selected doctor with useMemo for performance
+  const filteredServices = useMemo(() => {
     if (!servicesData || !selectedDoctor) return [];
     
-    const selectedDoctorName = getSelectedDoctorName();
+    const doctorName = getSelectedDoctorName();
+    
+    // Filter by both doctor name and serviceType matching appointmentType
     return servicesData.filter(service => 
-      service.provider === selectedDoctorName
+      service.provider === doctorName &&
+      service.serviceType === appointmentType &&
+      service.status === "Aktif"
     );
-  };
+  }, [servicesData, selectedDoctor, appointmentType, getSelectedDoctorName]);
+
+  // Handle service selection change with useCallback
+  const handleServiceChange = useCallback((serviceId) => {
+    setSelectedService(serviceId);
+  }, []);
+
+  // Memoize appointment fetching to avoid redundant fetches
+  const refreshAppointments = useCallback(async (doctorId) => {
+    // Önce engelleyici flag'i aktif et
+    setPreventAutoPopup(true);
+    
+    const res = await getCalendarAppointments(doctorId, currentWeekStart.toISOString());
+    if (res.success) {
+      setAppointments(res.data);
+      setPaymentRefreshTrigger((prev) => prev + 1);
+      setSelectedAppointment(null);
+      setRebookBookingId(null);
+    }
+    
+    // Belirli bir süre sonra flag'i devre dışı bırak (3 saniye daha uzun bir süre)
+    setTimeout(() => {
+      setPreventAutoPopup(false);
+    }, 3000);
+  }, [currentWeekStart]);
+
+  // Add back getFilteredServices for backward compatibility
+  const getFilteredServices = useCallback(() => {
+    return filteredServices;
+  }, [filteredServices]);
+
+  // Optimize form data reset with useCallback
+  const resetFormData = useCallback(() => {
+    setParticipantCount(1);
+    setParticipantNames([""]);
+    setParticipantPhones([""]);
+    setPhoneErrors([""]);
+    setDescription("");
+    setRebookBookingId(null);
+    setIsRecurring(true);
+    setEndDate(null);
+    setUpdateAllInstances(false);
+    setAppointmentType("");
+    setSelectedService("");
+  }, []);
 
   // "Yeni Randevu Oluştur" butonuna basınca: Form modalını varsayılan şekilde açar.
   const handleNewAppointment = () => {
@@ -536,21 +598,6 @@ export default function CalendarSchedulePage({ servicesData }) {
     setPhoneErrors(currentPhoneErrors);
   };
 
-  // Yeni randevu oluşturma veya düzenleme sırasında form verilerini resetleme
-  const resetFormData = () => {
-    setParticipantCount(1);
-    setParticipantNames([""]);
-    setParticipantPhones([""]);
-    setPhoneErrors([""]);
-    setDescription("");
-    setRebookBookingId(null);
-    setIsRecurring(true);
-    setEndDate(null);
-    setUpdateAllInstances(false);
-    setAppointmentType("");
-    setSelectedService("");
-  };
-
   // Kaydet fonksiyonu: Eğer rebookBookingId set edilmişse payload içerisine eklenir.
   const handleSubmit = async () => {
     if (!selectedAppointment) return;
@@ -608,7 +655,7 @@ export default function CalendarSchedulePage({ servicesData }) {
       isRecurring, // Tekrarlı randevu ayarı
       endDate, // Bitiş tarihi
       appointmentType, // Randevu Tipi
-      serviceId: selectedService // Randevu Hizmeti
+      serviceId: selectedService || null // Randevu Hizmeti - boş string yerine null gönder
     };
 
     if (rebookBookingId) {
@@ -716,25 +763,6 @@ export default function CalendarSchedulePage({ servicesData }) {
     }
   };
 
-  // Takvimi yenile - tarih filtresini ekle
-  const refreshAppointments = async (doctorId) => {
-    // Önce engelleyici flag'i aktif et
-    setPreventAutoPopup(true);
-    
-    const res = await getCalendarAppointments(doctorId, currentWeekStart.toISOString());
-    if (res.success) {
-      setAppointments(res.data);
-      setPaymentRefreshTrigger((prev) => prev + 1);
-      setSelectedAppointment(null);
-      setRebookBookingId(null);
-    }
-    
-    // Belirli bir süre sonra flag'i devre dışı bırak (3 saniye daha uzun bir süre)
-    setTimeout(() => {
-      setPreventAutoPopup(false);
-    }, 3000);
-  };
-
   // Hücredeki randevuyu bul
   const findAppointmentForCell = (dayIndex, timeIndex) => {
     return appointments.find(
@@ -745,20 +773,6 @@ export default function CalendarSchedulePage({ servicesData }) {
   // Sanal instance mi kontrol et
   const isVirtualInstance = (appointment) => {
     return appointment && appointment.isVirtualInstance;
-  };
-
-  // Seçili doktor adını göster
-  const getSelectedDoctorName = () => {
-    if (!loggedInUser) return "Yükleniyor...";
-    if (loggedInUser.roleId?.roleName === "doctor") {
-      return `${loggedInUser.firstName} ${loggedInUser.lastName}`;
-    } else if (
-      ["admin", "manager", "superadmin"].includes(loggedInUser.roleId?.roleName)
-    ) {
-      const doc = doctorList.find((d) => d._id === selectedDoctor);
-      return doc ? `${doc.firstName} ${doc.lastName}` : "Danışman Seçiniz";
-    }
-    return "Kullanıcı Rolü Tanımsız";
   };
 
   // Danışman seçili mi kontrolü için yardımcı fonksiyon
@@ -1267,18 +1281,33 @@ export default function CalendarSchedulePage({ servicesData }) {
             {/* Randevu Hizmeti Dropdown - YENİ EKLENEN */}
             <div className="mb-2">
               <label className="block font-medium">Randevu Hizmeti</label>
-              <select
-                value={selectedService}
-                onChange={(e) => handleServiceChange(e.target.value)}
-                className="border p-1 w-full cursor-pointer rounded-md"
-              >
-                <option value="">Seçiniz</option>
-                {getFilteredServices().map((service) => (
-                  <option key={service._id} value={service._id}>
-                    {service.serviceName}
-                  </option>
-                ))}
-              </select>
+              <div className="flex flex-col">
+                <select
+                  value={selectedService}
+                  onChange={(e) => handleServiceChange(e.target.value)}
+                  className={`border p-1 w-full cursor-pointer rounded-md ${
+                    !appointmentType ? "bg-gray-100" : ""
+                  }`}
+                  disabled={!appointmentType || filteredServices.length === 0}
+                >
+                  <option value="">Seçiniz</option>
+                  {filteredServices.map((service) => (
+                    <option key={service._id} value={service._id}>
+                      {service.serviceName}
+                    </option>
+                  ))}
+                </select>
+                {!appointmentType && (
+                  <p className="text-amber-500 text-xs mt-1">
+                    Önce Randevu Tipi seçmelisiniz
+                  </p>
+                )}
+                {appointmentType && filteredServices.length === 0 && (
+                  <p className="text-red-500 text-xs mt-1">
+                    {`"${appointmentType}" tipi için tanımlı hizmet bulunamadı`}
+                  </p>
+                )}
+              </div>
             </div>
             
             {/* Kişi Sayısı */}

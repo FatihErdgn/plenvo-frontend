@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { IoIosCloseCircleOutline } from "react-icons/io";
 import {
   createPayment,
@@ -23,9 +23,6 @@ export default function PaymentPopup({
   onPaymentSuccess,
   isCalendar,
 }) {
-  // Doktora ait hizmeti bul (doktor adı ve "Aktif" durumu kontrolü)
-  let matchedService = null;
-
   // Tekrarlı randevularda (recurringParentId varsa), doktor ve randevu tipi bilgilerini yönet
   const appointmentData = { ...row };
 
@@ -74,34 +71,41 @@ export default function PaymentPopup({
     }
   }, [row, isCalendar]);
 
-  if (isCalendar) {
-    // Önce serviceId'ye göre hizmeti bul (varsa)
+  // Optimize the service matching with useMemo to prevent unnecessary recalculations
+  const matchedService = useMemo(() => {
+    if (!isCalendar) {
+      // Not a calendar appointment - find by doctor name only
+      return servicesData.find(
+        (s) => s.provider === appointmentData.doctorName && s.status === "Aktif"
+      );
+    }
+
+    // For calendar appointments - more specific matching logic
     if (appointmentData?.serviceId) {
-      matchedService = servicesData.find(
+      // If a specific service was selected, use that
+      return servicesData.find(
         (s) => s._id === appointmentData.serviceId && s.status === "Aktif"
       );
     }
-    // Eğer serviceId ile hizmet bulunamadıysa, appointmentType'a göre ara
-    else if (appointmentData?.appointmentType) {
-      // Randevu tipi seçiliyse, SADECE o tipe uygun hizmeti ara
-      matchedService = servicesData.find(
+    
+    // If serviceId is explicitly null/empty, respect that choice (no service selected)
+    if ('serviceId' in appointmentData && (appointmentData.serviceId === null || appointmentData.serviceId === "")) {
+      return null;
+    }
+    
+    // Legacy case - try to find by appointment type and doctor
+    if (appointmentData?.appointmentType) {
+      return servicesData.find(
         (s) =>
           s.provider === appointmentData?.doctorName &&
           s.status === "Aktif" &&
-          s.serviceType === appointmentData.appointmentType // serviceType ile appointmentType eşleşmeli
+          s.serviceType === appointmentData.appointmentType
       );
-
-      // Eşleşen hizmet yoksa matchedService null kalacak, ücreti 0 TL olacak
-    } else {
-      // Randevu tipi seçili değilse, matchedService null olmalı (ücret 0 TL olacak)
-      matchedService = null;
     }
-  } else {
-    // Takvim randevusu değilse (ConsultantTable için), normal hizmet seçimi
-    matchedService = servicesData.find(
-      (s) => s.provider === appointmentData.doctorName && s.status === "Aktif"
-    );
-  }
+    
+    // No matching criteria
+    return null;
+  }, [servicesData, appointmentData, isCalendar]);
 
   const initialDoctorFee = matchedService ? matchedService.serviceFee : 0;
 
@@ -513,17 +517,6 @@ export default function PaymentPopup({
   const isPaymentCompleteDisabled = () => {
     // Randevu tipi seçilmemişse butonu devre dışı bırak (takvim randevuları için)
     if (isCalendar && !appointmentData.appointmentType) return true;
-
-    // Randevu tipi "Ön Görüşme" dışında bir şeyse, eşleşen hizmet yoksa ve ek hizmet de seçilmemişse devre dışı bırak
-    if (
-      isCalendar &&
-      appointmentData.appointmentType &&
-      appointmentData.appointmentType !== "Ön Görüşme" &&
-      appointmentData.appointmentType !== "Rutin Görüşme" &&
-      !matchedService &&
-      selectedExtras.length === 0
-    )
-      return true;
 
     // Ödeme tipi seçilmemişse devre dışı bırak
     if (!paymentMode) return true;
