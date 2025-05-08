@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import Chart from "react-apexcharts";
 import { getDashboardData } from "../services/dashboardService";
 import { getUsers, getProfile } from "../services/userService";
@@ -9,6 +9,14 @@ import { FaCalendarAlt, FaFilter, FaChartLine, FaMoneyBillWave, FaUserMd } from 
 const palette = ["#3B82F6", "#10B981", "#F59E0B", "#6366F1", "#EC4899"];
 
 export default function FinanceDashboard() {
+  // İşletim sistemi tespiti için fonksiyon
+  const isIOSDevice = useMemo(() => {
+    if (typeof window !== 'undefined') {
+      return /iPhone|iPad|iPod/i.test(window.navigator.userAgent);
+    }
+    return false;
+  }, []);
+
   // Tarih seçimleri - Tamamen yeniden yazılmış versiyonu
   const [startDate, setStartDate] = useState(() => {
     const now = new Date();
@@ -115,6 +123,18 @@ export default function FinanceDashboard() {
       fetchDashboard();
     }
   }, [startDate, endDate, selectedDoctor, loggedInUser]);
+
+  // iOS için fix - Component mount olduğunda
+  useEffect(() => {
+    // iOS Safari için özel düzenleme
+    const isIOS = /iPhone|iPad|iPod/i.test(window.navigator.userAgent);
+    if (isIOS) {
+      const container = document.getElementById('barChartContainer');
+      if (container) {
+        container.style.minHeight = '350px';
+      }
+    }
+  }, [dashboardData]);
 
   if (loading) {
     return (
@@ -440,7 +460,7 @@ export default function FinanceDashboard() {
                     </h2>
                   </div>
                   
-                  <div className="flex-1 overflow-hidden flex flex-col min-h-0 h-[300px] md:h-auto">
+                  <div className={`flex-1 overflow-hidden flex flex-col ${isIOSDevice ? 'min-h-[350px]' : 'min-h-0 h-[300px] md:h-auto'}`}>
                     {breakdown.incomeMethods && breakdown.incomeMethods.length > 0 ? (
                       <div className="flex-1 overflow-auto">
                         <Chart
@@ -556,7 +576,7 @@ export default function FinanceDashboard() {
                                 breakpoint: 1000,
                                 options: {
                                   chart: {
-                                    height: '100%'
+                                    height: 'auto'
                                   }
                                 }
                               },
@@ -564,6 +584,9 @@ export default function FinanceDashboard() {
                                 // Mobil cihazlar için özel ayarlar
                                 breakpoint: 768,
                                 options: {
+                                  chart: {
+                                    height: isIOSDevice ? 300 : 'auto'
+                                  },
                                   plotOptions: {
                                     bar: {
                                       horizontal: true,
@@ -632,7 +655,7 @@ export default function FinanceDashboard() {
                                 breakpoint: 375,
                                 options: {
                                   chart: {
-                                    height: '180px'
+                                    height: isIOSDevice ? 250 : 'auto'
                                   },
                                   plotOptions: {
                                     bar: {
@@ -649,7 +672,9 @@ export default function FinanceDashboard() {
                           }]}
                           type="bar"
                           width="100%"
-                          height={Math.min(breakdown.incomeMethods.length * 40 + 40, window.innerWidth < 768 ? 240 : 800)}
+                          height={isIOSDevice 
+                            ? (window.innerWidth < 375 ? 250 : 300)
+                            : Math.min(breakdown.incomeMethods.length * 40 + 40, window.innerWidth < 768 ? 240 : 800)}
                         />
                       </div>
                     ) : (
