@@ -94,10 +94,10 @@ export default function ViewServiceDetailsPopup({
   }, [data?.validityDate]);
 
   const handleInputChange = (e) => {
-    const { name, value } = e.target;
+    const { name, value, type, checked } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: value,
+      [name]: type === 'checkbox' ? checked : value,
     }));
   };
 
@@ -262,6 +262,33 @@ export default function ViewServiceDetailsPopup({
               "up"
             )}
           </div>
+          
+          <div className="mb-6 mt-8 p-4 border border-[#e8f4f5] bg-[#f8fdfd] rounded-lg shadow-sm">
+            <h4 className="text-[#399AA1] font-medium mb-3 flex items-center">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+              </svg>
+              SMS Hatırlatıcı Ayarı
+            </h4>
+            <label className="flex items-center space-x-3 cursor-pointer group">
+              <div className="relative">
+                <input
+                  type="checkbox"
+                  name="isSmsReminderActive"
+                  checked={formData.isSmsReminderActive || false}
+                  onChange={handleInputChange}
+                  className="sr-only"
+                />
+                <div className={formData.isSmsReminderActive ? 'w-10 h-5 bg-[#399AA1] rounded-full shadow-inner transition-colors duration-300 ease-in-out' : 'w-10 h-5 bg-gray-200 rounded-full shadow-inner transition-colors duration-300 ease-in-out group-hover:bg-gray-300'}></div>
+                <div className={`absolute left-0 top-0 w-5 h-5 bg-white rounded-full shadow transition-transform duration-300 ease-in-out transform ${formData.isSmsReminderActive ? 'translate-x-5' : ''}`}></div>
+              </div>
+              <div>
+                <span className="text-gray-700 font-medium">Bu hizmet için hatırlatıcı SMS gönderilsin mi?</span>
+                <p className="text-gray-500 text-xs mt-1">Bu seçenek açıksa, bu hizmet için oluşturulan randevular için müşterilere WhatsApp üzerinden hatırlatıcı mesaj gönderilecektir.</p>
+              </div>
+            </label>
+          </div>
+          
           <div className="flex justify-center mt-6">
             {alertState.open ? (
               <button

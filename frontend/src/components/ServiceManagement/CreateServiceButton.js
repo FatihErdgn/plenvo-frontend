@@ -17,6 +17,7 @@ export default function AddService({
     serviceType: "",
     currencyName: "",
     status: "",
+    isSmsReminderActive: false,
     //Manuel
     manualServiceName: "",
   });
@@ -126,8 +127,11 @@ export default function AddService({
   };
 
   const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+    const { name, value, type, checked } = e.target;
+    
+    // For checkbox inputs, use the checked property instead of value
+    const inputValue = type === 'checkbox' ? checked : value;
+    setFormData({ ...formData, [name]: inputValue });
   };
 
   const handleSubmit = (e) => {
@@ -166,6 +170,7 @@ export default function AddService({
         serviceType: formData.serviceType,
         currencyName: formData.currencyName,
         status: formData.status,
+        isSmsReminderActive: formData.isSmsReminderActive,
       });
       // console.log(formData);
       // 4) Temizleme
@@ -177,6 +182,7 @@ export default function AddService({
         serviceType: "",
         currencyName: "",
         status: "",
+        isSmsReminderActive: false,
         //Manuel
         manualServiceName: "",
         manualProvider: "",
@@ -398,6 +404,33 @@ export default function AddService({
                   "up"
                 )}
               </div>
+              
+              <div className="mb-6 mt-8 p-4 border border-[#e0f2f4] bg-[#f8fdfd] rounded-lg shadow-sm">
+                <h4 className="text-[#007E85] font-medium mb-3 flex items-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                  </svg>
+                  SMS Hatırlatıcı Ayarı
+                </h4>
+                <label className="flex items-center space-x-3 cursor-pointer group">
+                  <div className="relative">
+                    <input
+                      type="checkbox"
+                      name="isSmsReminderActive"
+                      checked={formData.isSmsReminderActive}
+                      onChange={handleInputChange}
+                      className="sr-only"
+                    />
+                    <div className={formData.isSmsReminderActive ? 'w-10 h-5 bg-[#007E85] rounded-full shadow-inner transition-colors duration-300 ease-in-out' : 'w-10 h-5 bg-gray-200 rounded-full shadow-inner transition-colors duration-300 ease-in-out group-hover:bg-gray-300'}></div>
+                    <div className={`absolute left-0 top-0 w-5 h-5 bg-white rounded-full shadow transition-transform duration-300 ease-in-out transform ${formData.isSmsReminderActive ? 'translate-x-5' : ''}`}></div>
+                  </div>
+                  <div>
+                    <span className="text-gray-700 font-medium">Bu hizmet için hatırlatıcı SMS gönderilsin mi?</span>
+                    <p className="text-gray-500 text-xs mt-1">Bu seçenek açıksa, bu hizmet için oluşturulan randevular için müşterilere WhatsApp üzerinden hatırlatıcı mesaj gönderilecektir.</p>
+                  </div>
+                </label>
+              </div>
+              
               <div className="flex justify-end mt-6 space-x-2">
                 <button
                   type="button"

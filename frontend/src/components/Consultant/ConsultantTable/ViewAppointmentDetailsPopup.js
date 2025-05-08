@@ -25,25 +25,6 @@ const getServiceNameById = (serviceId, servicesData) => {
   return service ? service.serviceName : "Hizmet bulunamadı";
 };
 
-// For server-side use with async/await and MongoDB
-const getServiceNameByIdAsync = async (serviceId) => {
-  try {
-    if (!serviceId) return "Hizmet seçilmemiş";
-    
-    // Assuming you have a Service model
-    const Service = require("../models/Service");
-    
-    // Query the database for the service
-    const service = await Service.findById(serviceId);
-    
-    // Return the service name if found, otherwise return a default message
-    return service ? service.serviceName : "Hizmet bulunamadı";
-  } catch (error) {
-    console.error("Error fetching service name:", error);
-    return "Hizmet bilgisi alınamadı";
-  }
-};
-
 export default function ViewAppointmentDetailsPopup({
   data,
   isEditable,
