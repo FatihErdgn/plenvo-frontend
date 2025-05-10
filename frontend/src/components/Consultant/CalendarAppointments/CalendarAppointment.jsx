@@ -17,6 +17,11 @@ import { format, addDays, startOfWeek, subWeeks, addWeeks, getDay, parse, isVali
 import { tr } from 'date-fns/locale';
 import { FaChevronLeft, FaChevronRight, FaRegCalendarAlt } from "react-icons/fa";
 
+// Required field indicator component
+const RequiredIndicator = () => (
+  <span className="text-red-500 ml-1">*</span>
+);
+
 // Haftanın günleri - tam ve kısaltılmış versiyonlar
 const DAYS = [
   "Pazartesi",
@@ -271,6 +276,13 @@ export default function CalendarSchedulePage({ servicesData }) {
   // Ödeme sonrası otomatik popup'ı engelleyen bayrak - true olduğunda popup engellenir
   const [preventAutoPopup, setPreventAutoPopup] = useState(false);
 
+  const [formErrors, setFormErrors] = useState({
+    appointmentType: false,
+    selectedService: false,
+    participantNames: [],
+    participantPhones: []
+  });
+
   console.log(servicesData);
 
   // Kullanıcı profilini al
@@ -419,6 +431,13 @@ export default function CalendarSchedulePage({ servicesData }) {
     const newPhones = [...participantPhones];
     newPhones[index] = value;
     setParticipantPhones(newPhones);
+    
+    // Clear error when field is filled correctly
+    if (value && validateTurkishPhoneNumber(value)) {
+      const newErrors = {...formErrors};
+      newErrors.participantPhones[index] = false;
+      setFormErrors(newErrors);
+    }
     
     // Telefon formatını kontrol et
     const newPhoneErrors = [...phoneErrors];
@@ -598,31 +617,53 @@ export default function CalendarSchedulePage({ servicesData }) {
     setPhoneErrors(currentPhoneErrors);
   };
 
-  // Kaydet fonksiyonu: Eğer rebookBookingId set edilmişse payload içerisine eklenir.
+  // Validate the form before submitting
+  const validateForm = () => {
+    let isValid = true;
+    const errors = {
+      appointmentType: false,
+      selectedService: false,
+      participantNames: Array(participantCount).fill(false),
+      participantPhones: Array(participantCount).fill(false)
+    };
+
+    // Validate appointment type
+    if (!appointmentType) {
+      errors.appointmentType = true;
+      isValid = false;
+    }
+
+    // Validate service selection only if services are available for the selected type
+    if (appointmentType && filteredServices.length > 0 && !selectedService) {
+      errors.selectedService = true;
+      isValid = false;
+    }
+
+    // Validate participant names
+    participantNames.forEach((name, index) => {
+      if (!name || name.trim() === '') {
+        errors.participantNames[index] = true;
+        isValid = false;
+      }
+    });
+
+    // Validate phone numbers
+    participantPhones.forEach((phone, index) => {
+      if (!phone || !validateTurkishPhoneNumber(phone)) {
+        errors.participantPhones[index] = true;
+        isValid = false;
+      }
+    });
+
+    setFormErrors(errors);
+    return isValid;
+  };
+
+  // Update handleSubmit to use validateForm
   const handleSubmit = async () => {
     if (!selectedAppointment) return;
     
-    // Hasta ismi validasyonu
-    if (!participantNames || 
-        participantNames.length === 0 || 
-        participantNames.some(name => !name || name.trim() === '')) {
-      // Hasta ismi eksikse hata göster
-      setParticipantError(true);
-      return;
-    } else {
-      setParticipantError(false);
-    }
-    
-    // Telefon numarası validasyonu
-    const invalidPhones = participantPhones.filter(phone => phone && !validateTurkishPhoneNumber(phone));
-    if (invalidPhones.length > 0) {
-      // Telefon numara formatı hatası
-      const newPhoneErrors = participantPhones.map(phone => 
-        phone && !validateTurkishPhoneNumber(phone) ? 
-          "Telefon 0 ile başlamalı ve 05XX XXX XX XX formatında olmalıdır" : ""
-      );
-      setPhoneErrors(newPhoneErrors);
-      alert("Lütfen telefon numaralarını doğru formatta giriniz (05XX XXX XX XX)");
+    if (!validateForm()) {
       return;
     }
     
@@ -1265,28 +1306,47 @@ export default function CalendarSchedulePage({ servicesData }) {
             
             {/* Randevu Tipi Dropdown */}
             <div className="mb-2">
-              <label className="block font-medium">Randevu Tipi</label>
+              <label className="block font-medium">
+                Randevu Tipi
+                <RequiredIndicator />
+              </label>
               <select
                 value={appointmentType}
-                onChange={(e) => setAppointmentType(e.target.value)}
-                className="border p-1 w-full cursor-pointer rounded-md"
+                onChange={(e) => {
+                  setAppointmentType(e.target.value);
+                  // Clear appointment type error
+                  setFormErrors(prev => ({...prev, appointmentType: false}));
+                }}
+                className={`border p-1 w-full cursor-pointer rounded-md ${
+                  formErrors.appointmentType ? 'border-red-500 bg-red-50' : ''
+                }`}
               >
                 <option value="">Seçiniz</option>
                 <option value="Ön Görüşme">Ön Görüşme</option>
                 <option value="Rutin Görüşme">Rutin Görüşme</option>
                 <option value="Muayene">Muayene</option>
               </select>
+              {formErrors.appointmentType && (
+                <p className="text-red-500 text-xs mt-1">Randevu tipi seçilmelidir</p>
+              )}
             </div>
             
-            {/* Randevu Hizmeti Dropdown - YENİ EKLENEN */}
+            {/* Randevu Hizmeti Dropdown */}
             <div className="mb-2">
-              <label className="block font-medium">Randevu Hizmeti</label>
+              <label className="block font-medium">
+                Randevu Hizmeti
+                {appointmentType && filteredServices.length > 0 && <RequiredIndicator />}
+              </label>
               <div className="flex flex-col">
                 <select
                   value={selectedService}
-                  onChange={(e) => handleServiceChange(e.target.value)}
+                  onChange={(e) => {
+                    handleServiceChange(e.target.value);
+                    // Clear service error
+                    setFormErrors(prev => ({...prev, selectedService: false}));
+                  }}
                   className={`border p-1 w-full cursor-pointer rounded-md ${
-                    !appointmentType ? "bg-gray-100" : ""
+                    !appointmentType ? "bg-gray-100" : formErrors.selectedService ? 'border-red-500 bg-red-50' : ''
                   }`}
                   disabled={!appointmentType || filteredServices.length === 0}
                 >
@@ -1306,6 +1366,9 @@ export default function CalendarSchedulePage({ servicesData }) {
                   <p className="text-red-500 text-xs mt-1">
                     {`"${appointmentType}" tipi için tanımlı hizmet bulunamadı`}
                   </p>
+                )}
+                {formErrors.selectedService && (
+                  <p className="text-red-500 text-xs mt-1">Randevu hizmeti seçilmelidir</p>
                 )}
               </div>
             </div>
@@ -1333,6 +1396,7 @@ export default function CalendarSchedulePage({ servicesData }) {
                 <div className="mb-2">
                 <label className="block text-sm font-medium">
                   Kişi {i + 1} Adı
+                  <RequiredIndicator />
                 </label>
                 <input
                   type="text"
@@ -1341,38 +1405,46 @@ export default function CalendarSchedulePage({ servicesData }) {
                     const newNames = [...participantNames];
                     newNames[i] = e.target.value;
                     setParticipantNames(newNames);
-                    // İsim girilince hatayı temizle
+                    
+                    // Clear name error when field is filled
                     if (e.target.value.trim() !== '') {
+                      const newErrors = {...formErrors};
+                      newErrors.participantNames[i] = false;
+                      setFormErrors(newErrors);
                       setParticipantError(false);
                     }
                   }}
                   className={`border p-1 w-full cursor-pointer rounded-md ${
-                    participantError && (!participantNames[i] || participantNames[i].trim() === '') 
+                    formErrors.participantNames[i] || (participantError && (!participantNames[i] || participantNames[i].trim() === ''))
                     ? 'border-red-500 bg-red-50' 
                     : ''
                   }`}
                 />
-                {participantError && (!participantNames[i] || participantNames[i].trim() === '') && (
+                {(formErrors.participantNames[i] || (participantError && (!participantNames[i] || participantNames[i].trim() === ''))) && (
                   <p className="text-red-500 text-xs mt-1">Hasta ismi boş olamaz</p>
                 )}
                 </div>
                 <div>
                   <label className="block text-sm font-medium">
                     Kişi {i + 1} Telefon
+                    <RequiredIndicator />
                   </label>
                   <input
                     type="text"
                     value={participantPhones[i] || ""}
                     onChange={(e) => handlePhoneChange(i, e.target.value)}
                     className={`border p-1 w-full cursor-pointer rounded-md ${
-                      phoneErrors[i] ? 'border-red-500 bg-red-50' : ''
+                      formErrors.participantPhones[i] || phoneErrors[i] ? 'border-red-500 bg-red-50' : ''
                     }`}
                     placeholder="05XX XXX XX XX"
                   />
                   {phoneErrors[i] && (
                     <p className="text-red-500 text-xs mt-1">{phoneErrors[i]}</p>
                   )}
-                  {!phoneErrors[i] && (
+                  {formErrors.participantPhones[i] && !phoneErrors[i] && (
+                    <p className="text-red-500 text-xs mt-1">Telefon numarası gereklidir</p>
+                  )}
+                  {!phoneErrors[i] && !formErrors.participantPhones[i] && (
                     <p className="text-gray-500 text-xs mt-1">
                       Telefon numarası 0 ile başlamalıdır (Örn: 05XX XXX XX XX)
                     </p>
@@ -1399,20 +1471,7 @@ export default function CalendarSchedulePage({ servicesData }) {
               {loggedInUser?.roleId?.roleName !== "doctor" && (
                 <button
                   onClick={handleSubmit}
-                  className={`px-4 py-1 rounded ${
-                    !participantNames || 
-                    participantNames.length === 0 || 
-                    participantNames.some(name => !name || name.trim() === '')
-                    ? 'bg-gray-300 cursor-not-allowed text-gray-500' 
-                    : 'bg-[#007E85] text-white hover:bg-[#00696F]'
-                  }`}
-                  title={
-                    !participantNames || 
-                    participantNames.length === 0 || 
-                    participantNames.some(name => !name || name.trim() === '')
-                    ? 'Lütfen tüm hasta isimlerini girin' 
-                    : 'Randevuyu kaydet'
-                  }
+                  className="bg-[#007E85] text-white hover:bg-[#00696F] px-4 py-1 rounded"
                 >
                   Kaydet
                 </button>

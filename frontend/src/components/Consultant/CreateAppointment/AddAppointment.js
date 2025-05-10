@@ -62,89 +62,95 @@ export default function AddAppointment({
       {/* POPUP - Responsive genişlik düzenlemesi */}
       {isPopUpOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50 p-4">
-          <div className="relative bg-white p-6 rounded-[10px] shadow-lg w-[95%] sm:w-[80%] md:w-[60%] lg:w-[40%] xl:w-[30%] max-h-[95vh] overflow-y-auto">
+          {/* Modal container with fixed rounded corners - not scrollable itself */}
+          <div className="relative bg-white rounded-[10px] shadow-lg w-[95%] sm:w-[80%] md:w-[60%] lg:w-[40%] xl:w-[30%] max-h-[95vh] flex flex-col overflow-hidden">
             {/* KAPAT BUTONU */}
-            <button
-              className="absolute top-4 right-4 text-red-500 hover:text-gray-600"
-              onClick={handleClosePopup}
-            >
-              <IoIosCloseCircleOutline className="w-7 h-7" />
-            </button>
+            <div className="sticky top-0 z-10 p-6 pb-0">
+              <button
+                className="absolute top-4 right-4 text-red-500 hover:text-gray-600"
+                onClick={handleClosePopup}
+              >
+                <IoIosCloseCircleOutline className="w-7 h-7" />
+              </button>
+            </div>
 
-            {/* Eğer henüz randevu tipi seçilmemişse, seçim butonlarını göster */}
-            {!appointmentType && (
-              <div>
-                <h2 className="text-lg font-semibold mb-4 text-center">
-                  Randevu Tipi Seçiniz
-                </h2>
-                <div className="flex flex-col sm:flex-row justify-center gap-4 sm:gap-4">
-                  <button
-                    onClick={() => setAppointmentType("single")}
-                    className="bg-[#399AA1] text-white px-4 py-2 rounded-md hover:bg-[#007E85]"
-                  >
-                    Tek Kişilik Randevu
-                  </button>
-                  <button
-                    onClick={() => setAppointmentType("group")}
-                    className="bg-[#399AA1] text-white px-4 py-2 rounded-md hover:bg-[#007E85]"
-                  >
-                    Grup Randevusu
-                  </button>
+            {/* Scrollable content area */}
+            <div className="flex-1 overflow-y-auto p-6 pt-2">
+              {/* Eğer henüz randevu tipi seçilmemişse, seçim butonlarını göster */}
+              {!appointmentType && (
+                <div>
+                  <h2 className="text-lg font-semibold mb-4 text-center">
+                    Randevu Tipi Seçiniz
+                  </h2>
+                  <div className="flex flex-col sm:flex-row justify-center gap-4 sm:gap-4">
+                    <button
+                      onClick={() => setAppointmentType("single")}
+                      className="bg-[#399AA1] text-white px-4 py-2 rounded-md hover:bg-[#007E85]"
+                    >
+                      Tek Kişilik Randevu
+                    </button>
+                    <button
+                      onClick={() => setAppointmentType("group")}
+                      className="bg-[#399AA1] text-white px-4 py-2 rounded-md hover:bg-[#007E85]"
+                    >
+                      Grup Randevusu
+                    </button>
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
-            {/* Tek Kişilik Randevu Formu */}
-            {appointmentType === "single" && (
-              <div>
-                <h2 className="text-lg font-semibold mb-4 text-center">
-                  Tek Kişilik Randevu
-                </h2>
-                <SingleAppointmentForm
-                  appointments={appointments}
-                  onClose={handleClosePopup}
-                  options={{
-                    clinicOptions,
-                    doctorOptions,
-                    doctorList,
-                    genderOptions,
-                  }}
-                  prefilledData={
-                    prefilledData && prefilledData.type === "single"
-                      ? prefilledData
-                      : null
-                  }
-                  onAddAppointment={onAddAppointment}
-                  servicesData={servicesData}
-                />
-              </div>
-            )}
+              {/* Tek Kişilik Randevu Formu */}
+              {appointmentType === "single" && (
+                <div>
+                  <h2 className="text-lg font-semibold mb-4 text-center">
+                    Tek Kişilik Randevu
+                  </h2>
+                  <SingleAppointmentForm
+                    appointments={appointments}
+                    onClose={handleClosePopup}
+                    options={{
+                      clinicOptions,
+                      doctorOptions,
+                      doctorList,
+                      genderOptions,
+                    }}
+                    prefilledData={
+                      prefilledData && prefilledData.type === "single"
+                        ? prefilledData
+                        : null
+                    }
+                    onAddAppointment={onAddAppointment}
+                    servicesData={servicesData}
+                  />
+                </div>
+              )}
 
-            {/* Grup Randevusu Formu */}
-            {appointmentType === "group" && (
-              <div>
-                <h2 className="text-lg font-semibold mb-4 text-center">
-                  Grup Randevusu
-                </h2>
-                <GroupAppointmentForm
-                  appointments={appointments}
-                  onClose={handleClosePopup}
-                  options={{
-                    clinicOptions,
-                    doctorOptions,
-                    doctorList,
-                    genderOptions,
-                  }}
-                  prefilledData={
-                    prefilledData && prefilledData.type === "group"
-                      ? prefilledData
-                      : null
-                  }
-                  onAddAppointment={onAddAppointment}
-                  servicesData={servicesData}
-                />
-              </div>
-            )}
+              {/* Grup Randevusu Formu */}
+              {appointmentType === "group" && (
+                <div>
+                  <h2 className="text-lg font-semibold mb-4 text-center">
+                    Grup Randevusu
+                  </h2>
+                  <GroupAppointmentForm
+                    appointments={appointments}
+                    onClose={handleClosePopup}
+                    options={{
+                      clinicOptions,
+                      doctorOptions,
+                      doctorList,
+                      genderOptions,
+                    }}
+                    prefilledData={
+                      prefilledData && prefilledData.type === "group"
+                        ? prefilledData
+                        : null
+                    }
+                    onAddAppointment={onAddAppointment}
+                    servicesData={servicesData}
+                  />
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}
