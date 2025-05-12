@@ -283,7 +283,7 @@ export default function CalendarSchedulePage({ servicesData }) {
     participantPhones: []
   });
 
-  console.log(servicesData);
+  // console.log(servicesData);
 
   // Kullanıcı profilini al
   useEffect(() => {
@@ -460,7 +460,7 @@ export default function CalendarSchedulePage({ servicesData }) {
     if (loggedInUser.roleId?.roleName === "doctor") {
       return `${loggedInUser.firstName} ${loggedInUser.lastName}`;
     } else if (
-      ["admin", "manager", "superadmin"].includes(loggedInUser.roleId?.roleName)
+      ["admin", "manager", "superadmin", "consultant"].includes(loggedInUser.roleId?.roleName)
     ) {
       const doc = doctorList.find((d) => d._id === selectedDoctor);
       return doc ? `${doc.firstName} ${doc.lastName}` : "Danışman Seçiniz";
