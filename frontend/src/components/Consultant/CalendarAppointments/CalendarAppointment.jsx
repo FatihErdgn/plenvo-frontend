@@ -13,7 +13,7 @@ import { IoCheckmarkDoneCircleSharp } from "react-icons/io5";
 import usePaymentStatus from "../../../hooks/usePaymentStatus"; // Custom hook
 import { IoIosCloseCircleOutline } from "react-icons/io";
 import ReadOnlyPaymentPopup from "../ConsultantTable/ReadOnlyPayNowButton";
-import { format, addDays, startOfWeek, subWeeks, addWeeks, getDay, parse, isValid, parseISO, addMonths, startOfMonth, setWeek, endOfMonth, eachWeekOfInterval, getWeeksInMonth } from 'date-fns';
+import { format, addDays, startOfWeek, subWeeks, addWeeks, getDay, parse, isValid, parseISO, addMonths, startOfMonth, setWeek, endOfMonth, eachWeekOfInterval, getWeeksInMonth, isSameDay } from 'date-fns';
 import { tr } from 'date-fns/locale';
 import { FaChevronLeft, FaChevronRight, FaRegCalendarAlt } from "react-icons/fa";
 
@@ -805,11 +805,16 @@ export default function CalendarSchedulePage({ servicesData }) {
   };
 
   // Hücredeki randevuyu bul
-  const findAppointmentForCell = (dayIndex, timeIndex) => {
+  const findAppointmentForCell = useCallback((dayIndex, timeIndex, cellDate) => {
     return appointments.find(
-      (appt) => appt.dayIndex === dayIndex && appt.timeIndex === timeIndex
+      (appt) => {
+        const apptDate = new Date(appt.appointmentDate);
+        return appt.dayIndex === dayIndex && 
+               appt.timeIndex === timeIndex &&
+               isSameDay(apptDate, cellDate);
+      }
     );
-  };
+  }, [appointments]);
 
   // Sanal instance mi kontrol et
   const isVirtualInstance = (appointment) => {
@@ -1076,7 +1081,8 @@ export default function CalendarSchedulePage({ servicesData }) {
                   {slot}
                 </td>
                 {DAYS.map((day, dayIndex) => {
-                  const appt = findAppointmentForCell(dayIndex, timeIndex);
+                  const cellSpecificDate = weekDates[dayIndex];
+                  const appt = findAppointmentForCell(dayIndex, timeIndex, cellSpecificDate);
                   return (
                     <td
                       key={dayIndex}
