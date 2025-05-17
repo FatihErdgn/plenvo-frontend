@@ -103,3 +103,21 @@ export const getPaymentsByAppointment = async (appointmentId) => {
     throw error.response?.data || error.message;
   }
 };
+
+/**
+ * Birden fazla randevu için ödeme durumlarını tek seferde getirme
+ * @param {string[]} appointmentIds Randevu ID'lerinin dizisi
+ * @returns {Promise<object>} API cevabı (tüm randevuların ödeme durumları)
+ */
+export const getBulkPaymentStatus = async (appointmentIds) => {
+  try {
+    const response = await api.post("/payments/bulk-status", { appointmentIds });
+    return response.data;
+  } catch (error) {
+    console.error(
+      "Bulk Payment Status Hatası:",
+      error.response?.data || error.message
+    );
+    return { success: false, paymentStatuses: [] };
+  }
+};

@@ -10,7 +10,8 @@ import PaymentPopup from "../ConsultantTable/PayNowButton"; // Ödeme popup'ı c
 import { FaMoneyBills } from "react-icons/fa6";
 import { FaCheckCircle } from "react-icons/fa";
 import { IoCheckmarkDoneCircleSharp } from "react-icons/io5";
-import usePaymentStatus from "../../../hooks/usePaymentStatus"; // Custom hook
+import usePaymentStatus from "../../../hooks/usePaymentStatus"; // Individual hook
+import useBulkPaymentStatus from "../../../hooks/useBulkPaymentStatus"; // Yeni bulk hook
 import { IoIosCloseCircleOutline } from "react-icons/io";
 import ReadOnlyPaymentPopup from "../ConsultantTable/ReadOnlyPayNowButton";
 import { format, addDays, startOfWeek, subWeeks, addWeeks, getDay, parse, isValid, parseISO, addMonths, startOfMonth, setWeek, endOfMonth, eachWeekOfInterval, getWeeksInMonth, isSameDay } from 'date-fns';
@@ -115,12 +116,13 @@ function PaymentStatusCell({
   onClickPayNow,
   refreshTrigger,
   fetchAppointments,
-  preventAutoPopup
+  preventAutoPopup,
+  bulkPaymentStatuses // Yeni: Toplu ödeme durumlarını içeren prop
 }) {
-  const { completed, halfPaid, totalPaid, isExpired } = usePaymentStatus(
-    appointment._id,
-    refreshTrigger
-  );
+  // Eski usePaymentStatus hook'u kullanmak yerine bulkPaymentStatuses'ten al
+  const paymentStatus = bulkPaymentStatuses.getStatusForAppointment(appointment._id);
+  const { completed, halfPaid, totalPaid, isExpired } = paymentStatus;
+  
   const [viewPaymentOpen, setViewPaymentOpen] = useState(false);
   
   // İlk mount sonrası oluşan değişiklikleri izleyen ref
@@ -282,6 +284,9 @@ export default function CalendarSchedulePage({ servicesData }) {
     participantNames: [],
     participantPhones: []
   });
+
+  // Yeni: Toplu ödeme durumu hook'unu ekle
+  const bulkPaymentStatuses = useBulkPaymentStatus(appointments, paymentRefreshTrigger);
 
   // console.log(servicesData);
 
@@ -1118,6 +1123,7 @@ export default function CalendarSchedulePage({ servicesData }) {
                             refreshAppointments(doctorId);
                           }}
                           preventAutoPopup={preventAutoPopup}
+                          bulkPaymentStatuses={bulkPaymentStatuses}
                         />
                       ) : (
                         <div className="text-gray-400 italic">Boş</div>
