@@ -382,10 +382,13 @@ export default function CalendarSchedulePage({ servicesData }) {
   const handleCellClick = (dayIndex, timeIndex, appt) => {
     if (loggedInUser?.roleId?.roleName === "doctor") return;
     
-    // Tarih ve saat hesaplayalım
+    // Tarih ve saat hesaplayalım - UTC kullan
     const appointmentDate = new Date(weekDates[dayIndex]);
-    appointmentDate.setHours(9 + Math.floor(timeIndex));
-    appointmentDate.setMinutes(0);
+    // UTC saat ayarla (Türkiye UTC+3 olduğu için 9-3=6 UTC saati olmalı)
+    appointmentDate.setUTCHours(6 + Math.floor(timeIndex)); // 09:00 Türkiye = 06:00 UTC
+    appointmentDate.setUTCMinutes(0);
+    appointmentDate.setUTCSeconds(0);
+    appointmentDate.setUTCMilliseconds(0);
     
     setSelectedCell({ dayIndex, timeIndex, appointmentDate });
     
@@ -556,9 +559,11 @@ export default function CalendarSchedulePage({ servicesData }) {
 
     // Önemli: Randevu tarihini seçilen hücrenin gün ve saat indeksine göre yeniden hesapla
     const newAppointmentDate = new Date(weekDates[selectedCell.dayIndex]);
-    newAppointmentDate.setHours(9 + Math.floor(selectedCell.timeIndex));
-    newAppointmentDate.setMinutes(0);
-    newAppointmentDate.setSeconds(0);
+    // UTC saat ayarla (Türkiye UTC+3 olduğu için 9-3=6 UTC saati olmalı)
+    newAppointmentDate.setUTCHours(6 + Math.floor(selectedCell.timeIndex)); // 09:00 Türkiye = 06:00 UTC
+    newAppointmentDate.setUTCMinutes(0);
+    newAppointmentDate.setUTCSeconds(0);
+    newAppointmentDate.setUTCMilliseconds(0);
 
     setSelectedAppointment({
       ...appt,
@@ -677,9 +682,11 @@ export default function CalendarSchedulePage({ servicesData }) {
     
     if (!appointmentDate) {
       const newDate = new Date(weekDates[selectedAppointment.dayIndex]);
-      newDate.setHours(9 + Math.floor(selectedAppointment.timeIndex));
-      newDate.setMinutes(0);
-      newDate.setSeconds(0);
+      // UTC saat ayarla (Türkiye UTC+3 olduğu için 9-3=6 UTC saati olmalı)
+      newDate.setUTCHours(6 + Math.floor(selectedAppointment.timeIndex)); // 09:00 Türkiye = 06:00 UTC
+      newDate.setUTCMinutes(0);
+      newDate.setUTCSeconds(0);
+      newDate.setUTCMilliseconds(0);
       appointmentDate = newDate;
     }
         
