@@ -383,12 +383,15 @@ export default function CalendarSchedulePage({ servicesData }) {
     if (loggedInUser?.roleId?.roleName === "doctor") return;
     
     // Tarih ve saat hesaplayalım - UTC kullan
-    const appointmentDate = new Date(weekDates[dayIndex]);
-    // UTC saat ayarla (Türkiye UTC+3 olduğu için 9-3=6 UTC saati olmalı)
-    appointmentDate.setUTCHours(6 + Math.floor(timeIndex)); // 09:00 Türkiye = 06:00 UTC
-    appointmentDate.setUTCMinutes(0);
-    appointmentDate.setUTCSeconds(0);
-    appointmentDate.setUTCMilliseconds(0);
+    const selectedDate = weekDates[dayIndex];
+    // Tamamen UTC'de tarih oluştur
+    const appointmentDate = new Date(Date.UTC(
+      selectedDate.getFullYear(),
+      selectedDate.getMonth(), 
+      selectedDate.getDate(),
+      6 + timeIndex, // timeIndex 0 = 09:00 TR = 06:00 UTC
+      0, 0, 0
+    ));
     
     setSelectedCell({ dayIndex, timeIndex, appointmentDate });
     
@@ -558,12 +561,15 @@ export default function CalendarSchedulePage({ servicesData }) {
     setRebookBookingId(appt.bookingId || appt._id);
 
     // Önemli: Randevu tarihini seçilen hücrenin gün ve saat indeksine göre yeniden hesapla
-    const newAppointmentDate = new Date(weekDates[selectedCell.dayIndex]);
-    // UTC saat ayarla (Türkiye UTC+3 olduğu için 9-3=6 UTC saati olmalı)
-    newAppointmentDate.setUTCHours(6 + Math.floor(selectedCell.timeIndex)); // 09:00 Türkiye = 06:00 UTC
-    newAppointmentDate.setUTCMinutes(0);
-    newAppointmentDate.setUTCSeconds(0);
-    newAppointmentDate.setUTCMilliseconds(0);
+    const selectedDate = weekDates[selectedCell.dayIndex];
+    // Tamamen UTC'de tarih oluştur
+    const newAppointmentDate = new Date(Date.UTC(
+      selectedDate.getFullYear(),
+      selectedDate.getMonth(), 
+      selectedDate.getDate(),
+      6 + selectedCell.timeIndex, // timeIndex 0 = 09:00 TR = 06:00 UTC
+      0, 0, 0
+    ));
 
     setSelectedAppointment({
       ...appt,
@@ -681,13 +687,15 @@ export default function CalendarSchedulePage({ servicesData }) {
     let appointmentDate = selectedAppointment.appointmentDate;
     
     if (!appointmentDate) {
-      const newDate = new Date(weekDates[selectedAppointment.dayIndex]);
-      // UTC saat ayarla (Türkiye UTC+3 olduğu için 9-3=6 UTC saati olmalı)
-      newDate.setUTCHours(6 + Math.floor(selectedAppointment.timeIndex)); // 09:00 Türkiye = 06:00 UTC
-      newDate.setUTCMinutes(0);
-      newDate.setUTCSeconds(0);
-      newDate.setUTCMilliseconds(0);
-      appointmentDate = newDate;
+      const selectedDate = weekDates[selectedAppointment.dayIndex];
+      // Tamamen UTC'de tarih oluştur
+      appointmentDate = new Date(Date.UTC(
+        selectedDate.getFullYear(),
+        selectedDate.getMonth(), 
+        selectedDate.getDate(),
+        6 + selectedAppointment.timeIndex, // timeIndex 0 = 09:00 TR = 06:00 UTC
+        0, 0, 0
+      ));
     }
         
     const payload = {
