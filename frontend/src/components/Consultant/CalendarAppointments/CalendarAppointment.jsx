@@ -1,486 +1,79 @@
-import React, { useEffect, useState, useRef, useMemo, useCallback } from "react";
-import {
-  getCalendarAppointments,
-  createCalendarAppointment,
-  updateCalendarAppointment,
-  deleteCalendarAppointment,
-} from "../../../services/calendarAppointmentService";
-import { getUsers, getProfile } from "../../../services/userService";
-import PaymentPopup from "../ConsultantTable/PayNowButton"; // Ödeme popup'ı component'i
-import { FaMoneyBills } from "react-icons/fa6";
-import { FaCheckCircle } from "react-icons/fa";
-import { IoCheckmarkDoneCircleSharp } from "react-icons/io5";
-import usePaymentStatus from "../../../hooks/usePaymentStatus"; // Custom hook
-import { IoIosCloseCircleOutline } from "react-icons/io";
-import ReadOnlyPaymentPopup from "../ConsultantTable/ReadOnlyPayNowButton";
-import { format, addDays, startOfWeek, subWeeks, addWeeks, getDay, parse, isValid, parseISO, addMonths, startOfMonth, setWeek, endOfMonth, eachWeekOfInterval, getWeeksInMonth, isSameDay } from 'date-fns';
-import { tr } from 'date-fns/locale';
-import { FaChevronLeft, FaChevronRight, FaRegCalendarAlt } from "react-icons/fa";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
+import PaymentPopup from "../ConsultantTable/PayNowButton";
+import { getWeekStart, calculateAppointmentDate, isVirtualInstance } from "./utils/calendarUtils";
+import { useAppointments } from "./hooks/useAppointments";
+import CalendarGrid from "./components/CalendarGrid";
+import DatePicker from "./components/DatePicker";
+import AppointmentModal from "./components/AppointmentModal";
+import { APPOINTMENT_TYPES } from "./constants/calendarConstants";
 
-// Required field indicator component
-const RequiredIndicator = () => (
-  <span className="text-red-500 ml-1">*</span>
-);
-
-// Haftanın günleri - tam ve kısaltılmış versiyonlar
-const DAYS = [
-  "Pazartesi",
-  "Salı",
-  "Çarşamba",
-  "Perşembe",
-  "Cuma",
-  "Cumartesi",
-  "Pazar",
-];
-
-// Mobil görünüm için kısaltılmış gün adları
-const DAYS_SHORT = [
-  "Pt",
-  "Sa",
-  "Çr",
-  "Pr",
-  "Cu",
-  "Ct",
-  "Pz",
-];
-
-// Saat dilimleri
-const TIME_SLOTS = [
-  "09:00-09:50",
-  "10:00-10:50",
-  "11:00-11:50",
-  "12:00-12:50",
-  "13:00-13:50",
-  "14:00-14:50",
-  "15:00-15:50",
-  "16:00-16:50",
-  "17:00-17:50",
-  "18:00-18:50",
-  "19:00-19:50",
-  "20:00-20:50",
-];
-
-// Yardımcı fonksiyon: Randevu id'sine göre pastel renk seçimi yapar.
-const getPastelColor = (appointment) => {
-  if (!appointment || !appointment.doctorId) return "";
-  const doctorId = appointment.doctorId.toString();
-  const participantNames = appointment.participants
-    ? appointment.participants
-        .map((p) => p.name.trim().toLowerCase())
-        .sort()
-        .join("")
-    : "";
-  const hashString = doctorId + participantNames;
-  let sum = 0;
-  for (let i = 0; i < hashString.length; i++) {
-    sum += hashString.charCodeAt(i);
-  }
-  const pastelColors = [
-    "bg-blue-100",
-    "bg-pink-100",
-    "bg-purple-100",
-    "bg-yellow-100",
-    "bg-green-100",
-    "bg-indigo-100",
-    "bg-orange-100",
-  ];
-  return pastelColors[sum % pastelColors.length];
-};
-
-// Yardımcı fonksiyon: Tarih formatlamak için
-const formatDate = (date, formatStr) => {
-  return format(date, formatStr, { locale: tr });
-};
-
-// Pazartesi başlangıçlı hafta başı hesaplama
-const getWeekStart = (date) => {
-  const day = getDay(date);
-  // Pazartesi = 1, Pazar = 0 olduğu için
-  const diff = day === 0 ? -6 : 1 - day;
-  return addDays(date, diff);
-};
-
-// Türkiye telefon numarası formatını kontrol eden yardımcı fonksiyon
-const validateTurkishPhoneNumber = (phone) => {
-  if (!phone) return true; // Boş numara kabul edilebilir
+const CalendarSchedulePage = ({ servicesData = [] }) => {
+  // Core calendar state
+  const [currentWeekStart, setCurrentWeekStart] = useState(getWeekStart(new Date()));
   
-  // 0 ile başlayan 10-11 haneli numara kontrolü
-  const regex = /^0[5][0-9]{8,9}$/;
-  return regex.test(phone);
-};
+  // Payment state
+  const [paymentOpen, setPaymentOpen] = useState(false);
+  const [paymentRefreshTrigger, setPaymentRefreshTrigger] = useState(0);
+  const [preventAutoPopup, setPreventAutoPopup] = useState(false);
 
-// PaymentStatusCell: Randevuya ait ödeme durumunu kontrol eder.
-function PaymentStatusCell({
-  appointment,
-  onClickPayNow,
-  refreshTrigger,
-  fetchAppointments,
-  preventAutoPopup
-}) {
-  const { completed, halfPaid, totalPaid, isExpired } = usePaymentStatus(
-    appointment._id,
-    refreshTrigger
-  );
-  const [viewPaymentOpen, setViewPaymentOpen] = useState(false);
-  
-  // İlk mount sonrası oluşan değişiklikleri izleyen ref
-  const initialRenderRef = useRef(true);
-  const lastCompletedRef = useRef(completed);
-  
-  // Tamamlanma durumu değişince ve bu ilk render değilse ve preventAutoPopup aktif değilse
-  useEffect(() => {
-    // İlk mount sırasında (ilk render) hiçbir şey yapma
-    if (initialRenderRef.current) {
-      initialRenderRef.current = false;
-      lastCompletedRef.current = completed;
-      return;
-    }
-    
-    // Tamamlanma durumu false'dan true'ya değiştiyse ve preventAutoPopup aktif değilse
-    // Bu, bir ödeme işlemi sonrası "completed" durumunun değiştiğini gösterir
-    if (completed && !lastCompletedRef.current && preventAutoPopup) {
-      // Otomatik popup açılmasını engelle
-      setViewPaymentOpen(false);
-    }
-    
-    lastCompletedRef.current = completed;
-  }, [completed, preventAutoPopup]);
-
-  // Ödeme periyodu sona ermişse özel bir durum gösterilmeli
-  if (isExpired) {
-    return (
-      <div className="relative">
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onClickPayNow();
-          }}
-          title="Ödeme periyodu dolmuş! Yeni ödeme gerekiyor."
-          className="absolute top-1 right-1 bg-orange-500 hover:bg-orange-600 text-white text-xs px-1 py-0.5 rounded"
-        >
-          <FaMoneyBills className="w-[1.25rem] h-[1.25rem]" />
-        </button>
-        <div className="text-sm font-medium pr-8">
-          {appointment.participants.map((p) => p.name).join(" - ")}
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="relative">
-      {completed ? (
-        <>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              // Sadece manuel tıklamalarda açılsın
-              setViewPaymentOpen(true);
-            }}
-            title={`Toplam Ödenen Miktar: ${totalPaid} TL`}
-            className="absolute top-0.5 right-0.5"
-          >
-            <IoCheckmarkDoneCircleSharp className="text-green-600 w-6 h-6 hover:text-green-700" />
-          </button>
-          {viewPaymentOpen && (
-            <div
-              className="fixed text-center inset-0 bg-black bg-opacity-50 z-50"
-              onClick={(e) => e.stopPropagation()}
-              style={{ pointerEvents: "all" }}
-            >
-              <ReadOnlyPaymentPopup
-                isOpen={viewPaymentOpen}
-                onClose={() => setViewPaymentOpen(false)}
-                row={appointment}
-                onRefreshAppointments={fetchAppointments}
-              />
-            </div>
-          )}
-        </>
-      ) : halfPaid ? (
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onClickPayNow();
-          }}
-          title={`Yarım Ödeme - Toplam Ödenen: ${totalPaid} TL`}
-          className="absolute top-0.5 right-0.5 text-red-500 hover:text-red-700"
-        >
-          <FaCheckCircle className="w-5 h-5" />
-        </button>
-      ) : (
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onClickPayNow();
-          }}
-          className="absolute top-1 right-1 bg-[#399AA1] hover:bg-[#007E85] text-white text-xs px-1 py-0.5 rounded"
-        >
-          <FaMoneyBills className="w-[1.25rem] h-[1.25rem]" />
-        </button>
-      )}
-      <div className="text-sm font-medium pr-8">
-        {appointment.participants.map((p) => p.name).join(" - ")}
-      </div>
-    </div>
-  );
-}
-
-export default function CalendarSchedulePage({ servicesData }) {
-  const [loggedInUser, setLoggedInUser] = useState(null);
-  const [doctorList, setDoctorList] = useState([]);
-  const [selectedDoctor, setSelectedDoctor] = useState("");
-  const [appointments, setAppointments] = useState([]);
+  // Modal state
   const [showModal, setShowModal] = useState(false);
+  const [showChoiceModal, setShowChoiceModal] = useState(false);
+  const [showRebookModal, setShowRebookModal] = useState(false);
+  const [showDeleteOptionsModal, setShowDeleteOptionsModal] = useState(false);
+  const [showRutinDeleteWarning, setShowRutinDeleteWarning] = useState(false);
+  const [showSimpleDeleteWarning, setShowSimpleDeleteWarning] = useState(false);
+  
+  // Form state
   const [editMode, setEditMode] = useState(false);
   const [selectedAppointment, setSelectedAppointment] = useState(null);
+  const [selectedCell, setSelectedCell] = useState({ dayIndex: null, timeIndex: null });
+  const [rebookBookingId, setRebookBookingId] = useState(null);
+  const [deleteMode, setDeleteMode] = useState("single");
+  
+  // Form data
   const [participantCount, setParticipantCount] = useState(1);
   const [participantNames, setParticipantNames] = useState([""]);
   const [participantPhones, setParticipantPhones] = useState([""]);
-  const [phoneErrors, setPhoneErrors] = useState([]); // Telefon numarası validasyon hataları
   const [description, setDescription] = useState("");
-  const [paymentOpen, setPaymentOpen] = useState(false); // Ödeme popup kontrolü
-  const [paymentRefreshTrigger, setPaymentRefreshTrigger] = useState(0); // Ödeme durumunu yenilemek için
-  const [isRecurring, setIsRecurring] = useState(true); // Randevunun tekrarlı olup olmadığı
-  const [endDate, setEndDate] = useState(null); // Tekrarlı randevunun bitiş tarihi
-  const [updateAllInstances, setUpdateAllInstances] = useState(false); // Tüm seriyi mi güncelliyoruz?
-  const [showDeleteOptionsModal, setShowDeleteOptionsModal] = useState(false); // Silme seçenekleri popup
-  const [deleteMode, setDeleteMode] = useState("single"); // Seçilen silme modu
-  const [appointmentType, setAppointmentType] = useState(""); // Randevu Tipi
-  const [selectedService, setSelectedService] = useState(""); // Randevu Hizmeti
-  
-  // Eski uyarı state'i yerine yeni state'ler ekliyoruz
-  const [showRutinDeleteWarning, setShowRutinDeleteWarning] = useState(false); // Rutin Görüşme için uzun uyarı
-  const [showSimpleDeleteWarning, setShowSimpleDeleteWarning] = useState(false); // Diğer tipler için basit uyarı
+  const [isRecurring, setIsRecurring] = useState(true);
+  const [endDate, setEndDate] = useState(null);
+  const [updateAllInstances, setUpdateAllInstances] = useState(false);
+  const [appointmentType, setAppointmentType] = useState("");
+  const [selectedService, setSelectedService] = useState("");
 
-  // Yeni: Hücre tıklama sonrası seçim modunu yönetmek için
-  const [showChoiceModal, setShowChoiceModal] = useState(false);
-  const [showRebookModal, setShowRebookModal] = useState(false);
-  const [selectedCell, setSelectedCell] = useState({
-    dayIndex: null,
-    timeIndex: null,
-  });
-  // Seçilen randevudan bookingId alınacaksa bu state'e kaydedilir
-  const [rebookBookingId, setRebookBookingId] = useState(null);
+  // Use appointments hook
+  const {
+    loggedInUser,
+    doctorList,
+    selectedDoctor,
+    appointments,
+    loading,
+    error,
+    setSelectedDoctor,
+    fetchAppointments,
+    createAppointment,
+    updateAppointment,
+    deleteAppointment,
+    getSelectedDoctorName,
+    isDoctorSelected,
+    getSelectedDoctorId,
+  } = useAppointments();
 
-  const [currentWeekStart, setCurrentWeekStart] = useState(getWeekStart(new Date()));
-  const [showDatePicker, setShowDatePicker] = useState(false);
-
-  // Ay seçimi için yeni state
-  const [showMonthPicker, setShowMonthPicker] = useState(false);
-  const [currentMonth, setCurrentMonth] = useState(new Date());
-
-  // Component içinde yeni state ekleme
-  const [participantError, setParticipantError] = useState(false);
-
-  // Ödeme sonrası otomatik popup'ı engelleyen bayrak - true olduğunda popup engellenir
-  const [preventAutoPopup, setPreventAutoPopup] = useState(false);
-
-  const [formErrors, setFormErrors] = useState({
-    appointmentType: false,
-    selectedService: false,
-    participantNames: [],
-    participantPhones: []
-  });
-
-  // console.log(servicesData);
-
-  // Kullanıcı profilini al
+  // Fetch appointments when dependencies change
   useEffect(() => {
-    (async () => {
-      const profileRes = await getProfile();
-      if (profileRes.success) {
-        setLoggedInUser(profileRes.user);
-      }
-    })();
-  }, []);
-
-  // Danışman listesini getir (admin/manager/superadmin/consultant ise)
-  useEffect(() => {
-    if (
-      loggedInUser &&
-      ["admin", "manager", "superadmin", "consultant"].includes(
-        loggedInUser.roleId?.roleName
-      )
-    ) {
-      (async () => {
-        const userRes = await getUsers();
-        if (userRes.success) {
-          const docs = userRes.data.filter(
-            (u) =>
-              u.roleId?.roleName === "doctor" || u.roleId?.roleName === "admin"
-          );
-          setDoctorList(docs);
-        }
-      })();
+    const doctorId = getSelectedDoctorId();
+    if (doctorId && isDoctorSelected()) {
+      fetchAppointments(doctorId, currentWeekStart);
     }
-  }, [loggedInUser]);
+  }, [currentWeekStart, fetchAppointments, getSelectedDoctorId, isDoctorSelected]);
 
-  // Seçilen (veya kendi) doktora ait randevuları çek - tarih filtresiyle
-  useEffect(() => {
-    if (!loggedInUser) return;
-    let doctorIdToFetch = "";
-    if (loggedInUser.roleId?.roleName === "doctor") {
-      doctorIdToFetch = loggedInUser._id;
-    } else if (
-      ["admin", "manager", "superadmin", "consultant"].includes(
-        loggedInUser.roleId?.roleName
-      )
-    ) {
-      if (!selectedDoctor) return;
-      doctorIdToFetch = selectedDoctor;
-    }
-    if (doctorIdToFetch) {
-      (async () => {
-        // Tarih filtresini ekle
-        const res = await getCalendarAppointments(
-          doctorIdToFetch, 
-          currentWeekStart.toISOString()
-        );
-        if (res.success) {
-          setAppointments(res.data);
-          setPaymentRefreshTrigger((prev) => prev + 1);
-        }
-      })();
-    }
-  }, [loggedInUser, selectedDoctor, currentWeekStart]);
-
-  // Tarih değiştirme fonksiyonları
-  const goToPreviousWeek = () => {
-    setCurrentWeekStart(prevDate => subWeeks(prevDate, 1));
-  };
-
-  const goToNextWeek = () => {
-    setCurrentWeekStart(prevDate => addWeeks(prevDate, 1));
-  };
-
-  const goToSpecificWeek = (date) => {
-    setCurrentWeekStart(getWeekStart(date));
-    setShowDatePicker(false);
-  };
-
-  // Ay değiştirme fonksiyonu
-  const goToMonth = (date) => {
-    setCurrentMonth(date);
-    // Ayın ilk haftasına git
-    const firstWeekStart = startOfWeek(startOfMonth(date), { weekStartsOn: 1 }); // Pazartesi başlangıç
-    setCurrentWeekStart(firstWeekStart);
-    setShowMonthPicker(false);
-    setShowDatePicker(true); // Hafta seçiciyi görünür yap
-  };
-  
-  // Mevcut ayı göstermek için formatla
-  const formatMonthName = (date) => {
-    return formatDate(date, "MMMM yyyy");
-  };
-
-  // Haftadaki tarihleri hesapla
-  const weekDates = Array.from({ length: 7 }, (_, i) => addDays(currentWeekStart, i));
-
-  // Ortak hücre tıklama fonksiyonu:
-  // Eğer hücrede randevu varsa direkt düzenleme moduna, yoksa seçim modalına yönlendir.
-  const handleCellClick = (dayIndex, timeIndex, appt) => {
-    if (loggedInUser?.roleId?.roleName === "doctor") return;
-    
-    // Tarih ve saat hesaplayalım - UTC kullan
-    const selectedDate = weekDates[dayIndex];
-    // Tamamen UTC'de tarih oluştur
-    const appointmentDate = new Date(Date.UTC(
-      selectedDate.getFullYear(),
-      selectedDate.getMonth(), 
-      selectedDate.getDate(),
-      6 + timeIndex, // timeIndex 0 = 09:00 TR = 06:00 UTC
-      0, 0, 0
-    ));
-    
-    setSelectedCell({ dayIndex, timeIndex, appointmentDate });
-    
-    if (appt) {
-      // Varolan randevu varsa; düzenleme moduna geç
-      setEditMode(true);
-      setSelectedAppointment(appt);
-      setParticipantCount(appt.participants ? appt.participants.length : 1);
-      
-      // İsim ve telefon bilgilerini ayarla
-      if (appt.participants) {
-        // Katılımcı isimleri
-        setParticipantNames(appt.participants.map((p) => p.name || ""));
-        
-        // Katılımcı telefon numaraları
-        setParticipantPhones(appt.participants.map((p) => p.phone || ""));
-        
-        // Telefon hatalarını sıfırla
-        setPhoneErrors(appt.participants.map(() => ""));
-      } else {
-        setParticipantNames([""]);
-        setParticipantPhones([""]);
-        setPhoneErrors([""]);
-      }
-      
-      setDescription(appt.description || "");
-      setIsRecurring(appt.isRecurring !== undefined ? appt.isRecurring : true);
-      setEndDate(appt.endDate);
-      setUpdateAllInstances(false);
-      setAppointmentType(appt.appointmentType || ""); // Randevu Tipini ayarla
-      setSelectedService(appt.serviceId || "");
-      setShowModal(true);
-    } else {
-      // Eğer randevu yoksa, seçenek modalını aç
-      setSelectedAppointment(null);
-      setShowModal(false);
-      setShowChoiceModal(true);
-    }
-  };
-
-  // Telefon numarası girişi için handler
-  const handlePhoneChange = (index, value) => {
-    const newPhones = [...participantPhones];
-    newPhones[index] = value;
-    setParticipantPhones(newPhones);
-    
-    // Clear error when field is filled correctly
-    if (value && validateTurkishPhoneNumber(value)) {
-      const newErrors = {...formErrors};
-      newErrors.participantPhones[index] = false;
-      setFormErrors(newErrors);
-    }
-    
-    // Telefon formatını kontrol et
-    const newPhoneErrors = [...phoneErrors];
-    if (value && !validateTurkishPhoneNumber(value)) {
-      newPhoneErrors[index] = "Telefon 0 ile başlamalı ve 05XX XXX XX XX formatında olmalıdır";
-    } else {
-      newPhoneErrors[index] = "";
-    }
-    setPhoneErrors(newPhoneErrors);
-  };
-
-  // Reset service selection when appointment type changes
-  useEffect(() => {
-    setSelectedService("");
-  }, [appointmentType]);
-
-  // Optimize getSelectedDoctorName with useMemo
-  const getSelectedDoctorName = useCallback(() => {
-    if (!loggedInUser) return "Yükleniyor...";
-    if (loggedInUser.roleId?.roleName === "doctor") {
-      return `${loggedInUser.firstName} ${loggedInUser.lastName}`;
-    } else if (
-      ["admin", "manager", "superadmin", "consultant"].includes(loggedInUser.roleId?.roleName)
-    ) {
-      const doc = doctorList.find((d) => d._id === selectedDoctor);
-      return doc ? `${doc.firstName} ${doc.lastName}` : "Danışman Seçiniz";
-    }
-    return "Kullanıcı Rolü Tanımsız";
-  }, [loggedInUser, selectedDoctor, doctorList]);
-
-  // Filter services based on selected doctor with useMemo for performance
+  // Filter services based on selected doctor and appointment type
   const filteredServices = useMemo(() => {
-    if (!servicesData || !selectedDoctor) return [];
+    if (!servicesData || !selectedDoctor || !appointmentType) return [];
     
     const doctorName = getSelectedDoctorName();
     
-    // Filter by both doctor name and serviceType matching appointmentType
     return servicesData.filter(service => 
       service.provider === doctorName &&
       service.serviceType === appointmentType &&
@@ -488,41 +81,83 @@ export default function CalendarSchedulePage({ servicesData }) {
     );
   }, [servicesData, selectedDoctor, appointmentType, getSelectedDoctorName]);
 
-  // Handle service selection change with useCallback
-  const handleServiceChange = useCallback((serviceId) => {
-    setSelectedService(serviceId);
+  // Handle week change
+  const handleWeekChange = useCallback((newWeekStart) => {
+    setCurrentWeekStart(newWeekStart);
   }, []);
 
-  // Memoize appointment fetching to avoid redundant fetches
-  const refreshAppointments = useCallback(async (doctorId) => {
-    // Önce engelleyici flag'i aktif et
+  // Handle cell click
+  const handleCellClick = useCallback((dayIndex, timeIndex, appointment, multiSelectInfo = null) => {
+    if (loggedInUser?.roleId?.roleName === "doctor") return;
+    
+    const weekDates = Array.from({ length: 7 }, (_, i) => 
+      new Date(currentWeekStart.getTime() + i * 24 * 60 * 60 * 1000)
+    );
+    const selectedDate = weekDates[dayIndex];
+    const appointmentDate = calculateAppointmentDate(selectedDate, timeIndex);
+    
+    // Multi-select durumunda endTimeIndex'i hesapla
+    const endTimeIndex = multiSelectInfo?.endTimeIndex || timeIndex;
+    const slotCount = multiSelectInfo?.slotCount || 1;
+    
+    setSelectedCell({ 
+      dayIndex, 
+      timeIndex, 
+      appointmentDate,
+      endTimeIndex,
+      slotCount,
+      isMultiSelect: multiSelectInfo?.isMultiSelect || false
+    });
+    
+    if (appointment) {
+      // Edit existing appointment
+      setEditMode(true);
+      setSelectedAppointment(appointment);
+      setParticipantCount(appointment.participants?.length || 1);
+      setParticipantNames(appointment.participants?.map(p => p.name || "") || [""]);
+      setParticipantPhones(appointment.participants?.map(p => p.phone || "") || [""]);
+      setDescription(appointment.description || "");
+      setIsRecurring(appointment.isRecurring !== undefined ? appointment.isRecurring : true);
+      setEndDate(appointment.endDate);
+      setUpdateAllInstances(false);
+      setAppointmentType(appointment.appointmentType || "");
+      setSelectedService(appointment.serviceId || "");
+      setShowModal(true);
+    } else {
+      // Show choice modal for new appointment
+      setSelectedAppointment(null);
+      setShowChoiceModal(true);
+    }
+  }, [loggedInUser, currentWeekStart]);
+
+  // Handle payment click
+  const handlePaymentClick = useCallback((appointment) => {
+    setSelectedAppointment(appointment);
+    setPaymentOpen(true);
+  }, []);
+
+  // Refresh appointments with payment trigger
+  const refreshAppointments = useCallback(async () => {
     setPreventAutoPopup(true);
     
-    const res = await getCalendarAppointments(doctorId, currentWeekStart.toISOString());
-    if (res.success) {
-      setAppointments(res.data);
-      setPaymentRefreshTrigger((prev) => prev + 1);
+    const doctorId = getSelectedDoctorId();
+    if (doctorId) {
+      await fetchAppointments(doctorId, currentWeekStart);
+      setPaymentRefreshTrigger(prev => prev + 1);
       setSelectedAppointment(null);
       setRebookBookingId(null);
     }
     
-    // Belirli bir süre sonra flag'i devre dışı bırak (3 saniye daha uzun bir süre)
     setTimeout(() => {
       setPreventAutoPopup(false);
     }, 3000);
-  }, [currentWeekStart]);
+  }, [getSelectedDoctorId, fetchAppointments, currentWeekStart]);
 
-  // Add back getFilteredServices for backward compatibility
-  const getFilteredServices = useCallback(() => {
-    return filteredServices;
-  }, [filteredServices]);
-
-  // Optimize form data reset with useCallback
+  // Reset form data
   const resetFormData = useCallback(() => {
     setParticipantCount(1);
     setParticipantNames([""]);
     setParticipantPhones([""]);
-    setPhoneErrors([""]);
     setDescription("");
     setRebookBookingId(null);
     setIsRecurring(true);
@@ -532,13 +167,15 @@ export default function CalendarSchedulePage({ servicesData }) {
     setSelectedService("");
   }, []);
 
-  // "Yeni Randevu Oluştur" butonuna basınca: Form modalını varsayılan şekilde açar.
-  const handleNewAppointment = () => {
+  // Handle new appointment choice
+  const handleNewAppointment = useCallback(() => {
     setEditMode(false);
     if (!selectedAppointment) {
       setSelectedAppointment({
         dayIndex: selectedCell.dayIndex,
         timeIndex: selectedCell.timeIndex,
+        endTimeIndex: selectedCell.endTimeIndex || selectedCell.timeIndex,
+        slotCount: selectedCell.slotCount || 1,
         appointmentDate: selectedCell.appointmentDate,
         participants: [],
       });
@@ -546,313 +183,200 @@ export default function CalendarSchedulePage({ servicesData }) {
     resetFormData();
     setShowChoiceModal(false);
     setShowModal(true);
-  };
+  }, [selectedAppointment, selectedCell, resetFormData]);
 
-  // "Randevu Yinele" butonuna basınca: Varolan randevuların listesini gösteren modalı açar.
-  const handleRebookAppointment = () => {
+  // Handle rebook appointment choice
+  const handleRebookAppointment = useCallback(() => {
     setShowChoiceModal(false);
     setShowRebookModal(true);
     setEditMode(false);
-  };
+  }, []);
 
-  // Randevu Yinele listesinden bir randevu seçildiğinde:
-  const selectRebookAppointment = (appt) => {
-    // Eğer appt.bookingId varsa o değeri al, yoksa appt._id'yi kullan
-    setRebookBookingId(appt.bookingId || appt._id);
-
-    // Önemli: Randevu tarihini seçilen hücrenin gün ve saat indeksine göre yeniden hesapla
+  // Handle rebook selection
+  const handleRebookSelect = useCallback((appointment) => {
+    setRebookBookingId(appointment.bookingId || appointment._id);
+    
+    const weekDates = Array.from({ length: 7 }, (_, i) => 
+      new Date(currentWeekStart.getTime() + i * 24 * 60 * 60 * 1000)
+    );
     const selectedDate = weekDates[selectedCell.dayIndex];
-    // Tamamen UTC'de tarih oluştur
-    const newAppointmentDate = new Date(Date.UTC(
-      selectedDate.getFullYear(),
-      selectedDate.getMonth(), 
-      selectedDate.getDate(),
-      6 + selectedCell.timeIndex, // timeIndex 0 = 09:00 TR = 06:00 UTC
-      0, 0, 0
-    ));
+    const newAppointmentDate = calculateAppointmentDate(selectedDate, selectedCell.timeIndex);
+
+    const slotCount = appointment.slotCount || 1;
+    const newEndTimeIndex = selectedCell.timeIndex + slotCount - 1;
 
     setSelectedAppointment({
-      ...appt,
+      ...appointment,
       dayIndex: selectedCell.dayIndex,
       timeIndex: selectedCell.timeIndex,
-      appointmentDate: newAppointmentDate // Yeni hesaplanmış tarih
+      endTimeIndex: newEndTimeIndex,
+      slotCount: slotCount,
+      appointmentDate: newAppointmentDate
     });
     
-    setParticipantCount(appt.participants ? appt.participants.length : 1);
-    
-    // İsim ve telefon bilgilerini ayarla
-    if (appt.participants) {
-      // Katılımcı isimleri
-      setParticipantNames(appt.participants.map((p) => p.name || ""));
-      
-      // Katılımcı telefon numaraları
-      setParticipantPhones(appt.participants.map((p) => p.phone || ""));
-      
-      // Telefon hatalarını sıfırla
-      setPhoneErrors(appt.participants.map(() => ""));
-    } else {
-      setParticipantNames([""]);
-      setParticipantPhones([""]);
-      setPhoneErrors([""]);
-    }
-    
-    setDescription(appt.description || "");
-    setIsRecurring(appt.isRecurring !== undefined ? appt.isRecurring : true);
-    setEndDate(appt.endDate);
+    setParticipantCount(appointment.participants?.length || 1);
+    setParticipantNames(appointment.participants?.map(p => p.name || "") || [""]);
+    setParticipantPhones(appointment.participants?.map(p => p.phone || "") || [""]);
+    setDescription(appointment.description || "");
+    setIsRecurring(appointment.isRecurring !== undefined ? appointment.isRecurring : true);
+    setEndDate(appointment.endDate);
     setUpdateAllInstances(false);
-    setAppointmentType(appt.appointmentType || "");
-    setSelectedService(appt.serviceId || "");
+    setAppointmentType(appointment.appointmentType || "");
+    setSelectedService(appointment.serviceId || "");
     setShowRebookModal(false);
     setShowModal(true);
-  };
+  }, [selectedCell, currentWeekStart]);
 
-  // Kişi sayısı değiştiğinde isimleri ve telefonları güncelleme
-  const handleParticipantCountChange = (count) => {
-    setParticipantCount(count);
-    const currentNames = [...participantNames];
-    const currentPhones = [...participantPhones];
-    const currentPhoneErrors = [...phoneErrors];
-    
-    while (currentNames.length < count) {
-      currentNames.push("");
-      currentPhones.push("");
-      currentPhoneErrors.push("");
-    }
-    
-    currentNames.splice(count);
-    currentPhones.splice(count);
-    currentPhoneErrors.splice(count);
-    
-    setParticipantNames(currentNames);
-    setParticipantPhones(currentPhones);
-    setPhoneErrors(currentPhoneErrors);
-  };
-
-  // Validate the form before submitting
-  const validateForm = () => {
-    let isValid = true;
-    const errors = {
-      appointmentType: false,
-      selectedService: false,
-      participantNames: Array(participantCount).fill(false),
-      participantPhones: Array(participantCount).fill(false)
-    };
-
-    // Validate appointment type
-    if (!appointmentType) {
-      errors.appointmentType = true;
-      isValid = false;
-    }
-
-    // Validate service selection only if services are available for the selected type
-    if (appointmentType && filteredServices.length > 0 && !selectedService) {
-      errors.selectedService = true;
-      isValid = false;
-    }
-
-    // Validate participant names
-    participantNames.forEach((name, index) => {
-      if (!name || name.trim() === '') {
-        errors.participantNames[index] = true;
-        isValid = false;
-      }
-    });
-
-    // Validate phone numbers
-    participantPhones.forEach((phone, index) => {
-      if (!phone || !validateTurkishPhoneNumber(phone)) {
-        errors.participantPhones[index] = true;
-        isValid = false;
-      }
-    });
-
-    setFormErrors(errors);
-    return isValid;
-  };
-
-  // Update handleSubmit to use validateForm
-  const handleSubmit = async () => {
+  // Handle form submit
+  const handleSubmit = useCallback(async () => {
     if (!selectedAppointment) return;
     
-    if (!validateForm()) {
-      return;
-    }
-    
-    const doctorId =
-      loggedInUser?.roleId?.roleName === "doctor"
-        ? loggedInUser._id
-        : selectedDoctor;
-        
-    // Randevu tarihini kontrol et - eğer tanımlı değilse, seçilen hücreye göre oluştur
-    let appointmentDate = selectedAppointment.appointmentDate;
-    
-    if (!appointmentDate) {
-      const selectedDate = weekDates[selectedAppointment.dayIndex];
-      // Tamamen UTC'de tarih oluştur
-      appointmentDate = new Date(Date.UTC(
-        selectedDate.getFullYear(),
-        selectedDate.getMonth(), 
-        selectedDate.getDate(),
-        6 + selectedAppointment.timeIndex, // timeIndex 0 = 09:00 TR = 06:00 UTC
-        0, 0, 0
-      ));
-    }
+    const doctorId = getSelectedDoctorId();
+    const appointmentDate = selectedAppointment.appointmentDate || 
+      calculateAppointmentDate(
+        new Date(currentWeekStart.getTime() + selectedAppointment.dayIndex * 24 * 60 * 60 * 1000),
+        selectedAppointment.timeIndex
+      );
         
     const payload = {
       dayIndex: selectedAppointment.dayIndex,
       timeIndex: selectedAppointment.timeIndex,
+      endTimeIndex: selectedAppointment.endTimeIndex || selectedAppointment.timeIndex,
+      slotCount: selectedAppointment.slotCount || 1,
       doctorId,
       participants: participantNames.map((name, index) => ({ 
         name, 
         phone: participantPhones[index] || "" 
       })),
       description,
-      appointmentDate: appointmentDate,
-      isRecurring, // Tekrarlı randevu ayarı
-      endDate, // Bitiş tarihi
-      appointmentType, // Randevu Tipi
-      serviceId: selectedService || null // Randevu Hizmeti - boş string yerine null gönder
+      appointmentDate,
+      isRecurring,
+      endDate,
+      appointmentType,
+      serviceId: selectedService || null
     };
 
     if (rebookBookingId) {
       payload.bookingId = rebookBookingId;
     }
 
-    // Sanal instance için güncelleme yapılıyorsa
     if (editMode && selectedAppointment._id && selectedAppointment._id.includes("_instance_")) {
       payload.updateAllInstances = updateAllInstances;
     }
 
     try {
+      let result;
       if (editMode) {
-        const res = await updateCalendarAppointment(
-          selectedAppointment._id,
-          payload
-        );
-        if (res.success) {
-          refreshAppointments(doctorId);
-          setShowModal(false);
-        }
+        result = await updateAppointment(selectedAppointment._id, payload);
       } else {
-        const res = await createCalendarAppointment(payload);
-        if (res.success) {
-          refreshAppointments(doctorId);
+        result = await createAppointment(payload);
+      }
+      
+      if (result.success) {
+        await refreshAppointments();
           setShowModal(false);
-        }
+      } else {
+        alert(result.error || 'Randevu kaydedilirken bir hata oluştu.');
       }
     } catch (err) {
-      // API hatası olursa
-      if (err.response && err.response.data && err.response.data.message) {
-        alert(err.response.data.message);
-      } else {
-        alert('Randevu kaydedilirken bir hata oluştu.');
-      }
+      alert('Beklenmeyen bir hata oluştu.');
     }
-  };
+  }, [
+    selectedAppointment, getSelectedDoctorId, currentWeekStart, participantNames, 
+    participantPhones, description, isRecurring, endDate, appointmentType, 
+    selectedService, rebookBookingId, editMode, updateAllInstances, 
+    updateAppointment, createAppointment, refreshAppointments
+  ]);
 
-  // Sil
-  const handleDelete = async () => {
+  // Handle delete
+  const handleDelete = useCallback(() => {
     if (!selectedAppointment) return;
     
-    // Sanal instance için silme işlemini başlat
     if (selectedAppointment._id && selectedAppointment._id.includes("_instance_")) {
       setShowDeleteOptionsModal(true);
     } else {
-      // Orijinal randevu için randevu tipine göre uygun uyarıyı göster
       if (selectedAppointment.appointmentType === "Rutin Görüşme") {
-        // Rutin Görüşme tipli randevu için uzun uyarı göster
         setShowRutinDeleteWarning(true);
       } else {
-        // Diğer randevu tipleri için basit onay uyarısı göster
         setShowSimpleDeleteWarning(true);
       }
     }
-  };
+  }, [selectedAppointment]);
 
-  // Orijinal randevu silme işlemini onayla - Rutin Görüşme için
-  const confirmRutinDelete = async () => {
-      const doctorId =
-        loggedInUser?.roleId?.roleName === "doctor"
-          ? loggedInUser._id
-          : selectedDoctor;
+  // Handle delete confirm
+  const handleDeleteConfirm = useCallback(async () => {
+    if (!selectedAppointment) return;
           
-      const res = await deleteCalendarAppointment(selectedAppointment._id);
-      if (res.success) {
-        // Silme başarılı olduğunda bookingId'yi sıfırla
-        setRebookBookingId(null);
-        refreshAppointments(doctorId);
-      setShowRutinDeleteWarning(false);
+    const result = await deleteAppointment(selectedAppointment._id, deleteMode);
+    
+    if (result.success) {
+      await refreshAppointments();
+      setShowDeleteOptionsModal(false);
         setShowModal(false);
-      }
-  };
-  
-  // Diğer randevular için basit silme onayı
-  const confirmSimpleDelete = async () => {
-    const doctorId =
-      loggedInUser?.roleId?.roleName === "doctor"
-        ? loggedInUser._id
-        : selectedDoctor;
+    } else {
+      alert(result.error || 'Randevu silinirken bir hata oluştu.');
+    }
+  }, [selectedAppointment, deleteMode, deleteAppointment, refreshAppointments]);
+
+  // Handle simple delete
+  const handleDeleteSimple = useCallback(async () => {
+    if (!selectedAppointment) return;
         
-    const res = await deleteCalendarAppointment(selectedAppointment._id);
-    if (res.success) {
-      // Silme başarılı olduğunda bookingId'yi sıfırla
+    const result = await deleteAppointment(selectedAppointment._id);
+    
+    if (result.success) {
       setRebookBookingId(null);
-      refreshAppointments(doctorId);
+      await refreshAppointments();
       setShowSimpleDeleteWarning(false);
       setShowModal(false);
+    } else {
+      alert(result.error || 'Randevu silinirken bir hata oluştu.');
     }
-  };
+  }, [selectedAppointment, deleteAppointment, refreshAppointments]);
 
-  // Seçilen silme modu ile randevuyu sil
-  const confirmDelete = async () => {
-    const doctorId =
-      loggedInUser?.roleId?.roleName === "doctor"
-        ? loggedInUser._id
-        : selectedDoctor;
+  // Handle rutin delete
+  const handleDeleteRutin = useCallback(async () => {
+    if (!selectedAppointment) return;
         
-    const res = await deleteCalendarAppointment(selectedAppointment._id, deleteMode);
+    const result = await deleteAppointment(selectedAppointment._id);
     
-    if (res.success) {
-      refreshAppointments(doctorId);
-      setShowDeleteOptionsModal(false);
+    if (result.success) {
+      setRebookBookingId(null);
+      await refreshAppointments();
+      setShowRutinDeleteWarning(false);
       setShowModal(false);
-    }
-  };
-
-  // Hücredeki randevuyu bul
-  const findAppointmentForCell = useCallback((dayIndex, timeIndex, cellDate) => {
-    return appointments.find(
-      (appt) => {
-        const apptDate = new Date(appt.appointmentDate);
-        return appt.dayIndex === dayIndex && 
-               appt.timeIndex === timeIndex &&
-               isSameDay(apptDate, cellDate);
+    } else {
+      alert(result.error || 'Randevu silinirken bir hata oluştu.');
       }
-    );
-  }, [appointments]);
-
-  // Sanal instance mi kontrol et
-  const isVirtualInstance = (appointment) => {
-    return appointment && appointment.isVirtualInstance;
-  };
-
-  // Danışman seçili mi kontrolü için yardımcı fonksiyon
-  const isDoctorSelected = () => {
-    return selectedDoctor !== "";
-  };
+  }, [selectedAppointment, deleteAppointment, refreshAppointments]);
 
   return (
-    <div className="bg-[#f4f7fe] font-montserrat p-6 rounded-lg shadow-md w-full h-full bg-white">
-      {/* Üst kısım: Danışman seçimi ve tarih kontrolü */}
-      <div className="flex justify-between items-center mb-4">
-        {/* Danışman seçimi */}
+    <div className="min-h-screen p-4">
+      <div className="max-w-[95%] mx-auto">
+        {/* Header */}
+        <div className="mb-6">
+          <div className="flex flex-col lg:flex-row lg:justify-between lg:items-start gap-6 mb-6">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                Randevu Takvimi
+              </h1>
+              <p className="text-gray-600">
+                Randevularınızı görüntüleyin ve yönetin
+              </p>
+            </div>
+
+            {/* Doctor Selection and Date Picker - Side by Side */}
+            <div className="flex flex-col sm:flex-row gap-4 lg:gap-6 items-start">
+              {/* Doctor Selection */}
         {loggedInUser?.roleId?.roleName !== "doctor" && (
-          <div className="mb-0">
-            <label className="mr-2 font-medium">Danışman Seç:</label>
+                <div className="w-full sm:w-auto">
+                  <label className="block text-sm font-medium text-gray-700 mb-2 min-h-[20px]">
+                    Danışman Seç
+                  </label>
             <select
               value={selectedDoctor}
               onChange={(e) => setSelectedDoctor(e.target.value)}
-              className="border p-1 cursor-pointer rounded-md"
+                    className="w-full sm:w-64 px-4 py-3 bg-white border border-gray-200 rounded-xl shadow-sm focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200"
             >
               <option value="">Danışman Seçiniz</option>
               {doctorList.map((doc) => (
@@ -864,656 +388,148 @@ export default function CalendarSchedulePage({ servicesData }) {
           </div>
         )}
         
-        {/* Tarih Kontrolü - Danışman seçili değilse devre dışı */}
-        <div className="flex items-center space-x-2 relative">
-          <button 
-            onClick={isDoctorSelected() ? goToPreviousWeek : undefined}
-            className={`p-2 rounded-full ${
-              isDoctorSelected() 
-                ? "hover:bg-gray-200 cursor-pointer" 
-                : "opacity-50 cursor-not-allowed"
-            }`}
-            disabled={!isDoctorSelected()}
-          >
-            <FaChevronLeft />
-          </button>
-          
-          <button 
-            onClick={isDoctorSelected() ? () => setShowDatePicker(!showDatePicker) : undefined}
-            className={`flex items-center space-x-1 bg-white p-2 px-3 rounded-md border ${
-              isDoctorSelected() 
-                ? "hover:bg-gray-100 cursor-pointer" 
-                : "opacity-50 cursor-not-allowed"
-            }`}
-            disabled={!isDoctorSelected()}
-          >
-            <FaRegCalendarAlt />
-            <span>
-              {formatDate(currentWeekStart, "d MMM")} - {formatDate(addDays(currentWeekStart, 6), "d MMM yyyy")}
-            </span>
-          </button>
-          
-          <button 
-            onClick={isDoctorSelected() ? goToNextWeek : undefined}
-            className={`p-2 rounded-full ${
-              isDoctorSelected() 
-                ? "hover:bg-gray-200 cursor-pointer" 
-                : "opacity-50 cursor-not-allowed"
-            }`}
-            disabled={!isDoctorSelected()}
-          >
-            <FaChevronRight />
-          </button>
-          
-          {/* Tarih Seçici Popup - yalnızca isDoctorSelected() true ise göster */}
-          {showDatePicker && isDoctorSelected() && (
-            <div className="absolute top-12 right-0 bg-white rounded-lg shadow-lg border p-4 z-20 w-auto min-w-[300px]">
-              <div className="flex justify-between items-center mb-3">
-                <h3 className="text-center font-medium text-gray-700">Hafta Seçin</h3>
-                
-                {/* Ay seçme butonu - ekledik */}
-                <button
-                  onClick={() => {
-                    setShowMonthPicker(true);
-                    setShowDatePicker(false);
-                  }}
-                  className="text-sm bg-blue-50 hover:bg-blue-100 text-blue-700 px-2 py-1 rounded-md flex items-center"
-                >
-                  <span>{formatMonthName(currentMonth)}</span>
-                  <FaChevronRight className="ml-1 text-xs" />
-                </button>
+              {/* Date Navigation */}
+              <div className="w-full sm:w-auto">
+                <label className="block text-sm font-medium text-gray-700 mb-2 min-h-[20px]">
+                  Tarih Seçin
+                </label>
+                <DatePicker
+                  currentWeekStart={currentWeekStart}
+                  onWeekChange={handleWeekChange}
+                  isDoctorSelected={isDoctorSelected()}
+                />
+              </div>
+                        </div>
+                        </div>
               </div>
               
-              {/* Hafta grid görünümü */}
-              <div className="grid grid-cols-3 gap-2">
-                {(() => {
-                  // İçinde bulunduğumuz haftadan önceki 4 hafta ve sonraki 7 hafta (toplam 12 hafta)
-                  const weeksToShow = 12;
-                  const pastWeeksToShow = 4; // Geçmişteki hafta sayısı
-                  
-                  // Şu anki haftadan 4 hafta geriye git (başlangıç noktası)
-                  const startDate = subWeeks(currentWeekStart, pastWeeksToShow);
-                  
-                  return Array.from({ length: weeksToShow }, (_, weekOffset) => {
-                    const weekStartDate = addWeeks(startDate, weekOffset);
-                    const weekEndDate = addDays(weekStartDate, 6);
-                    
-                    const isCurrentWeek = 
-                      format(weekStartDate, 'yyyy-MM-dd') === format(currentWeekStart, 'yyyy-MM-dd');
-                    
-                    return (
-                      <button
-                        key={`week-${weekOffset}`}
-                        onClick={() => goToSpecificWeek(weekStartDate)}
-                        className={`
-                          p-2 text-center rounded-md transition-colors
-                          ${isCurrentWeek 
-                            ? 'bg-[#007E85] text-white' 
-                            : 'bg-gray-100 hover:bg-[#c6eef0] text-gray-800'}
-                        `}
-                      >
-                        <div className="text-sm font-medium">
-                          {formatDate(weekStartDate, "d MMM")}
-                        </div>
-                        <div className="text-xs">
-                          - {formatDate(weekEndDate, "d MMM")}
-                        </div>
-                      </button>
-                    );
-                  });
-                })()}
+        {/* Warning for no doctor selected */}
+        {!isDoctorSelected() && loggedInUser?.roleId?.roleName !== "doctor" && (
+          <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-xl">
+            <div className="flex items-center space-x-3">
+              <div className="flex-shrink-0">
+                <div className="w-8 h-8 bg-amber-100 rounded-full flex items-center justify-center">
+                  <span className="text-amber-600 text-sm font-semibold">!</span>
               </div>
-              
-              <div className="mt-4 flex justify-between">
-                <button 
-                  onClick={() => goToSpecificWeek(getWeekStart(new Date()))} 
-                  className="text-sm bg-blue-100 hover:bg-blue-200 text-blue-800 px-3 py-1 rounded"
-                >
-                  Bugün
-                </button>
-                <button 
-                  onClick={() => setShowDatePicker(false)} 
-                  className="text-sm bg-gray-100 hover:bg-gray-200 text-gray-800 px-3 py-1 rounded"
-                >
-                  Kapat
-                </button>
+            </div>
+              <div>
+                <h3 className="text-amber-800 font-medium">Danışman Seçimi Gerekli</h3>
+                <p className="text-amber-700 text-sm">
+                  Takvimi görüntülemek için lütfen bir danışman seçin
+                </p>
+              </div>
               </div>
             </div>
           )}
-          
-          {/* Ay Seçici Popup - yalnızca isDoctorSelected() true ise göster */}
-          {showMonthPicker && isDoctorSelected() && (
-            <div className="absolute top-12 right-0 bg-white rounded-lg shadow-lg border p-4 z-20 w-auto min-w-[300px]">
-              <div className="flex justify-between items-center mb-3">
-                <h3 className="text-center font-medium text-gray-700">Ay Seçin</h3>
-                
-                {/* Hafta seçme geri butonu */}
-                <button
-                  onClick={() => {
-                    setShowMonthPicker(false);
-                    setShowDatePicker(true);
-                  }}
-                  className="text-sm bg-gray-50 hover:bg-gray-100 text-gray-700 px-2 py-1 rounded-md"
-                >
-                  Hafta Seçimine Dön
-                </button>
-              </div>
-              
-              {/* Ay grid görünümü */}
-              <div className="grid grid-cols-3 gap-2">
-                {Array.from({ length: 24 }, (_, monthOffset) => {
-                  // 12 ay geriden başla (1 yıl önce) ve 2 yıl ileriye kadar göster (toplam 24 ay)
-                  const targetMonth = addMonths(new Date(), monthOffset - 12);
-                  const isCurrentMonth = 
-                    format(targetMonth, 'yyyy-MM') === format(currentMonth, 'yyyy-MM');
-                  
-                  return (
-                    <button
-                      key={`month-${monthOffset}`}
-                      onClick={() => goToMonth(targetMonth)}
-                      className={`
-                        p-2 text-center rounded-md transition-colors
-                        ${isCurrentMonth 
-                          ? 'bg-[#007E85] text-white' 
-                          : 'bg-gray-100 hover:bg-[#c6eef0] text-gray-800'}
-                      `}
-                    >
-                      <div className="text-sm font-medium">
-                        {formatDate(targetMonth, "MMM")}
-                      </div>
-                      <div className="text-xs">
-                        {formatDate(targetMonth, "yyyy")}
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-              
-              <div className="mt-4 flex justify-between">
-                <button 
-                  onClick={() => goToMonth(new Date())} 
-                  className="text-sm bg-blue-100 hover:bg-blue-200 text-blue-800 px-3 py-1 rounded"
-                >
-                  Bu Ay
-                </button>
-                <button 
-                  onClick={() => setShowMonthPicker(false)} 
-                  className="text-sm bg-gray-100 hover:bg-gray-200 text-gray-800 px-3 py-1 rounded"
-                >
-                  Kapat
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
 
-      {/* Uyarı Mesajı - Danışman seçilmediğinde göster */}
-      {!isDoctorSelected() && loggedInUser?.roleId?.roleName !== "doctor" && (
-        <div className="bg-yellow-50 border border-yellow-200 text-yellow-800 p-3 mb-4 rounded-md text-center">
-          Takvimi görüntülemek için lütfen bir danışman seçin
-        </div>
-      )}
-
-      {/* Takvim tablosu - Danışman seçili değilse gri tonlama yap */}
-      <div 
-        className={`md:max-h-[43.75rem] overflow-auto ${!isDoctorSelected() ? "opacity-50" : ""} 
-        overflow-x-auto md:overflow-x-hidden border rounded-lg`}
-      >
-        <table className="table-fixed w-full border-collapse border border-gray-300 min-w-[750px] md:min-w-0">
-          <thead>
-            <tr>
-              <th
-                colSpan={DAYS.length + 1}
-                className="border border-gray-300 p-2 bg-[#007E85] text-white text-lg font-semibold text-center"
-              >
-                {getSelectedDoctorName()}
-              </th>
-            </tr>
-            <tr>
-              <th className="border border-gray-300 p-2 bg-gray-50 w-[15%]"></th>
-              {DAYS.map((day, index) => (
-                <th
-                  key={index}
-                  className="border border-gray-300 p-2 bg-gray-50 text-center w-[calc(85%/7)]"
-                >
-                  <div>
-                    {/* Masaüstünde tam isim, mobilde kısaltılmış isim */}
-                    <span className="hidden md:inline">{day}</span>
-                    <span className="md:hidden">{DAYS_SHORT[index]}</span>
-                  </div>
-                  <div className="text-xs font-normal mt-1 text-gray-500">
-                    {formatDate(weekDates[index], "d MMM")}
-                  </div>
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {TIME_SLOTS.map((slot, timeIndex) => (
-              <tr key={timeIndex}>
-                <td className="border border-gray-300 p-2 bg-[#F7F6FE] text-center font-medium">
-                  {slot}
-                </td>
-                {DAYS.map((day, dayIndex) => {
-                  const cellSpecificDate = weekDates[dayIndex];
-                  const appt = findAppointmentForCell(dayIndex, timeIndex, cellSpecificDate);
-                  return (
-                    <td
-                      key={dayIndex}
-                      onClick={isDoctorSelected() ? () => handleCellClick(dayIndex, timeIndex, appt) : undefined}
-                      className={`relative border border-gray-300 p-2 md:p-2 h-[60px] md:h-auto ${
-                        appt ? getPastelColor(appt) : "bg-white"
-                      } ${
-                        isDoctorSelected() ? "cursor-pointer" : "cursor-not-allowed"
-                      }`}
-                      title={
-                        !isDoctorSelected()
-                          ? "Danışman seçiniz"
-                          : appt && appt.description
-                          ? `Randevu Açıklaması: ${appt.description}`
-                          : ""
-                      }
-                    >
-                      {appt ? (
-                        <PaymentStatusCell
-                          appointment={appt}
-                          onClickPayNow={() => {
-                            if (isDoctorSelected()) {
-                              setSelectedAppointment(appt);
-                              setPaymentOpen(true);
-                            }
-                          }}
-                          refreshTrigger={paymentRefreshTrigger}
-                          fetchAppointments={() => {
-                            const doctorId =
-                              loggedInUser?.roleId?.roleName === "doctor"
-                                ? loggedInUser._id
-                                : selectedDoctor;
-                            refreshAppointments(doctorId);
-                          }}
+        {/* Calendar Grid */}
+        <div className="overflow-y-auto max-h-[calc(100vh-14rem)] border border-gray-200 rounded-xl scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 hover:scrollbar-thumb-gray-400">
+          <CalendarGrid
+            appointments={appointments}
+            currentWeekStart={currentWeekStart}
+            selectedDoctorName={getSelectedDoctorName()}
+            isDoctorSelected={isDoctorSelected()}
+            onCellClick={handleCellClick}
+            onPaymentClick={handlePaymentClick}
+            paymentRefreshTrigger={paymentRefreshTrigger}
                           preventAutoPopup={preventAutoPopup}
-                        />
-                      ) : (
-                        <div className="text-gray-400 italic">Boş</div>
-                      )}
-
-                      {/* Sanal Instance Göstergesi */}
-                      {appt && isVirtualInstance(appt) && (
-                        <div className="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-blue-400" title="Tekrarlı Randevu"></div>
-                      )}
-                    </td>
-                  );
-                })}
-              </tr>
-            ))}
-          </tbody>
-        </table>
+            refreshAppointments={refreshAppointments}
+          />
       </div>
 
-      {/* Seçim Modalı: Hücrede randevu yoksa iki seçenek sunar */}
-      {showChoiceModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-30 flex justify-center items-center z-50">
-          <div className="bg-white p-4 rounded shadow-md w-80">
-            <h2 className="text-lg font-bold mb-4 text-center">
-              Randevu Oluşturun/Yineleyin
-            </h2>
-            <div className="flex justify-around">
-              <button
-                onClick={handleNewAppointment}
-                className="bg-[#399AA1] hover:bg-[#007E85] text-white text-sm px-4 py-2 rounded-lg mr-2"
-              >
-                Yeni Randevu Oluştur
-              </button>
-              <button
-                onClick={handleRebookAppointment}
-                className="bg-orange-500 hover:bg-orange-700 text-white text-sm px-4 py-2 rounded-lg"
-              >
-                Randevu Yinele
-              </button>
-            </div>
-            <button
-              onClick={() => setShowChoiceModal(false)}
-              className="mt-4 w-full bg-gray-300 hover:bg-gray-400 hover:text-white px-4 py-2 rounded"
-            >
-              Vazgeç
-            </button>
+        {/* Loading and Error Messages */}
+        <div className="mt-4 space-y-4">
+          {/* Loading indicator */}
+          {loading && (
+            <div className="flex justify-center">
+              <div className="flex items-center space-x-2 text-teal-600">
+                <div className="w-4 h-4 border-2 border-teal-600 border-t-transparent rounded-full animate-spin"></div>
+                <span className="text-sm font-medium">Yükleniyor...</span>
           </div>
         </div>
       )}
 
-      {/* Randevu Yinele Modalı: Varolan randevuların listesini gösterir */}
-      {showRebookModal && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-30 flex justify-center items-center z-50"
-          onClick={() => setShowRebookModal(false)} // Modal dışına tıklanınca kapanır
-        >
-          <div
-            className="relative bg-white p-4 rounded shadow-md w-96 max-h-[80vh] overflow-auto"
-            onClick={(e) => e.stopPropagation()} // Modal içindeki tıklamalar kapanmayı tetiklemesin
-          >
-            <button
-              onClick={() => setShowRebookModal(false)}
-              className="absolute top-2 right-2 text-gray-500 hover:text-gray-700 text-xl"
-            >
-              <IoIosCloseCircleOutline className="text-red-500 hover:text-gray-500" />
-            </button>
-            <h2 className="text-xl font-bold mb-4 text-center">
-              Randevu Yinele - Seçiniz
-            </h2>
-            {appointments.length > 0 ? (
-              appointments
-                .slice()
-                .sort(
-                  (a, b) => a.dayIndex - b.dayIndex || a.timeIndex - b.timeIndex
-                )
-                .map((appt) => (
-                  <div
-                    key={appt._id}
-                    className="p-2 border-b cursor-pointer hover:bg-gray-100"
-                    onClick={() => selectRebookAppointment(appt)}
-                  >
-                    <div>
-                      <span className="font-semibold">
-                        Gün: {DAYS[appt.dayIndex]}, Saat:{" "}
-                        {TIME_SLOTS[appt.timeIndex]}
-                      </span>
-                    </div>
-                    <div className="text-sm">
-                      {appt.participants.map((p) => p.name).join(" - ")}
-                    </div>
-                    {appt.description && (
-                      <div className="text-xs text-gray-600">
-                        {appt.description}
+          {/* Error message */}
+          {error && (
+            <div className="p-4 bg-red-50 border border-red-200 rounded-xl">
+              <p className="text-red-700 text-sm">{error}</p>
                       </div>
                     )}
                   </div>
-                ))
-            ) : (
-              <div className="text-center text-gray-500">
-                Randevu bulunamadı.
-              </div>
-            )}
-            <button
-              onClick={() => setShowRebookModal(false)}
-              className="mt-4 w-full bg-gray-300 hover:bg-gray-400 hover:text-white px-4 py-2 rounded"
-            >
-              Vazgeç
-            </button>
-          </div>
-        </div>
-      )}
 
-      {/* Randevu Modalı: Yeni randevu oluşturma veya düzenleme formu */}
-      {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-30 flex justify-center items-center z-50">
-          <div className="bg-white p-4 rounded shadow-md w-96 max-h-[90vh] overflow-y-auto">
-            <h2 className="text-xl font-bold mb-2">
-              {editMode
-                ? "Randevu Düzenle"
-                : rebookBookingId
-                ? "Randevu Yinele"
-                : "Yeni Randevu Oluştur"}
-            </h2>
-            {/* Danışman Adı */}
-            <div className="mb-2">
-              <label className="block font-medium">Danışman</label>
-              <input
-                type="text"
-                value={getSelectedDoctorName()}
-                readOnly
-                className="border p-1 w-full cursor-pointer rounded-md"
-              />
-            </div>
-            {/* Açıklama Alanı */}
-            <div className="mb-2">
-              <label className="block font-medium">Açıklama</label>
-              <textarea
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                className="border p-1 w-full cursor-pointer rounded-md resize-none"
-                rows="3"
-                placeholder="Randevu ile ilgili açıklama giriniz..."
-              />
-            </div>
-            
-            {/* Tekrarlı Randevu Seçeneği */}
-            <div className="mb-2">
-              <label className="flex items-center space-x-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={isRecurring}
-                  onChange={(e) => setIsRecurring(e.target.checked)}
-                  className="form-checkbox h-4 w-4 text-[#007E85] rounded"
-                />
-                <span className="text-gray-700">Tekrarlı Randevu</span>
-              </label>
-            </div>
-            
-            {/* Tekrarlı Randevu Bitiş Tarihi */}
-            {isRecurring && (
-              <div className="mb-2">
-                <label className="block font-medium">Bitiş Tarihi (Opsiyonel)</label>
-                <input
-                  type="date"
-                  value={endDate ? new Date(endDate).toISOString().split('T')[0] : ""}
-                  onChange={(e) => setEndDate(e.target.value ? new Date(e.target.value) : null)}
-                  className="border p-1 w-full cursor-pointer rounded-md"
-                  placeholder="Sonsuza kadar tekrarlanır"
-                />
-                <p className="text-xs text-gray-500 mt-1">
-                  Boş bırakırsanız, randevu siz silene kadar tekrarlanacaktır.
-                </p>
-              </div>
-            )}
-            
-            {/* Tekrarlı Randevu Güncelleme Seçeneği */}
-            {editMode && selectedAppointment && isVirtualInstance(selectedAppointment) && (
-              <div className="mb-2">
-                <label className="flex items-center space-x-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={updateAllInstances}
-                    onChange={(e) => setUpdateAllInstances(e.target.checked)}
-                    className="form-checkbox h-4 w-4 text-[#007E85] rounded"
-                  />
-                  <span className="text-gray-700">Tüm gelecek randevuları güncelle</span>
-                </label>
-                <p className="text-xs text-gray-500 mt-1">
-                  Seçiliyse tüm tekrarlı randevular güncellenecek, değilse sadece bu tarih için güncellenir.
-                </p>
-              </div>
-            )}
-            
-            {/* Randevu Tipi Dropdown */}
-            <div className="mb-2">
-              <label className="block font-medium">
-                Randevu Tipi
-                <RequiredIndicator />
-              </label>
-              <select
-                value={appointmentType}
-                onChange={(e) => {
-                  setAppointmentType(e.target.value);
-                  // Clear appointment type error
-                  setFormErrors(prev => ({...prev, appointmentType: false}));
-                }}
-                className={`border p-1 w-full cursor-pointer rounded-md ${
-                  formErrors.appointmentType ? 'border-red-500 bg-red-50' : ''
-                }`}
-              >
-                <option value="">Seçiniz</option>
-                <option value="Ön Görüşme">Ön Görüşme</option>
-                <option value="Rutin Görüşme">Rutin Görüşme</option>
-                <option value="Muayene">Muayene</option>
-              </select>
-              {formErrors.appointmentType && (
-                <p className="text-red-500 text-xs mt-1">Randevu tipi seçilmelidir</p>
-              )}
-            </div>
-            
-            {/* Randevu Hizmeti Dropdown */}
-            <div className="mb-2">
-              <label className="block font-medium">
-                Randevu Hizmeti
-                {appointmentType && filteredServices.length > 0 && <RequiredIndicator />}
-              </label>
-              <div className="flex flex-col">
-                <select
-                  value={selectedService}
-                  onChange={(e) => {
-                    handleServiceChange(e.target.value);
-                    // Clear service error
-                    setFormErrors(prev => ({...prev, selectedService: false}));
-                  }}
-                  className={`border p-1 w-full cursor-pointer rounded-md ${
-                    !appointmentType ? "bg-gray-100" : formErrors.selectedService ? 'border-red-500 bg-red-50' : ''
-                  }`}
-                  disabled={!appointmentType || filteredServices.length === 0}
-                >
-                  <option value="">Seçiniz</option>
-                  {filteredServices.map((service) => (
-                    <option key={service._id} value={service._id}>
-                      {service.serviceName}
-                    </option>
-                  ))}
-                </select>
-                {!appointmentType && (
-                  <p className="text-amber-500 text-xs mt-1">
-                    Önce Randevu Tipi seçmelisiniz
-                  </p>
-                )}
-                {appointmentType && filteredServices.length === 0 && (
-                  <p className="text-red-500 text-xs mt-1">
-                    {`"${appointmentType}" tipi için tanımlı hizmet bulunamadı`}
-                  </p>
-                )}
-                {formErrors.selectedService && (
-                  <p className="text-red-500 text-xs mt-1">Randevu hizmeti seçilmelidir</p>
-                )}
-              </div>
-            </div>
-            
-            {/* Kişi Sayısı */}
-            <div className="mb-2">
-              <label className="block font-medium">Kişi Sayısı</label>
-              <select
-                value={participantCount}
-                onChange={(e) =>
-                  handleParticipantCountChange(parseInt(e.target.value))
-                }
-                className="border p-1 w-full cursor-pointer rounded-md"
-              >
-                {[1, 2, 3, 4, 5, 6].map((cnt) => (
-                  <option key={cnt} value={cnt}>
-                    {cnt}
-                  </option>
-                ))}
-              </select>
-            </div>
-            {/* Kişi İsimleri ve Telefon Numaraları */}
-            {Array.from({ length: participantCount }, (_, i) => (
-              <div key={i} className="mb-4">
-                <div className="mb-2">
-                <label className="block text-sm font-medium">
-                  Kişi {i + 1} Adı
-                  <RequiredIndicator />
-                </label>
-                <input
-                  type="text"
-                  value={participantNames[i] || ""}
-                  onChange={(e) => {
-                    const newNames = [...participantNames];
-                    newNames[i] = e.target.value;
-                    setParticipantNames(newNames);
-                    
-                    // Clear name error when field is filled
-                    if (e.target.value.trim() !== '') {
-                      const newErrors = {...formErrors};
-                      newErrors.participantNames[i] = false;
-                      setFormErrors(newErrors);
-                      setParticipantError(false);
-                    }
-                  }}
-                  className={`border p-1 w-full cursor-pointer rounded-md ${
-                    formErrors.participantNames[i] || (participantError && (!participantNames[i] || participantNames[i].trim() === ''))
-                    ? 'border-red-500 bg-red-50' 
-                    : ''
-                  }`}
-                />
-                {(formErrors.participantNames[i] || (participantError && (!participantNames[i] || participantNames[i].trim() === ''))) && (
-                  <p className="text-red-500 text-xs mt-1">Hasta ismi boş olamaz</p>
-                )}
-                </div>
-                <div>
-                  <label className="block text-sm font-medium">
-                    Kişi {i + 1} Telefon
-                    <RequiredIndicator />
-                  </label>
-                  <input
-                    type="text"
-                    value={participantPhones[i] || ""}
-                    onChange={(e) => handlePhoneChange(i, e.target.value)}
-                    className={`border p-1 w-full cursor-pointer rounded-md ${
-                      formErrors.participantPhones[i] || phoneErrors[i] ? 'border-red-500 bg-red-50' : ''
-                    }`}
-                    placeholder="05XX XXX XX XX"
-                  />
-                  {phoneErrors[i] && (
-                    <p className="text-red-500 text-xs mt-1">{phoneErrors[i]}</p>
-                  )}
-                  {formErrors.participantPhones[i] && !phoneErrors[i] && (
-                    <p className="text-red-500 text-xs mt-1">Telefon numarası gereklidir</p>
-                  )}
-                  {!phoneErrors[i] && !formErrors.participantPhones[i] && (
-                    <p className="text-gray-500 text-xs mt-1">
-                      Telefon numarası 0 ile başlamalıdır (Örn: 05XX XXX XX XX)
-                    </p>
-                  )}
-                </div>
-              </div>
-            ))}
-            {/* Butonlar */}
-            <div className="flex justify-end gap-2 mt-4">
-              {editMode && (
-                <button
-                  onClick={handleDelete}
-                  className="bg-red-500 text-white px-4 py-1 rounded"
-                >
-                  Sil
-                </button>
-              )}
-              <button
-                onClick={() => setShowModal(false)}
-                className="bg-gray-300 px-4 py-1 rounded"
-              >
-                Vazgeç
-              </button>
-              {loggedInUser?.roleId?.roleName !== "doctor" && (
-                <button
-                  onClick={handleSubmit}
-                  className="bg-[#007E85] text-white hover:bg-[#00696F] px-4 py-1 rounded"
-                >
-                  Kaydet
-                </button>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
+        {/* Modals */}
+        <AppointmentModal
+          // Modal control
+          showModal={showModal}
+          setShowModal={setShowModal}
+          editMode={editMode}
+          
+          // Choice Modal
+          showChoiceModal={showChoiceModal}
+          setShowChoiceModal={setShowChoiceModal}
+          
+          // Rebook Modal
+          showRebookModal={showRebookModal}
+          setShowRebookModal={setShowRebookModal}
+          
+          // Delete Modals
+          showDeleteOptionsModal={showDeleteOptionsModal}
+          setShowDeleteOptionsModal={setShowDeleteOptionsModal}
+          showRutinDeleteWarning={showRutinDeleteWarning}
+          setShowRutinDeleteWarning={setShowRutinDeleteWarning}
+          showSimpleDeleteWarning={showSimpleDeleteWarning}
+          setShowSimpleDeleteWarning={setShowSimpleDeleteWarning}
+          
+          // Form data
+          selectedAppointment={selectedAppointment}
+          participantCount={participantCount}
+          setParticipantCount={setParticipantCount}
+          participantNames={participantNames}
+          setParticipantNames={setParticipantNames}
+          participantPhones={participantPhones}
+          setParticipantPhones={setParticipantPhones}
+          description={description}
+          setDescription={setDescription}
+          isRecurring={isRecurring}
+          setIsRecurring={setIsRecurring}
+          endDate={endDate}
+          setEndDate={setEndDate}
+          updateAllInstances={updateAllInstances}
+          setUpdateAllInstances={setUpdateAllInstances}
+          appointmentType={appointmentType}
+          setAppointmentType={setAppointmentType}
+          selectedService={selectedService}
+          setSelectedService={setSelectedService}
+          
+          // Data
+          appointments={appointments}
+          filteredServices={filteredServices}
+          selectedDoctorName={getSelectedDoctorName()}
+          
+          // Actions
+          onSubmit={handleSubmit}
+          onDelete={handleDelete}
+          onChoiceNewAppointment={handleNewAppointment}
+          onChoiceRebookAppointment={handleRebookAppointment}
+          onRebookSelect={handleRebookSelect}
+          onDeleteConfirm={handleDeleteConfirm}
+          onDeleteSimple={handleDeleteSimple}
+          onDeleteRutin={handleDeleteRutin}
+          
+          // Utils
+          isVirtualInstance={isVirtualInstance}
+          deleteMode={deleteMode}
+          setDeleteMode={setDeleteMode}
+        />
 
-      {/* Ödeme Popup'ı */}
+        {/* Payment Popup */}
       {paymentOpen && (
-        <div className="flex flex-row justify-center text-sm items-center px-4 py-[0.875rem] space-x-2">
+          <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex justify-center items-center z-50">
           <PaymentPopup
             isOpen={paymentOpen}
             onClose={() => {
               setPaymentOpen(false);
-              
-              // Ödeme popup'ını kapattığımızda otomatik ReadOnly popup'ı engelle
               setPreventAutoPopup(true);
-              
-              // Daha uzun bir süre (3 saniye) engelleyici aktif kalsın
               setTimeout(() => {
                 setPreventAutoPopup(false); 
               }, 3000);
@@ -1521,176 +537,16 @@ export default function CalendarSchedulePage({ servicesData }) {
             servicesData={servicesData}
             row={selectedAppointment}
             onPaymentSuccess={() => {
-              // Önce engelleyici flag'i aktif et
               setPreventAutoPopup(true);
-              
-              const doctorId =
-                loggedInUser?.roleId?.roleName === "doctor"
-                  ? loggedInUser._id
-                  : selectedDoctor;
-              refreshAppointments(doctorId);
+                refreshAppointments();
             }}
             isCalendar={true}
           />
         </div>
       )}
-
-      {/* Silme Seçenekleri Popup */}
-      {showDeleteOptionsModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-30 flex justify-center items-center z-50">
-          <div className="relative bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
-            <button
-              onClick={() => setShowDeleteOptionsModal(false)}
-              className="absolute top-2 right-2 text-red-500 hover:text-gray-600"
-            >
-              <IoIosCloseCircleOutline className="w-6 h-6" />
-            </button>
-            
-            <h2 className="text-2xl font-bold mb-4 text-gray-800">Randevu Silme Seçenekleri</h2>
-            
-            <p className="mb-4 text-gray-600">
-              Tekrarlı randevuyu silme şeklini seçin:
-            </p>
-            
-            <div className="space-y-3 mb-6">
-              <label className="flex items-center p-3 border rounded-md hover:bg-gray-50 cursor-pointer transition-colors">
-                <input
-                  type="radio"
-                  name="deleteMode"
-                  value="single"
-                  checked={deleteMode === "single"}
-                  onChange={() => setDeleteMode("single")}
-                  className="mr-3"
-                />
-                <div>
-                  <p className="font-medium text-gray-800">Sadece bu tarihi sil</p>
-                  <p className="text-sm text-gray-500">Bu tarih için randevu iptal edilir, diğer tarihler etkilenmez</p>
                 </div>
-              </label>
-              
-              <label className="flex items-center p-3 border rounded-md hover:bg-gray-50 cursor-pointer transition-colors">
-                <input
-                  type="radio"
-                  name="deleteMode"
-                  value="afterThis"
-                  checked={deleteMode === "afterThis"}
-                  onChange={() => setDeleteMode("afterThis")}
-                  className="mr-3"
-                />
-                <div>
-                  <p className="font-medium text-gray-800">Bu tarihten sonrakileri sil</p>
-                  <p className="text-sm text-gray-500">Bu tarih ve sonraki tüm tekrarlar iptal edilir</p>
-                </div>
-              </label>
-              
-              <label className="flex items-center p-3 border rounded-md hover:bg-gray-50 cursor-pointer transition-colors">
-                <input
-                  type="radio"
-                  name="deleteMode"
-                  value="allSeries"
-                  checked={deleteMode === "allSeries"}
-                  onChange={() => setDeleteMode("allSeries")}
-                  className="mr-3"
-                />
-                <div>
-                  <p className="font-medium text-gray-800">Tüm tekrarlı randevuları sil</p>
-                  <p className="text-sm text-gray-500">Bu randevunun tüm geçmiş ve gelecek tekrarları silinir</p>
-                </div>
-              </label>
-            </div>
-            
-            <div className="flex justify-end gap-3">
-              <button
-                onClick={() => setShowDeleteOptionsModal(false)}
-                className="px-4 py-2 bg-gray-300 hover:bg-gray-400 rounded-md text-gray-800"
-              >
-                İptal
-              </button>
-              <button
-                onClick={confirmDelete}
-                className="px-4 py-2 bg-red-500 hover:bg-red-600 rounded-md text-white"
-              >
-                Sil
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-      
-      {/* Rutin Görüşme Randevu Silme Uyarısı */}
-      {showRutinDeleteWarning && (
-        <div className="fixed inset-0 bg-black bg-opacity-30 flex justify-center items-center z-50">
-          <div className="relative bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
-            <button
-              onClick={() => setShowRutinDeleteWarning(false)}
-              className="absolute top-2 right-2 text-red-500 hover:text-gray-600"
-            >
-              <IoIosCloseCircleOutline className="w-6 h-6" />
-            </button>
-            
-            <h2 className="text-2xl font-bold mb-4 text-gray-800">Rutin Görüşme Silme Uyarısı</h2>
-            
-            <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-md">
-              <p className="text-gray-700 leading-relaxed">
-                Bu, tarafınızdan oluşturulan orijinal bir Rutin Görüşme randevusudur. Bu randevuyu sildiğinizde, buna bağlı tüm tekrarlı randevular da silinecektir.
-              </p>
-              <p className="mt-2 text-gray-700 leading-relaxed">
-                İlerleyen tarihlerde aynı randevuyu tekrar oluşturmanız gerekebilir.
-              </p>
-            </div>
-            
-            <div className="flex justify-end gap-3">
-              <button
-                onClick={() => setShowRutinDeleteWarning(false)}
-                className="px-4 py-2 bg-gray-300 hover:bg-gray-400 rounded-md text-gray-800"
-              >
-                İptal Et
-              </button>
-              <button
-                onClick={confirmRutinDelete}
-                className="px-4 py-2 bg-red-500 hover:bg-red-600 rounded-md text-white"
-              >
-                Randevuyu Sil
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-      
-      {/* Basit Randevu Silme Onayı */}
-      {showSimpleDeleteWarning && (
-        <div className="fixed inset-0 bg-black bg-opacity-30 flex justify-center items-center z-50">
-          <div className="relative bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
-            <button
-              onClick={() => setShowSimpleDeleteWarning(false)}
-              className="absolute top-2 right-2 text-red-500 hover:text-gray-600"
-            >
-              <IoIosCloseCircleOutline className="w-6 h-6" />
-            </button>
-            
-            <h2 className="text-2xl font-bold mb-4 text-gray-800">Randevu Silme Onayı</h2>
-            
-            <p className="mb-6 text-gray-700">
-              Bu randevuyu silmek istediğinize emin misiniz?
-            </p>
-            
-            <div className="flex justify-end gap-3">
-              <button
-                onClick={() => setShowSimpleDeleteWarning(false)}
-                className="px-4 py-2 bg-gray-300 hover:bg-gray-400 rounded-md text-gray-800"
-              >
-                İptal Et
-              </button>
-              <button
-                onClick={confirmSimpleDelete}
-                className="px-4 py-2 bg-red-500 hover:bg-red-600 rounded-md text-white"
-              >
-                Randevuyu Sil
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
-}
+};
+
+export default CalendarSchedulePage; 

@@ -22,7 +22,7 @@ export default function ConsultantPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
-  const [isCalendarModalOpen, setIsCalendarModalOpen] = useState(false);
+  const [isCalendarModalOpen, setIsCalendarModalOpen] = useState(true);
 
   const fetchUsers = async () => {
     try {
@@ -139,58 +139,52 @@ export default function ConsultantPage() {
   const genderOptions = ["Erkek", "Kadın"];
 
   return (
-    <div className="w-screen bg-[#f4f7fe] p-4 md:p-8 overflow-auto rounded-l-[2.5rem] relative z-20">
-      {/* Başlık ve Üst Alan */}
-      <div className="flex flex-col md:flex-row md:justify-between items-center mb-3">
-        {isCalendarModalOpen ? (
-          <h1 className="text-2xl md:text-3xl font-bold mb-3">Takvimi Yönet</h1>
-        ) : (
+    <div className={`w-screen bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-100 ${isCalendarModalOpen ? 'p-2 md:p-4' : 'p-4 md:p-8'} overflow-hidden rounded-l-[2.5rem] relative z-20 h-screen`}>
+      {/* Başlık ve Üst Alan - Sadece normal modda göster */}
+      {!isCalendarModalOpen && (
+        <div className="flex flex-col md:flex-row md:justify-between items-center mb-3">
           <h1 className="text-2xl md:text-3xl font-bold mb-3">Randevu Yönetimi</h1>
-        )}
-        <div className="flex flex-wrap justify-center md:justify-end gap-2 md:gap-4 items-center w-full md:w-auto">
-          {isCalendarModalOpen ? (
-            <div></div>
-          ) : (
-            <>
-              <ConsultantSearchContainer onSearchChange={handleSearchChange} />
-              <DateFilter
-                onStartDateChange={handleStartDateChange}
-                onEndDateChange={handleEndDateChange}
-              />
-              <AddAppointment
-                onAddAppointment={handleAddAppointment}
-                options={{
-                  clinicOptions,
-                  doctorOptions,
-                  doctorList,
-                  genderOptions,
-                  appointmentTypeOptions,
-                }}
-                appointments={appointmentDateData}
-                servicesData={servicesData}
-              />
-            </>
-          )}
+          <div className="flex flex-wrap justify-center md:justify-end gap-2 md:gap-4 items-center w-full md:w-auto">
+            <ConsultantSearchContainer onSearchChange={handleSearchChange} />
+            <DateFilter
+              onStartDateChange={handleStartDateChange}
+              onEndDateChange={handleEndDateChange}
+            />
+            <AddAppointment
+              onAddAppointment={handleAddAppointment}
+              options={{
+                clinicOptions,
+                doctorOptions,
+                doctorList,
+                genderOptions,
+                appointmentTypeOptions,
+              }}
+              appointments={appointmentDateData}
+              servicesData={servicesData}
+            />
+          </div>
         </div>
-      </div>
+      )}
 
       {/* İçerik */}
       {!isCalendarModalOpen ? (
         <div>
-          <ConsultantTableWrapper
-            data={appointmentData}
-            searchQuery={searchQuery}
-            startDate={startDate}
-            endDate={endDate}
-            options={{
-              clinicOptions,
-              doctorOptions,
-              genderOptions,
-              appointmentTypeOptions,
-            }}
-            fetchAppointments={fetchAppointments}
-            servicesData={servicesData}
-          />
+          <div className="flex-1 overflow-hidden">
+            <ConsultantTableWrapper
+              data={appointmentData}
+              searchQuery={searchQuery}
+              startDate={startDate}
+              endDate={endDate}
+              options={{
+                clinicOptions,
+                doctorOptions,
+                genderOptions,
+                appointmentTypeOptions,
+              }}
+              fetchAppointments={fetchAppointments}
+              servicesData={servicesData}
+            />
+          </div>
           {/* Alt Buton */}
           <div className="flex flex-row justify-end gap-4 mt-4">
             <button
@@ -204,14 +198,16 @@ export default function ConsultantPage() {
           </div>
         </div>
       ) : (
-        <div>
-          <CalendarSchedulePage servicesData={calendarServicesData} />
-          <div className="flex flex-row justify-start gap-4 mt-4">
+        <div className="h-full flex flex-col">
+          <div className="flex-1 overflow-hidden">
+            <CalendarSchedulePage servicesData={calendarServicesData} />
+          </div>
+          <div className="flex flex-row justify-start gap-4 mt-2">
             <button
               onClick={handleCalendarModalOpen}
               className="font-poppins flex flex-row text-[#399AA1] font-semibold px-4 py-3 rounded-[0.625rem] hover:text-[#007E85]"
             >
-              <span className="md:inline hidden">Randevu Yönetimine Dön</span>
+              <span className="md:inline hidden">Tablo Görünümüne Geç</span>
               <span className="md:hidden inline">Geri Dön</span>
               <FiArrowLeftCircle className="w-6 h-6 ml-2" />
             </button>
