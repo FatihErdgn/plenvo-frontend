@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from "react";
 import { FaMoneyBill, FaCheckCircle } from "react-icons/fa";
 import { IoCheckmarkDoneCircleSharp } from "react-icons/io5";
-import usePaymentStatus from "../../../../hooks/usePaymentStatus";
-import ReadOnlyPaymentPopup from "../../ConsultantTable/ReadOnlyPayNowButton";
-import { cn } from "../utils/calendarUtils";
+import usePaymentStatus from "../../../hooks/usePaymentStatus";
+import ReadOnlyPaymentPopup from "../ConsultantTable/ReadOnlyPayNowButton";
+import { cn } from "../../../utils/calendarUtils";
 
 const PaymentStatusCell = ({
   appointment,

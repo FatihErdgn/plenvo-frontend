@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { FaChevronLeft, FaChevronRight, FaRegCalendarAlt } from "react-icons/fa";
-import { formatDate, getWeekStart, cn } from "../utils/calendarUtils";
+import { formatDate, getWeekStart, cn } from "../../../utils/calendarUtils";
 import { subWeeks, addWeeks, addDays, addMonths, startOfMonth } from 'date-fns';
 
 const DatePicker = ({ 

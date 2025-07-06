@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import PaymentPopup from "../ConsultantTable/PayNowButton";
-import { getWeekStart, calculateAppointmentDate, isVirtualInstance } from "./utils/calendarUtils";
-import { useAppointments } from "./hooks/useAppointments";
-import CalendarGrid from "./components/CalendarGrid";
-import DatePicker from "./components/DatePicker";
-import AppointmentModal from "./components/AppointmentModal";
-import { APPOINTMENT_TYPES } from "./constants/calendarConstants";
+import { getWeekStart, calculateAppointmentDate, isVirtualInstance } from "../../../utils/calendarUtils";
+import { useAppointments } from "../../../hooks/useAppointments";
+import CalendarGrid from "./CalendarGrid";
+import DatePicker from "./DatePicker";
+import AppointmentModal from "./AppointmentModal";
+import { APPOINTMENT_TYPES } from "../../../constants/calendarConstants";
 
 const CalendarSchedulePage = ({ servicesData = [] }) => {
   // Core calendar state

@@ -4,8 +4,8 @@ import {
   createCalendarAppointment,
   updateCalendarAppointment,
   deleteCalendarAppointment,
-} from '../../../../services/calendarAppointmentService';
-import { getUsers, getProfile } from '../../../../services/userService';
+} from '../services/calendarAppointmentService' 
+import { getUsers, getProfile } from '../services/userService';
 
 export const useAppointments = () => {
   const [loggedInUser, setLoggedInUser] = useState(null);

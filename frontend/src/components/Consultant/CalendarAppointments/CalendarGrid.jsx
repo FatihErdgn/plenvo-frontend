@@ -1,6 +1,6 @@
 import React, { useMemo, useState, useCallback, useRef } from "react";
-import { DAYS, DAYS_SHORT, TIME_SLOTS } from "../constants/calendarConstants";
-import { formatDate, getPastelColor, findAppointmentForCell, isVirtualInstance, getWeekDates, cn } from "../utils/calendarUtils";
+import { DAYS, DAYS_SHORT, TIME_SLOTS } from "../../../constants/calendarConstants";
+import { formatDate, getPastelColor, findAppointmentForCell, isVirtualInstance, getWeekDates, cn } from "../../../utils/calendarUtils";
 import PaymentStatusCell from "./PaymentStatusCell";
 
 const CalendarGrid = ({

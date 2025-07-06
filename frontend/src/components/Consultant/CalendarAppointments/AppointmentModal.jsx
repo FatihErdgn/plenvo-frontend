@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { IoIosCloseCircleOutline } from "react-icons/io";
-import { APPOINTMENT_TYPES, PARTICIPANT_COUNT_OPTIONS, DAYS, TIME_SLOTS } from "../constants/calendarConstants";
-import { useFormValidation } from "../hooks/useFormValidation";
-import { cn, calculateAppointmentDuration, formatDuration } from "../utils/calendarUtils";
+import { APPOINTMENT_TYPES, PARTICIPANT_COUNT_OPTIONS, DAYS, TIME_SLOTS } from "../../../constants/calendarConstants";
+import { useFormValidation } from "../../../hooks/useFormValidation";
+import { cn, calculateAppointmentDuration, formatDuration } from "../../../utils/calendarUtils";
 
 // Required field indicator component
 const RequiredIndicator = () => (
