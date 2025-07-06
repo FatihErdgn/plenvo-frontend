@@ -174,7 +174,7 @@ const DatePicker = ({
   );
 
   return (
-    <div className="flex items-center space-x-3 relative">
+    <div className="flex items-center space-x-3 relative z-50">
       <button 
         onClick={goToPreviousWeek}
         disabled={!isDoctorSelected}
