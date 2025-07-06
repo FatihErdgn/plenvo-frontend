@@ -108,8 +108,8 @@ const CalendarGrid = ({
   }, [handleMouseUp]);
 
   const renderTableHeader = () => (
-    <thead className="sticky top-0 z-20 bg-white">
-      <tr>
+    <thead>
+      <tr className="sticky top-0 z-30 bg-white">
         <th
           colSpan={DAYS.length + 1}
           className={cn(
@@ -125,8 +125,8 @@ const CalendarGrid = ({
           </div>
         </th>
       </tr>
-      <tr className="bg-gradient-to-r from-gray-50 to-gray-100 sticky top-[3.5rem] z-10">
-        <th className="border border-gray-200 p-3 bg-white font-medium text-gray-700 w-[15%] sticky left-0 z-20 shadow-sm">
+      <tr className="sticky top-[3.5rem] z-20 bg-white">
+        <th className="border border-gray-200 p-3 bg-white font-medium text-gray-700 w-[15%] sticky left-0 z-30 shadow-sm">
           <div className="flex items-center justify-center">
             <span className="text-sm">Saat</span>
           </div>
@@ -161,7 +161,7 @@ const CalendarGrid = ({
         className={cn(
           "border border-gray-200 p-1 text-center font-medium text-gray-700",
           "bg-white",
-          "sticky left-0 z-10 shadow-md",
+          "sticky left-0 z-10 shadow-sm",
           isHourStart && "border-t-2 border-t-gray-400"
         )}
       >
@@ -279,20 +279,17 @@ const CalendarGrid = ({
 
   return (
     <div className={cn(
-      "rounded-xl overflow-hidden relative",
-      "bg-white backdrop-blur-sm",
+      "relative w-full",
       !isDoctorSelected && "opacity-50"
     )}>
-      <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 hover:scrollbar-thumb-gray-400">
-        <table className="table-fixed w-full border-collapse min-w-[900px] xl:min-w-full">
-          {renderTableHeader()}
-          {renderTableBody()}
-        </table>
-      </div>
+      <table className="table-fixed w-full border-collapse min-w-[900px] xl:min-w-full">
+        {renderTableHeader()}
+        {renderTableBody()}
+      </table>
       
       {/* Loading Overlay */}
       {!isDoctorSelected && (
-        <div className="absolute inset-0 bg-white bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-20">
+        <div className="absolute inset-0 bg-white bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-40">
           <div className="bg-white p-4 rounded-lg shadow-lg border border-gray-200">
             <div className="text-center">
               <div className="w-8 h-8 border-4 border-teal-500 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>

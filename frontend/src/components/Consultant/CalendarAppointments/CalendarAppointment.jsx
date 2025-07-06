@@ -5,7 +5,7 @@ import { useAppointments } from "../../../hooks/useAppointments";
 import CalendarGrid from "./CalendarGrid";
 import DatePicker from "./DatePicker";
 import AppointmentModal from "./AppointmentModal";
-import { APPOINTMENT_TYPES } from "../../../constants/calendarConstants";
+import { APPOINTMENT_TYPES,DAYS,DAYS_SHORT,TIME_SLOTS } from "../../../constants/calendarConstants";
 
 const CalendarSchedulePage = ({ servicesData = [] }) => {
   // Core calendar state
@@ -423,19 +423,21 @@ const CalendarSchedulePage = ({ servicesData = [] }) => {
           )}
 
         {/* Calendar Grid */}
-        <div className="overflow-y-auto max-h-[calc(100vh-14rem)] border border-gray-200 rounded-xl scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 hover:scrollbar-thumb-gray-400">
-          <CalendarGrid
-            appointments={appointments}
-            currentWeekStart={currentWeekStart}
-            selectedDoctorName={getSelectedDoctorName()}
-            isDoctorSelected={isDoctorSelected()}
-            onCellClick={handleCellClick}
-            onPaymentClick={handlePaymentClick}
-            paymentRefreshTrigger={paymentRefreshTrigger}
-                          preventAutoPopup={preventAutoPopup}
-            refreshAppointments={refreshAppointments}
-          />
-      </div>
+        <div className="relative border border-gray-200 rounded-xl bg-white shadow-sm">
+          <div className="overflow-auto max-h-[calc(100vh-14rem)] scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 hover:scrollbar-thumb-gray-400">
+            <CalendarGrid
+              appointments={appointments}
+              currentWeekStart={currentWeekStart}
+              selectedDoctorName={getSelectedDoctorName()}
+              isDoctorSelected={isDoctorSelected()}
+              onCellClick={handleCellClick}
+              onPaymentClick={handlePaymentClick}
+              paymentRefreshTrigger={paymentRefreshTrigger}
+              preventAutoPopup={preventAutoPopup}
+              refreshAppointments={refreshAppointments}
+            />
+          </div>
+        </div>
 
         {/* Loading and Error Messages */}
         <div className="mt-4 space-y-4">
