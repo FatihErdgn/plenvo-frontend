@@ -68,13 +68,17 @@ export const timeIndexToTime = (timeIndex) => {
 export const calculateAppointmentDate = (selectedDate, timeIndex) => {
   const { hours, minutes } = timeIndexToTime(timeIndex);
   
-  return new Date(Date.UTC(
-    selectedDate.getFullYear(),
-    selectedDate.getMonth(), 
-    selectedDate.getDate(),
-    hours - 3, // TR saatini UTC'ye çevir (TR = UTC+3)
-    minutes, 0, 0
-  ));
+  // selectedDate'den sadece tarih bilgisini al (UTC olarak)
+  // hours ve minutes değerlerini doğrudan Türkiye saatine göre hesapla
+  // TimeIndex zaten 09:00-20:45 TR saatine göre tasarlandığı için direkt kullan
+  const year = selectedDate.getFullYear();
+  const month = selectedDate.getMonth();
+  const date = selectedDate.getDate();
+  
+  // Türkiye saati UTC+3 olduğu için TR saatinden 3 saat çıkar
+  const utcHours = hours - 3;
+  
+  return new Date(Date.UTC(year, month, date, utcHours, minutes, 0, 0));
 };
 
 // Randevu bulma fonksiyonu - multi-slot desteği ile
