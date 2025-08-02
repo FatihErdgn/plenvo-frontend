@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { getPaymentsByAppointment } from "../services/paymentService";
 
-export default function usePaymentStatus(appointmentId, refreshTrigger = 0) {
+export default function usePaymentStatus(appointmentId, refreshTrigger = 0, disabled = false) {
   const [completed, setCompleted] = useState(false);
   const [halfPaid, setHalfPaid] = useState(false);
   const [totalPaid, setTotalPaid] = useState(0);
@@ -10,7 +10,7 @@ export default function usePaymentStatus(appointmentId, refreshTrigger = 0) {
 
   useEffect(() => {
     async function fetchStatus() {
-      if (!appointmentId) return;
+      if (!appointmentId || disabled) return;
       try {
         const res = await getPaymentsByAppointment(appointmentId);
         
@@ -75,7 +75,7 @@ export default function usePaymentStatus(appointmentId, refreshTrigger = 0) {
       }
     }
     fetchStatus();
-  }, [appointmentId, refreshTrigger]);
+  }, [appointmentId, refreshTrigger, disabled]);
 
   return { completed, halfPaid, totalPaid, isExpired };
 }

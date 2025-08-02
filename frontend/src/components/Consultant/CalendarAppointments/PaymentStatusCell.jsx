@@ -10,12 +10,74 @@ const PaymentStatusCell = ({
   onClickPayNow,
   refreshTrigger,
   fetchAppointments,
-  preventAutoPopup = false
+  preventAutoPopup = false,
+  weeklyPaymentData = {},
+  paymentLoading = false
 }) => {
-  const { completed, halfPaid, totalPaid, isExpired } = usePaymentStatus(
-    appointment._id,
-    refreshTrigger
+  // Haftalık payment data'dan bu appointment için payment bilgilerini al
+  const getPaymentStatusFromWeeklyData = () => {
+    const appointmentId = appointment._id;
+    const payments = weeklyPaymentData[appointmentId] || [];
+    
+    if (payments.length === 0) {
+      return {
+        completed: false,
+        halfPaid: false,
+        totalPaid: 0,
+        isExpired: false
+      };
+    }
+    
+    // Geçerli ödemeleri filtrele
+    const validPayments = payments.filter(payment => payment.isValid === true);
+    const expiredPayments = payments.filter(payment => payment.isValid === false);
+    
+    // Hiç geçerli ödeme yoksa ama süresi dolmuş ödemeler varsa
+    if (validPayments.length === 0 && expiredPayments.length > 0) {
+      return {
+        completed: false,
+        halfPaid: false,
+        totalPaid: 0,
+        isExpired: true
+      };
+    }
+    
+    // Geçerli ödemeler varsa durumu kontrol et
+    const isCompleted = validPayments.some(payment => payment.isCompleted === true);
+    const isPartialPayment = validPayments.some(payment => 
+      payment.isValid === true && payment.isCompleted === false
+    );
+    
+    // Toplam ödenen miktarı hesapla (sadece geçerli ödemelerden)
+    const total = validPayments.reduce(
+      (acc, payment) => acc + Number(payment.paymentAmount),
+      0
+    );
+    
+    return {
+      completed: isCompleted,
+      halfPaid: isPartialPayment,
+      totalPaid: total,
+      isExpired: false
+    };
+  };
+
+  // Weekly data var mı kontrol et
+  const hasWeeklyData = Object.keys(weeklyPaymentData).length > 0;
+  
+  // Fallback olarak hook kullan (eğer weekly data henüz yüklenmemişse)
+  // Hook'a weekly data varsa disabled flag'i gönder
+  const hookResult = usePaymentStatus(
+    appointment._id, 
+    refreshTrigger, 
+    hasWeeklyData // Bu parametre hook'un çalışmamasını sağlayacak
   );
+  
+  // Weekly data varsa onu kullan, yoksa hook sonucunu kullan
+  const { completed, halfPaid, totalPaid, isExpired } = hasWeeklyData
+    ? getPaymentStatusFromWeeklyData() 
+    : hookResult;
+
   const [viewPaymentOpen, setViewPaymentOpen] = useState(false);
   
   // İlk mount sonrası oluşan değişiklikleri izleyen ref

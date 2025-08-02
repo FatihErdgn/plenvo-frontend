@@ -12,7 +12,9 @@ const CalendarGrid = ({
   onPaymentClick,
   paymentRefreshTrigger,
   preventAutoPopup,
-  refreshAppointments
+  refreshAppointments,
+  weeklyPaymentData,
+  paymentLoading
 }) => {
   const weekDates = useMemo(() => getWeekDates(currentWeekStart), [currentWeekStart]);
   
@@ -224,6 +226,8 @@ const CalendarGrid = ({
                   refreshTrigger={paymentRefreshTrigger}
                   fetchAppointments={refreshAppointments}
                   preventAutoPopup={preventAutoPopup}
+                  weeklyPaymentData={weeklyPaymentData}
+                  paymentLoading={paymentLoading}
                 />
                 
                 {/* Multi-slot göstergesi

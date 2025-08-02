@@ -6,6 +6,7 @@ import {
   isVirtualInstance,
 } from "../../../utils/calendarUtils";
 import { useAppointments } from "../../../hooks/useAppointments";
+import { getPaymentsByWeek } from "../../../services/paymentService";
 import CalendarGrid from "./CalendarGrid";
 import DatePicker from "./DatePicker";
 import AppointmentModal from "./AppointmentModal";
@@ -26,6 +27,8 @@ const CalendarSchedulePage = ({ servicesData = [] }) => {
   const [paymentOpen, setPaymentOpen] = useState(false);
   const [paymentRefreshTrigger, setPaymentRefreshTrigger] = useState(0);
   const [preventAutoPopup, setPreventAutoPopup] = useState(false);
+  const [weeklyPaymentData, setWeeklyPaymentData] = useState({});
+  const [paymentLoading, setPaymentLoading] = useState(false);
 
   // Modal state
   const [showModal, setShowModal] = useState(false);
@@ -74,6 +77,29 @@ const CalendarSchedulePage = ({ servicesData = [] }) => {
     getSelectedDoctorId,
   } = useAppointments();
 
+  // Fetch weekly payment data
+  const fetchWeeklyPaymentData = useCallback(async () => {
+    if (!isDoctorSelected()) return;
+    
+    setPaymentLoading(true);
+    try {
+      const doctorId = getSelectedDoctorId();
+      const weekStartISO = currentWeekStart.toISOString();
+      const response = await getPaymentsByWeek(weekStartISO, doctorId);
+      
+      if (response.success) {
+        setWeeklyPaymentData(response.paymentsByAppointment || {});
+      } else {
+        setWeeklyPaymentData({});
+      }
+    } catch (error) {
+      console.error("Haftalık ödeme verileri alınırken hata:", error);
+      setWeeklyPaymentData({});
+    } finally {
+      setPaymentLoading(false);
+    }
+  }, [currentWeekStart, getSelectedDoctorId, isDoctorSelected]);
+
   // Fetch appointments when dependencies change
   useEffect(() => {
     const doctorId = getSelectedDoctorId();
@@ -86,6 +112,11 @@ const CalendarSchedulePage = ({ servicesData = [] }) => {
     getSelectedDoctorId,
     isDoctorSelected,
   ]);
+
+  // Fetch weekly payment data when dependencies change
+  useEffect(() => {
+    fetchWeeklyPaymentData();
+  }, [fetchWeeklyPaymentData, paymentRefreshTrigger]);
 
   // Filter services based on selected doctor and appointment type
   const filteredServices = useMemo(() => {
@@ -173,6 +204,8 @@ const CalendarSchedulePage = ({ servicesData = [] }) => {
     const doctorId = getSelectedDoctorId();
     if (doctorId) {
       await fetchAppointments(doctorId, currentWeekStart);
+      // Haftalık ödeme verilerini de yeniden yükle
+      await fetchWeeklyPaymentData();
       setPaymentRefreshTrigger((prev) => prev + 1);
       setSelectedAppointment(null);
       setRebookBookingId(null);
@@ -181,7 +214,7 @@ const CalendarSchedulePage = ({ servicesData = [] }) => {
     setTimeout(() => {
       setPreventAutoPopup(false);
     }, 3000);
-  }, [getSelectedDoctorId, fetchAppointments, currentWeekStart]);
+  }, [getSelectedDoctorId, fetchAppointments, currentWeekStart, fetchWeeklyPaymentData]);
 
   // Reset form data
   const resetFormData = useCallback(() => {
@@ -506,6 +539,8 @@ const CalendarSchedulePage = ({ servicesData = [] }) => {
               paymentRefreshTrigger={paymentRefreshTrigger}
               preventAutoPopup={preventAutoPopup}
               refreshAppointments={refreshAppointments}
+              weeklyPaymentData={weeklyPaymentData}
+              paymentLoading={paymentLoading}
             />
           </div>
         </div>

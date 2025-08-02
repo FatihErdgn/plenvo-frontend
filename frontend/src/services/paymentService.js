@@ -103,3 +103,27 @@ export const getPaymentsByAppointment = async (appointmentId) => {
     throw error.response?.data || error.message;
   }
 };
+
+/**
+ * Belirli bir hafta için tüm randevuların ödeme bilgilerini getirme
+ * @param {string} weekStart Hafta başlangıç tarihi (ISO string)
+ * @param {string} doctorId Opsiyonel doktor ID'si
+ * @returns {Promise<object>} API cevabı (haftalık ödeme bilgileri)
+ */
+export const getPaymentsByWeek = async (weekStart, doctorId = null) => {
+  try {
+    let url = `/payments/week?weekStart=${weekStart}`;
+    if (doctorId) {
+      url += `&doctorId=${doctorId}`;
+    }
+    
+    const response = await api.get(url);
+    return response.data;
+  } catch (error) {
+    console.error(
+      "Get Payments By Week Hatası:",
+      error.response?.data || error.message
+    );
+    throw error.response?.data || error.message;
+  }
+};
