@@ -193,7 +193,7 @@ const MainModal = ({
                   <>
                     <span className="text-gray-500 mx-2">→</span>
                     <span className="font-medium text-gray-700">
-                      {TIME_SLOTS[selectedAppointment.endTimeIndex]}
+                      {TIME_SLOTS[selectedAppointment.endTimeIndex + 1]}
                     </span>
                   </>
                 )}
