@@ -133,6 +133,7 @@ const MainModal = ({
   editMode,
   selectedDoctorName,
   selectedAppointment,
+  setSelectedAppointment,
   description,
   setDescription,
   isRecurring,
@@ -209,6 +210,37 @@ const MainModal = ({
                 </div>
               )}
             </div>
+          </div>
+        )}
+
+        {/* Appointment Duration Editor - for editing mode */}
+        {editMode && selectedAppointment && (
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 mb-2">Randevu Süresi</label>
+            <select
+              value={selectedAppointment.slotCount || 1}
+              onChange={(e) => {
+                const newSlotCount = parseInt(e.target.value);
+                const maxSlots = Math.min(48 - selectedAppointment.timeIndex, 48);
+                const validSlotCount = Math.min(newSlotCount, maxSlots);
+                
+                setSelectedAppointment({
+                  ...selectedAppointment,
+                  slotCount: validSlotCount,
+                  endTimeIndex: selectedAppointment.timeIndex + validSlotCount - 1
+                });
+              }}
+              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200"
+            >
+              {Array.from({ length: Math.min(48 - selectedAppointment.timeIndex, 16) }, (_, i) => i + 1).map(slotCount => (
+                <option key={slotCount} value={slotCount}>
+                  {formatDuration(slotCount * 15)}
+                </option>
+              ))}
+            </select>
+            <p className="text-xs text-gray-500 mt-1">
+              Randevu süresi değiştirilebilir. Maksimum süre gün sonuna kadar olan süredir.
+            </p>
           </div>
         )}
 
@@ -563,6 +595,7 @@ const AppointmentModal = ({
   
   // Form data
   selectedAppointment,
+  setSelectedAppointment,
   participantCount,
   setParticipantCount,
   participantNames,
@@ -697,6 +730,7 @@ const AppointmentModal = ({
           editMode={editMode}
           selectedDoctorName={selectedDoctorName}
           selectedAppointment={selectedAppointment}
+          setSelectedAppointment={setSelectedAppointment}
           description={description}
           setDescription={setDescription}
           isRecurring={isRecurring}

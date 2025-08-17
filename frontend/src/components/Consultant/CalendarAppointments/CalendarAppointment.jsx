@@ -586,6 +586,7 @@ const CalendarSchedulePage = ({ servicesData = [] }) => {
           setShowSimpleDeleteWarning={setShowSimpleDeleteWarning}
           // Form data
           selectedAppointment={selectedAppointment}
+          setSelectedAppointment={setSelectedAppointment}
           participantCount={participantCount}
           setParticipantCount={setParticipantCount}
           participantNames={participantNames}
